@@ -261,7 +261,7 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
 <div class="card hdr">
   <h1>RAWDY — Strength &amp; Equipment Accounting</h1>
   <div class="note">Company-level manpower and equipment accounting for HQ, PL1, PL2, PL3.
-    <span id="build" style="float:right; font-family:var(--fm); color:var(--muted);">BUILD 19 · 26JUL26</span></div>
+    <span id="build" style="float:right; font-family:var(--fm); color:var(--muted);">BUILD 20 · 26JUL26</span></div>
 </div>
 
 <div class="card">
@@ -446,18 +446,18 @@ const DEFAULT_CATS = [
   {"id": "others", "label": "OTHERS (STATE REASON)",    "kind": "moveout_np"}
 ];
 
-const WEAPON_ITEMS = ["SAR21", "SS", "M203", "LMG", "GPMG", "MATADOR", "M110", "KN252", "M110 SILENCER", "M110 TRIPOD", "SPARE BARREL", "MG TRIPOD", "GPMG CARTRIDGE POUCH", "GPMG AMMO FEEDER", "PYTHON BELT", "SAR21 MAG", "LMG MAG", "M110 MAG", "SAR21 BFA", "LMG BFA", "GPMG BFA", "SAR 21 AMMO POUCH", "LMG AMMO POUCH", "GPMG AMMO POUCH"], WEAPON_GROUPS = [["Weapons", ["SAR21", "SS", "M203", "LMG", "GPMG", "MATADOR", "M110"]], ["Blank firing attachments", ["SAR21 BFA", "LMG BFA", "GPMG BFA"]], ["Magazines & pouches", ["SAR21 MAG", "LMG MAG", "M110 MAG", "SAR 21 AMMO POUCH", "LMG AMMO POUCH", "GPMG AMMO POUCH"]], ["GPMG detail", ["GPMG CARTRIDGE POUCH", "GPMG AMMO FEEDER", "PYTHON BELT", "SPARE BARREL", "MG TRIPOD"]], ["Accessories", ["KN252", "M110 SILENCER", "M110 TRIPOD"]]];
+const WEAPON_ITEMS = ["SAR21", "SS", "M203", "LMG", "GPMG", "MATADOR", "MPAT", "M110", "KN252", "M110 SILENCER", "M110 TRIPOD", "SPARE BARREL", "MG TRIPOD", "GPMG CARTRIDGE POUCH", "GPMG AMMO FEEDER", "PYTHON BELT", "SAR21 MAG", "LMG MAG", "M110 MAG", "SAR21 BFA", "LMG BFA", "GPMG BFA", "SAR 21 AMMO POUCH", "LMG AMMO POUCH", "GPMG AMMO POUCH"], WEAPON_GROUPS = [["Weapons", ["SAR21", "SS", "M203", "LMG", "GPMG", "MATADOR", "MPAT", "M110"]], ["Blank firing attachments", ["SAR21 BFA", "LMG BFA", "GPMG BFA"]], ["Magazines & pouches", ["SAR21 MAG", "LMG MAG", "M110 MAG", "SAR 21 AMMO POUCH", "LMG AMMO POUCH", "GPMG AMMO POUCH"]], ["GPMG detail", ["GPMG CARTRIDGE POUCH", "GPMG AMMO FEEDER", "PYTHON BELT", "SPARE BARREL", "MG TRIPOD"]], ["Accessories", ["KN252", "M110 SILENCER", "M110 TRIPOD"]]];
 const SIGNALS_ITEMS = ["NVG", "PRC650", "PRC940", "COMPASS", "BINO", "UTWS", "MAP", "MG WALLET", "FSS", "CDS(FSS)", "UOCE", "TTS", "KHS", "HAMMER (HEARTLANDER)", "SNIP-IT (HEARTLANDER)", "CROWBAR (HEARTLANDER)"], SIGNALS_GROUPS = [["Comms", ["PRC650", "PRC940"]], ["Optics & navigation", ["NVG", "BINO", "UTWS", "COMPASS", "MAP"]], ["MG detail", ["MG WALLET"]], ["Surveillance / target", ["FSS", "CDS(FSS)", "UOCE", "TTS", "KHS"]], ["Heartlander (breaching)", ["HAMMER (HEARTLANDER)", "SNIP-IT (HEARTLANDER)", "CROWBAR (HEARTLANDER)"]]];
 const PANTES_ITEMS = ["CHOCO BAR", "BFI/PU", "LH MOUNT", "RH MOUNT", "FT MOUNT", "BT MOUNT", "GAMEBOY", "GAMEBOY POUCH", "SAR 21 SFT", "LMG SFT", "M203 SFT", "M203 LAUNCHER", "M203 ROUND", "GPMG SFT", "MATADOR SFT", "CLAYMORE SFT", "M110 SFT"], PANTES_GROUPS = [["Per-man kit", ["CHOCO BAR", "BFI/PU", "GAMEBOY", "GAMEBOY POUCH"]], ["Mounts", ["LH MOUNT", "RH MOUNT", "FT MOUNT", "BT MOUNT"]], ["SFT (one per weapon)", ["SAR 21 SFT", "LMG SFT", "GPMG SFT", "M203 SFT", "MATADOR SFT", "M110 SFT", "CLAYMORE SFT"]], ["M203 attachments", ["M203 LAUNCHER", "M203 ROUND"]]];
 const STORE_ITEMS = ["SECTION GROUND SHEET", "WIRED GLOVE", "ENGINEER GLOVE", "BREACHING FLAGS", "COLOURED FLAGS", "LIGHT STICK", "VINE CUTTER", "COVER LITTER", "BANGALORE", "CLAYMORE", "TRIPFLARE", "PARANG"], TAG_ITEMS = ["PANEL MARKERS", "TENT PINS", "MARSHALLING WANDS", "MARSHALLING GLOVES", "MALLET", "LENSATIC COMPASS", "WIND METER", "GROUNDSHEET", "ET BLADE", "ET POUCH", "ET STICK", "IR MARKER", "PRC940", "GREEN LIGHT STICKS"];
 const MAP_COMPASS_EXCLUDE = ["MEDIC", "CQ", "ASA"];
 const DEFAULT_RULES = {
   // A commander carries his own SAR21, NOT the section/platoon MG — his gunner does.
-  weapon: [["MAT", "MATADOR"], ["M203", "M203"], ["GPMG COMD", "SAR21"], ["MG COMD", "SAR21"], ["LMG", "LMG"], ["MG OPR", "GPMG"], ["GPMG", "GPMG"], ["MM", "M110"], ["ASA", null], ["SAGE", null], ["CQ", null]],
+  weapon: [["MPAT", "MPAT"], ["MAT", "MATADOR"], ["M203", "M203"], ["GPMG COMD", "SAR21"], ["MG COMD", "SAR21"], ["LMG", "LMG"], ["MG OPR", "GPMG"], ["GPMG", "GPMG"], ["MM", "M110"], ["ASA", null], ["SAGE", null], ["CQ", null]],
   sft: [["MAT", "MATADOR SFT"], ["M203", "M203 SFT"], ["LMG", "LMG SFT"], ["MG OPR", "GPMG SFT"], ["MM", "M110 SFT"]],
   signal: [["OC", null, ["NVG", "PRC650"]], ["PC", null, ["NVG", "PRC650"]], ["PL COMD", null, ["NVG", "PRC650"]], ["PS", null, ["NVG", "PRC650"]], ["APC", null, []], ["MG COMD", null, ["NVG", "PRC650"]], ["GPMG COMD", null, ["NVG", "PRC650"]], ["GPMG OPR", null, ["UTWS"]], ["MG OPR", null, ["UTWS"]], ["ASST OPR", null, ["MG WALLET"]], ["SC", null, ["NVG", "PRC650"]], ["1ST LMG", null, ["NVG"]], ["MM", "3SG", ["PRC650"]], ["RUNNER", null, ["PRC650"]], ["SENSOR", null, []], ["MEDIC", null, []]],
   // GPMG gunner draws the belt-fed detail: cartridge pouch, ammo feeder, python belt, spare barrel (2 barrels), BFA. Tripod is mission-dependent (off by default). Wallet sits on the assistant (issued via the signal rule above).
-  accessories: [["SAR21", "SAR21 BFA", 1, false], ["LMG", "LMG BFA", 1, false], ["GPMG", "GPMG BFA", 2, false], ["SAR21", "SAR 21 AMMO POUCH", 1, false], ["LMG", "LMG AMMO POUCH", 1, false], ["GPMG", "GPMG AMMO POUCH", 1, false], ["GPMG", "GPMG CARTRIDGE POUCH", 1, false], ["GPMG", "GPMG AMMO FEEDER", 1, false], ["GPMG", "PYTHON BELT", 1, false], ["GPMG", "SPARE BARREL", 1, false], ["M110", "M110 TRIPOD", 1, false], ["M110", "M110 SILENCER", 1, false], ["M110", "KN252", 1, true], ["M203", "SAR21", 1, false], ["M203", "SAR21 BFA", 1, false], ["M203", "SAR 21 AMMO POUCH", 1, false]],
+  accessories: [["SAR21", "SAR21 BFA", 1, false], ["LMG", "LMG BFA", 1, false], ["GPMG", "GPMG BFA", 2, false], ["SAR21", "SAR 21 AMMO POUCH", 1, false], ["LMG", "LMG AMMO POUCH", 1, false], ["GPMG", "GPMG AMMO POUCH", 1, false], ["GPMG", "GPMG CARTRIDGE POUCH", 1, false], ["GPMG", "GPMG AMMO FEEDER", 1, false], ["GPMG", "PYTHON BELT", 1, false], ["GPMG", "SPARE BARREL", 1, false], ["M110", "M110 TRIPOD", 1, false], ["M110", "M110 SILENCER", 1, false], ["M110", "KN252", 1, true], ["M203", "SAR21", 1, false], ["M203", "SAR21 BFA", 1, false], ["M203", "SAR 21 AMMO POUCH", 1, false], ["MATADOR", "SAR21", 1, false], ["MATADOR", "SAR21 BFA", 1, false], ["MATADOR", "SAR 21 AMMO POUCH", 1, false], ["MPAT", "SAR21", 1, false], ["MPAT", "SAR21 BFA", 1, false], ["MPAT", "SAR 21 AMMO POUCH", 1, false]],
   perman: {"CHOCO BAR": 4, "BFI/PU": 1, "LH MOUNT": 1, "RH MOUNT": 1, "FT MOUNT": 1, "BT MOUNT": 1, "GAMEBOY": 1, "GAMEBOY POUCH": 1},
   pantesExclude: ["ASA", "CQ", "SAGE"],
   storeEstab: {"SECTION GROUND SHEET": 3, "WIRED GLOVE": 6, "ENGINEER GLOVE": 6, "BREACHING FLAGS": 6, "COLOURED FLAGS": 6, "LIGHT STICK": 48, "VINE CUTTER": 6, "COVER LITTER": 3, "BANGALORE": 6, "CLAYMORE": 6, "TRIPFLARE": 6, "PARANG": 6},
@@ -465,12 +465,12 @@ const DEFAULT_RULES = {
   autoStatus: [["ASA", "sbf"], ["SAGE", "moving"]],
   autoAttachOut: ["MPAT"]
 };
-const WEAPON_CHOICES = ["SAR21","SS","M203","LMG","GPMG","MATADOR","M110"];
+const WEAPON_CHOICES = ["SAR21","SS","M203","LMG","GPMG","MATADOR","MPAT","M110"];
 const SFT_CHOICES = ["SAR 21 SFT","LMG SFT","GPMG SFT","M203 SFT","MATADOR SFT","M110 SFT","CLAYMORE SFT"];
 // Primary weapons belong here too: a weapon can be issued WITH another weapon
 // (the M203 mounts on a SAR21). Leaving them out meant the editor could not show
 // such a rule, and rewrote it to the wrong item on the next edit.
-const ACC_CHOICES = ["SAR21","SS","M203","LMG","GPMG","MATADOR","M110",
+const ACC_CHOICES = ["SAR21","SS","M203","LMG","GPMG","MATADOR","MPAT","M110",
   "SAR21 BFA","LMG BFA","GPMG BFA","SAR 21 AMMO POUCH","LMG AMMO POUCH","GPMG AMMO POUCH",
   "GPMG CARTRIDGE POUCH","GPMG AMMO FEEDER","PYTHON BELT",
   "M110 TRIPOD","M110 SILENCER","SPARE BARREL","KN252","MG TRIPOD","SAR21 MAG","LMG MAG","M110 MAG"];
@@ -478,8 +478,8 @@ const RANK_CHOICES = ["","CPT","LTA","2LT","3WO","MSG","2SG","3SG","ME1-1","CPL"
 const WEAPON_TO_SFT = {"SAR21":"SAR 21 SFT","LMG":"LMG SFT","GPMG":"GPMG SFT","M203":"M203 SFT",
   "MATADOR":"MATADOR SFT","M110":"M110 SFT"};
 const EXTERNAL = "__EXT__";
-const BUILD_ID = "19 · 26JUL26";
-const BUILD_NO = 19;   // attached out of the company entirely
+const BUILD_ID = "20 · 26JUL26";
+const BUILD_NO = 20;   // attached out of the company entirely
 
 // ---- state ----
 function freshState(){
@@ -494,6 +494,7 @@ function freshState(){
     guests: [],        // men attached in from another coy/unit: {id,unit,rank,name,appt,from,mo,pa}
     cats: DEFAULT_CATS.map(c => ({...c})),
     catsRemoved: [],   // built-in statuses the user deliberately deleted — never resurrect these
+    rulesRev: 2,       // fresh state already carries the latest built-in rules
     rules: JSON.parse(JSON.stringify(DEFAULT_RULES)),
     notes: {},         // unit -> free-text additional items/notes appended to the report
     equip: {},         // unit -> {group -> {item -> value}}  (manual overrides / stores)
@@ -512,6 +513,20 @@ function ensureDefaultCats(){
     if((S.catsRemoved || []).includes(c.id)) return;
     if(!S.cats.some(x => x.id === c.id)) S.cats.splice(Math.min(i, S.cats.length), 0, {...c});
   });
+}
+
+// One-time additive rule migrations for phones with older saved rules, keyed by
+// revision so a deliberately deleted rule is not resurrected on every load.
+// rev 2: MATADOR and MPAT gunners carry a SAR21 alongside the launcher.
+const RULES_REV = 2;
+function migrateRules(){
+  if((S.rulesRev || 1) >= RULES_REV) return;
+  const has = (arr, rule) => arr.some(x => x[0] === rule[0] && x[1] === rule[1]);
+  [["MATADOR","SAR21",1,false], ["MATADOR","SAR21 BFA",1,false], ["MATADOR","SAR 21 AMMO POUCH",1,false],
+   ["MPAT","SAR21",1,false], ["MPAT","SAR21 BFA",1,false], ["MPAT","SAR 21 AMMO POUCH",1,false]]
+    .forEach(rule => { if(!has(S.rules.accessories, rule)) S.rules.accessories.push(rule); });
+  if(!S.rules.weapon.some(x => x[0] === "MPAT")) S.rules.weapon.unshift(["MPAT","MPAT"]);
+  S.rulesRev = RULES_REV;
 }
 
 const personsOf = u => S.persons.filter(p => p.unit === u);
@@ -1560,7 +1575,7 @@ function unitReport(u, opts){
     if(!WEAPON_CHOICES.includes(item)) return;
     const n = eq.wpn[host] || 0;
     if(!n) return;
-    mountNote[item] = (mountNote[item] || []).concat(`${fmt2(n)} with ${host} mounted`);
+    mountNote[item] = (mountNote[item] || []).concat(`${fmt2(n)} carried by ${host} men`);
   });
   let eqShown = false;
   const eqSect = (title, items, vals) => {
@@ -2016,7 +2031,7 @@ function unitPayload(u){
     notes: (S.notes||{})[u] || ""
   };
 }
-function globalPayload(){ return {cats:S.cats, catsRemoved:S.catsRemoved||[], rules:S.rules, meta:{act:el("act").value, caa:el("caa").value}}; }
+function globalPayload(){ return {cats:S.cats, catsRemoved:S.catsRemoved||[], rules:S.rules, rulesRev:S.rulesRev||RULES_REV, meta:{act:el("act").value, caa:el("caa").value}}; }
 
 async function put(key, obj, attempt=1){
   if(!shareOn || offSave || ready !== true) return;
@@ -2048,10 +2063,11 @@ async function loadAll(){
   if(g){
     if(Array.isArray(g.cats) && g.cats.length) S.cats = g.cats;
     S.catsRemoved = Array.isArray(g.catsRemoved) ? g.catsRemoved : [];
-    if(g.rules) S.rules = {...JSON.parse(JSON.stringify(DEFAULT_RULES)), ...g.rules};
+    if(g.rules){ S.rules = {...JSON.parse(JSON.stringify(DEFAULT_RULES)), ...g.rules}; S.rulesRev = g.rulesRev || 1; }
     if(g.meta){ el("act").value = g.meta.act || ""; el("caa").value = g.meta.caa || ""; }
   }
   ensureDefaultCats();   // saved data from an older build still gets new built-in statuses
+  migrateRules();        // ...and new built-in equipment rules
   for(const u of UNITS){
     let d = null;
     try { const r = await sGet(ukey(u)); d = r && JSON.parse(r.value); } catch(e){}
@@ -2118,7 +2134,7 @@ el("wipe").onclick = async () => {
 function sessionSnapshot(){
   return {v:3, persons:S.persons, status:S.status, reason:S.reason, attach:S.attach,
           appt:S.appt, gear:S.gear, guests:S.guests, sOver:S.sOver, cats:S.cats, catsRemoved:S.catsRemoved||[],
-          rules:S.rules, equip:S.equip, live:S.live,
+          rules:S.rules, rulesRev:S.rulesRev||RULES_REV, equip:S.equip, live:S.live,
           notes:S.notes, meta:{act:el("act").value, caa:el("caa").value}};
 }
 el("exp").onclick = () => {
@@ -2173,7 +2189,8 @@ el("imp").onclick = () => {
   if(Array.isArray(d.cats) && d.cats.length) S.cats = d.cats;
   S.catsRemoved = Array.isArray(d.catsRemoved) ? d.catsRemoved : [];
   ensureDefaultCats();
-  if(d.rules) S.rules = {...JSON.parse(JSON.stringify(DEFAULT_RULES)), ...d.rules};
+  if(d.rules){ S.rules = {...JSON.parse(JSON.stringify(DEFAULT_RULES)), ...d.rules}; S.rulesRev = d.rulesRev || 1; }
+  migrateRules();
   S.equip = d.equip || {}; S.live = d.live || {}; S.sOver = d.sOver || {}; S.notes = d.notes || {};
   if(d.meta){ el("act").value = d.meta.act || ""; el("caa").value = d.meta.caa || ""; }
   buildTabs(); buildPanels(); renderRules(); renderAll();
