@@ -1,0 +1,1780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RAWDY Strength &amp; Equipment Accounting</title>
+<style>
+:root{color-scheme:dark;}
+*{box-sizing:border-box;}
+body{margin:0; background:#0E100C; }
+.rw{
+  --bg:#12140F; --surface:#1A1E15; --surface2:#232920; --surface3:#2B3227;
+  --border:#3A422F; --border2:#5A6640;
+  --acc:#C9A227; --acc2:#E8C547; --accdim:#8A6F1B;
+  --text:#EAE7D8; --dim:#A8A794; --muted:#777567;
+  --ok:#7A9B5A; --ok2:#9BBC7A; --bad:#8A3B24; --bad2:#F0A98A;
+  --fh:"Helvetica Neue",Arial,sans-serif;
+  --fb:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --fm:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  background:var(--bg); color:var(--text); font-family:var(--fb);
+  max-width:1200px; margin:0 auto; padding:12px; font-size:14px; line-height:1.45;
+}
+.rw h1{font-family:var(--fh); font-size:17px; font-weight:700; letter-spacing:0.02em; margin:0;}
+.rw h2{font-family:var(--fh); font-size:13px; font-weight:700; letter-spacing:0.07em;
+  text-transform:uppercase; color:var(--acc2); margin:0 0 10px; display:flex; align-items:center; gap:7px;}
+.rw h3{font-family:var(--fh); font-size:11px; letter-spacing:0.08em; text-transform:uppercase;
+  color:var(--muted); margin:0 0 6px; padding-bottom:4px; border-bottom:1px solid var(--border);}
+.rw input,.rw select,.rw textarea,.rw button{font-family:inherit; font-size:13px; color:var(--text);
+  background:var(--surface2); border:1px solid var(--border); border-radius:3px; padding:7px 9px;}
+.rw input[readonly]{background:var(--bg); cursor:default;}
+.rw button{cursor:pointer; background:var(--surface3); font-weight:600; letter-spacing:0.03em;}
+.rw button:hover{border-color:var(--acc); color:var(--acc2);}
+.rw .card{background:var(--surface); border:1px solid var(--border); border-radius:5px;
+  padding:12px 14px; margin-bottom:12px;}
+.rw .hdr{border-left:3px solid var(--acc); }
+.rw .step{display:inline-flex; align-items:center; justify-content:center; width:19px; height:19px;
+  border-radius:50%; background:var(--accdim); color:#161810; font-family:var(--fm); font-size:11px; font-weight:700;}
+
+/* ---- company dashboard ---- */
+#coy{border-color:var(--accdim); position:relative;}
+#coy::before{content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  background:linear-gradient(90deg,var(--accdim),var(--acc),var(--accdim));}
+.big3{display:grid; grid-template-columns:repeat(3,1fr); gap:10px;}
+.big{background:var(--bg); border:1px solid var(--accdim); border-radius:4px; padding:9px 12px;}
+.big label{display:block; font-size:10px; letter-spacing:0.09em; text-transform:uppercase; color:var(--muted);}
+.big .v{font-family:var(--fm); font-size:25px; font-weight:700; color:var(--acc2); line-height:1.25;}
+.big .d{font-family:var(--fm); font-size:12px; font-weight:700; color:#FF6B4A; letter-spacing:0.02em;
+  min-height:15px; line-height:1.35; overflow-wrap:anywhere;}
+.big.sub .v{font-size:19px; color:var(--text);}
+.dash{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:10px;}
+.dcard{background:var(--bg); border:1px solid var(--border); border-radius:4px; padding:8px 10px; cursor:pointer;}
+.dcard:hover{border-color:var(--acc);}
+.dcard .u{font-family:var(--fh); font-weight:700; font-size:13px; letter-spacing:0.05em; color:var(--acc2);
+  display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;}
+.dcard .b{background:var(--bad); color:var(--bad2); font-family:var(--fm); font-size:10px; padding:0 6px; border-radius:8px;}
+.dcard .r{display:flex; justify-content:space-between; font-size:10px; color:var(--muted); letter-spacing:0.04em;}
+.dcard .r b{font-family:var(--fm); font-size:12px; color:var(--text); font-weight:600;
+  text-align:right; overflow-wrap:anywhere;}
+.dcard .r{gap:6px;}
+
+/* ---- tabs ---- */
+.tabs{display:flex; gap:2px; border-bottom:1px solid var(--border); margin-bottom:12px; overflow-x:auto;}
+.tab{padding:9px 15px; cursor:pointer; font-family:var(--fh); font-weight:700; font-size:13px;
+  letter-spacing:0.05em; color:var(--dim); border-bottom:2px solid transparent; white-space:nowrap;}
+.tab.on{color:var(--acc2); border-bottom-color:var(--acc); background:var(--surface);}
+.tab .s{display:block; font-family:var(--fm); font-size:10px; font-weight:400; color:var(--muted);}
+
+/* ---- sticky end state ---- */
+.end{position:sticky; top:0; z-index:30; background:linear-gradient(180deg,var(--surface3),var(--surface));
+  border:1px solid var(--accdim); border-radius:4px; padding:9px 13px 11px; margin-bottom:12px;
+  box-shadow:0 6px 16px rgba(0,0,0,0.45);}
+.end .t{font-family:var(--fh); font-size:12px; font-weight:700; letter-spacing:0.08em;
+  text-transform:uppercase; color:var(--acc2); margin-bottom:5px; display:flex; justify-content:space-between;}
+.end .t .tag{font-family:var(--fm); font-size:11px; font-weight:400; color:var(--dim); letter-spacing:0; margin-right:8px;}
+.end .adj{font-size:10.5px; padding:3px 9px; min-height:0; letter-spacing:0.03em;}
+.end .adj.on{background:var(--acc); color:#161810; border-color:var(--acc2);}
+.vedit{width:100%; font-family:var(--fm); font-size:18px; font-weight:700; color:var(--acc2);
+  background:var(--bg); border:1px solid var(--acc); padding:4px 7px;}
+.ovnote{margin-top:7px; font-size:11px; color:#E8C547; background:rgba(201,162,39,0.14);
+  border-radius:3px; padding:6px 9px; display:flex; justify-content:space-between; align-items:center; gap:8px;}
+.ovnote button{font-size:10.5px; padding:4px 9px; min-height:0;}
+
+/* ---- roster chips ---- */
+.filter{width:100%; margin-bottom:8px;}
+.sect{font-family:var(--fh); font-size:11px; font-weight:700; letter-spacing:0.09em; text-transform:uppercase;
+  color:var(--acc); background:var(--surface3); border-left:3px solid var(--acc); padding:5px 9px; margin:10px 0 4px;}
+.chip{display:flex; align-items:center; gap:7px; padding:9px 10px; border-bottom:1px solid var(--border);
+  cursor:pointer; font-size:13px; flex-wrap:wrap;}
+.chip:hover{background:var(--surface2);}
+.chip .n{font-family:var(--fm); font-size:10px; color:var(--muted); min-width:20px;}
+.chip .nm{flex:1; font-weight:600;}
+.chip .ld{font-size:10px; color:var(--muted); font-family:var(--fm); text-align:right; max-width:190px;}
+.chip .st{font-family:var(--fm); font-size:10px; padding:2px 7px; border-radius:9px;
+  white-space:normal; max-width:100%; overflow-wrap:anywhere; text-align:right;}
+.chip.out{opacity:0.62;}
+.chip.out .nm{text-decoration:line-through; text-decoration-color:var(--muted);}
+.chip .st.o{background:var(--bad); color:var(--bad2);}
+.chip .st.i{background:rgba(122,155,90,0.22); color:var(--ok2);}
+/* Gear provenance, at a glance:
+   green  = the man draws his weapon and gear from us
+   grey   = his gear comes from another unit/coy, or he draws none          */
+.chip.ours{border-left:3px solid var(--ok); background:rgba(122,155,90,0.05);}
+.chip.ours .ld{color:var(--ok2);}
+.chip.other{border-left:3px solid #6E6E66; background:rgba(120,120,110,0.07);}
+.chip.other .ld{color:#9A9A90;}
+.chip.nogear .ld{color:var(--muted); font-style:italic;}
+.legend{display:flex; gap:14px; flex-wrap:wrap; font-size:11px; color:var(--dim); margin-bottom:8px;}
+.legend span{display:flex; align-items:center; gap:5px;}
+.legend i{width:11px; height:11px; border-radius:2px; display:inline-block;}
+.chip .x{color:var(--bad2); font-size:14px; padding:0 5px;}
+.hide{display:none !important;}
+
+/* ---- person sheet ---- */
+.sheet{position:absolute; z-index:200; width:330px; max-width:94vw; background:var(--surface2);
+  border:1px solid var(--border2); border-radius:6px; padding:9px; color:var(--text);
+  box-shadow:0 14px 44px rgba(0,0,0,0.65); display:flex; flex-direction:column; gap:4px;}
+.sheet .who{font-family:var(--fm); font-size:11.5px; color:var(--dim); padding:2px 3px 7px;
+  border-bottom:1px solid var(--border);}
+.sheet .lab{font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--accdim);
+  padding:8px 3px 3px; border-top:1px solid var(--border); margin-top:3px;}
+.sheet .lab:first-of-type{border-top:none; margin-top:0;}
+.sheet .opt{text-align:left; background:transparent; border:1px solid transparent; padding:9px 10px;
+  font-weight:500; letter-spacing:0; font-size:13px;}
+.sheet .opt:hover{background:var(--surface3); border-color:var(--border);}
+.sheet .opt.on{border-color:var(--acc); background:var(--surface3);}
+.sheet .opt.on::after{content:' ✓'; color:var(--acc2);}
+.sheet .opt.pres{color:var(--ok2); font-weight:600;}
+.sheet .row{display:flex; align-items:center; gap:7px; padding:3px; font-size:11.5px; color:var(--dim);}
+.sheet .row>span{flex:0 0 70px;}
+.sheet .row input[type=text],.sheet .row select{flex:1; min-width:0; font-size:13px;}
+.sheet .note{font-size:11px; color:var(--bad2); background:rgba(138,59,36,0.35); border-radius:4px;
+  padding:6px 8px; line-height:1.4;}
+.sheet .danger{text-align:left; font-size:12px; border-color:var(--bad); color:var(--bad2); background:transparent;}
+.sigs{display:grid; grid-template-columns:repeat(auto-fill,minmax(112px,1fr)); gap:1px 7px; padding:5px;
+  max-height:145px; overflow-y:auto; border:1px solid var(--border); border-radius:4px; background:var(--bg);}
+.sigs label{display:flex; align-items:center; gap:5px; font-size:11.5px; color:var(--dim);}
+.sigs input{width:auto;}
+.acts{display:flex; gap:6px; margin-top:6px;}
+.acts .save{flex:1; background:var(--accdim); border-color:var(--acc); color:#161810;}
+
+/* ---- attachments panel ---- */
+.att{border:1px solid var(--border); border-radius:4px; padding:9px 11px; margin-bottom:9px; background:var(--surface2);}
+.att .hd{display:flex; justify-content:space-between; align-items:center; font-family:var(--fh);
+  font-size:11px; letter-spacing:0.07em; text-transform:uppercase; color:var(--acc); margin-bottom:6px;}
+.att .row{display:flex; align-items:center; gap:8px; padding:6px 0; border-top:1px solid var(--border); flex-wrap:wrap;}
+.att .row .who{flex:1; min-width:150px; font-size:12.5px;}
+.att .row .to{font-family:var(--fm); font-size:11px; color:var(--acc2);}
+.att .ticks{display:flex; gap:9px; font-size:11px; color:var(--dim);}
+.att .ticks label{display:flex; align-items:center; gap:4px; cursor:pointer;}
+.att .ticks input{width:auto;}
+.att .empty{font-size:11.5px; color:var(--muted); padding:4px 0;}
+
+/* ---- equipment ---- */
+.grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(148px,1fr)); gap:7px;}
+.it{display:flex; align-items:center; justify-content:space-between; gap:7px; background:var(--surface2);
+  border:1px solid var(--border); border-radius:3px; padding:6px 9px;}
+.it label{font-size:10.5px; color:var(--dim); letter-spacing:0.02em;}
+.it input{width:62px; text-align:right; font-family:var(--fm); padding:4px 6px; background:var(--bg);}
+.eqg{margin-bottom:11px;}
+details.card>summary{cursor:pointer; font-family:var(--fh); font-size:12px; font-weight:700;
+  letter-spacing:0.06em; text-transform:uppercase; color:var(--acc2); list-style:none;}
+details.card>summary::-webkit-details-marker{display:none;}
+details.card>summary::before{content:'▸ '; color:var(--acc);}
+details.card[open]>summary::before{content:'▾ ';}
+.sync{display:flex; align-items:flex-start; gap:7px; font-size:11.5px; color:var(--dim); margin:8px 0;
+  padding:8px 10px; background:var(--surface2); border:1px solid var(--border); border-radius:3px;}
+.sync input{width:auto; margin-top:2px;}
+
+/* ---- rules ---- */
+.rrow{display:flex; align-items:center; gap:6px; margin-bottom:5px; flex-wrap:wrap;}
+.rrow input[type=text]{width:140px;}
+.rrow .arrow{color:var(--muted);}
+.rrow .del{font-size:10px; padding:4px 8px; border-color:var(--bad); color:var(--bad2);}
+.rrow .qty{width:54px; text-align:right;}
+.rrow .fo{display:flex; align-items:center; gap:4px; font-size:11px; color:var(--dim); white-space:nowrap;}
+.rrow .fo input{width:auto;}
+
+/* ---- output ---- */
+#out{width:100%; min-height:230px; font-family:var(--fm); font-size:12px; background:var(--bg);}
+.bar{display:flex; gap:7px; flex-wrap:wrap; margin-bottom:9px;}
+.bar .go{background:var(--acc); color:#161810; border-color:var(--acc2);}
+.status{font-size:11px; color:var(--dim); font-family:var(--fm); margin-left:4px;}
+.note{font-size:11px; color:var(--muted); line-height:1.5;}
+table{border-collapse:collapse; width:100%; font-size:12px;}
+th{text-align:left; padding:6px 8px; border-bottom:1px solid var(--border2); color:var(--acc);
+  font-size:10px; letter-spacing:0.06em; text-transform:uppercase; position:sticky; top:0; background:var(--surface);}
+td{padding:5px 8px; border-bottom:1px solid var(--border);}
+.ledger{font-family:var(--fm); font-size:12.5px;}
+.ledger .l{display:flex; justify-content:space-between; gap:10px; padding:3px 6px; border-bottom:1px solid rgba(58,66,47,0.5);}
+.ledger .l.head{color:var(--acc2); font-weight:700; border-bottom:1px solid var(--border2); padding-top:5px;}
+.ledger .l.sum{color:var(--acc2); font-weight:700; background:rgba(201,162,39,0.08); border-bottom:1px solid var(--border2);}
+.ledger .l.ded{color:#FF6B4A;}
+.ledger .l.add{color:var(--ok2);}
+.ledger .l b{font-variant-numeric:tabular-nums; white-space:nowrap;}
+.ledger .l .w{color:var(--muted); font-size:11px;}
+.scroll{max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;}
+/* Generate sits at the bottom of a very long page; on a phone that is five screens
+   of scrolling, so the action bar is pinned to the viewport instead. */
+.rw{padding-bottom:78px;}
+#dock{position:fixed; left:0; right:0; bottom:0; z-index:120; display:flex; gap:7px; align-items:center;
+  padding:9px 12px calc(9px + env(safe-area-inset-bottom)); background:rgba(18,20,15,0.97);
+  border-top:1px solid var(--border2); box-shadow:0 -6px 20px rgba(0,0,0,0.5);}
+#dock .who{font-family:var(--fh); font-weight:700; font-size:12px; letter-spacing:0.06em; color:var(--acc2); white-space:nowrap;}
+#dock button{flex:0 0 auto; font-size:13px;}
+#dock .go{background:var(--acc); color:#161810; border-color:var(--acc2); flex:1;}
+#out.flash{border-color:var(--acc2); box-shadow:0 0 0 2px rgba(232,197,71,0.35);}
+
+@media (pointer:coarse){
+  .rw input,.rw select,.rw textarea{font-size:16px !important;}
+  .rw button{min-height:44px;}
+  .rw input[type=checkbox]{width:22px; height:22px; accent-color:var(--acc);}
+  .chip{min-height:50px;}
+  .sheet .opt{padding:13px 11px; font-size:15px;}
+}
+@media (max-width:640px){
+  .dash{grid-template-columns:1fr 1fr;}
+  .sheet{position:fixed; left:0 !important; right:0; bottom:0; top:auto !important; width:100%;
+    max-width:none; border-radius:12px 12px 0 0; max-height:80vh; overflow-y:auto;
+    padding:12px 14px calc(14px + env(safe-area-inset-bottom));}
+}
+@media (max-width:480px){
+  .big3{grid-template-columns:1fr;}
+  .grid{grid-template-columns:1fr;}
+  .chip .ld{display:none;}
+}
+</style>
+</head>
+<body>
+<div class="rw">
+
+<div class="card hdr">
+  <h1>RAWDY — Strength &amp; Equipment Accounting</h1>
+  <div class="note">Company-level manpower and equipment accounting for HQ, PL1, PL2, PL3.
+    <span id="build" style="float:right; font-family:var(--fm); color:var(--muted);">BUILD 14 · 26JUL26</span></div>
+</div>
+
+<div class="card">
+  <div class="bar">
+    <div style="flex:1; min-width:180px;">
+      <label class="note">Activity</label>
+      <input type="text" id="act" placeholder="e.g. MOVE OUT FOR CCT" style="width:100%;">
+    </div>
+    <div style="min-width:170px;">
+      <label class="note">CAA (date/time)</label>
+      <div style="display:flex; gap:5px;"><input type="text" id="caa" style="flex:1;"><button type="button" id="now">Now</button></div>
+    </div>
+  </div>
+  <div class="bar" style="align-items:center;">
+    <button type="button" id="enable">Turn on sharing &amp; auto-save</button>
+    <button type="button" id="sync" style="display:none;">Sync now</button>
+    <button type="button" id="wipe" style="border-color:var(--bad); color:var(--bad2);">Erase everything &amp; start fresh</button>
+    <button type="button" id="exp">Copy session code</button>
+    <button type="button" id="imp">Load session code</button>
+    <button type="button" id="diag" style="color:var(--muted);">Show saved data</button>
+    <span class="status" id="stat"></span>
+  </div>
+  <div id="sharebanner" class="note" style="display:none; padding:8px 10px; border-radius:3px; margin-bottom:6px;"></div>
+  <div style="display:none;">
+  </div>
+  <div class="note" style="margin-bottom:5px;"><b>Copy session code</b> shares everything — statuses, attachments, roles — as text you can WhatsApp to another phone; they press <b>Load session code</b>. This always works, even when auto-sharing is unavailable.</div>
+  <div class="note" style="margin-bottom:5px;"><b>Erase everything &amp; start fresh</b> wipes all saved data for every platoon and rebuilds from the built-in roll — use it if the shared session is ever in a bad state. <b>Show saved data</b> prints what is stored into the output box.</div>
+  <div class="note">Sharing is <b>off by default</b> — the tool works fully without it. Turn it on so each PS edits their own platoon on one shared link; every platoon saves separately.</div>
+</div>
+
+<div class="card" id="coy">
+  <h2>Company End State — live</h2>
+  <div class="big3">
+    <div class="big"><label>Total strength</label><div class="v" id="c-tot">—</div><div class="d" id="c-td"></div></div>
+    <div class="big"><label>Move out</label><div class="v" id="c-mo">—</div></div>
+    <div class="big"><label>Participating</label><div class="v" id="c-pa">—</div></div>
+  </div>
+  <div class="dash" id="dash"></div>
+  <div class="note" style="margin-top:8px;" id="coy-note"></div>
+</div>
+
+<details class="card">
+  <summary>How the counting works</summary>
+  <div class="note" style="margin-top:9px; line-height:1.7;">
+    <b>Total strength</b> always shows your platoon's own roster figure — it never moves.
+    Any change is shown <span style="color:#FF6B4A;">in red beside it</span> (e.g. <span style="color:#FF6B4A;">−1 out  +2 in</span>) so the difference is visible at a glance.<br><br>
+    <b>Move out</b> and <b>participating</b> do reflect the attachments, because those are the numbers you actually march with.<br><br>
+    <b>Move out</b> = total held, minus stay-backs (MC, SBF, MA, Duty).<br>
+    <b>Participating</b> = move out, minus those moving but not participating (safety walker, conducting staff, etc).<br><br>
+    <b>Attached out</b> means he goes out for training, but under another coy or unit — so he is no longer
+    on your move out or your participating strength. If he is attached to <b>another coy</b>, the company total
+    drops as well, because he is not ours for this activity. If he is attached to <b>one of our own platoons</b>,
+    he simply counts under them instead and the company total is unchanged.<br><br>
+    <b>MC, SBF, MA and Duty</b> stay in camp, so they come off move out and participating too.
+    The <b>Strength accounting</b> panel on each platoon tab lists every one of these deductions by name,
+    so you can trace the figures from roster strength down to participating.<br><br>
+    An attachment is a single record shared by both platoons: remove it from either side and both restore instantly.
+    His weapon and gear stay counted at his <i>home</i> platoon, because that is where he drew them.
+  </div>
+</details>
+
+<details class="card">
+  <summary>Full nominal roll — every pax, all units</summary>
+  <div style="margin:9px 0;"><input type="text" id="rollq" placeholder="Search name, rank, appointment, unit..." style="width:100%;"></div>
+  <div class="bar"><button type="button" id="rollcopy">Copy for Excel</button></div>
+  <div class="scroll" style="max-height:460px; overflow-y:auto; border:1px solid var(--border); border-radius:3px;">
+    <table id="roll"><thead><tr>
+      <th>S/N</th><th>Unit</th><th>Section</th><th>Rank</th><th>Name</th><th>Appt</th><th>Loadout</th><th>Status</th>
+    </tr></thead><tbody id="rollb"></tbody></table>
+  </div>
+  <details style="margin-top:10px;"><summary class="note" style="cursor:pointer;">Upload / replace nominal roll</summary>
+    <div class="note" style="margin:8px 0;">Columns: Unit, Section, Rank, Name, Appointment. Paste from Excel or pick a CSV.
+      <b>Applying a new roll clears all statuses and attachments.</b></div>
+    <input type="file" id="nrfile" accept=".csv,.tsv,.txt" style="font-size:12px;">
+    <textarea id="nrpaste" rows="4" style="width:100%; margin-top:7px; font-family:var(--fm); font-size:12px;"
+      placeholder="PL1&#9;SECTION 1&#9;3SG&#9;TAN AH KOW&#9;SC"></textarea>
+    <div class="bar" style="margin-top:7px;">
+      <button type="button" id="nrprev">Preview</button>
+      <button type="button" id="nrapply" style="display:none; border-color:var(--acc); color:var(--acc2);">Apply new roll</button>
+    </div>
+    <div class="note" id="nrstat" style="white-space:pre-wrap; font-family:var(--fm);"></div>
+  </details>
+</details>
+
+<details class="card">
+  <summary>Equipment rules — what auto-generate issues</summary>
+  <div class="note" style="margin:9px 0;">Applies to all platoons. Matching is by appointment text: a rule for <b>LMG</b> catches "1ST LMG" and "2ND LMG". First match wins; anyone unmatched gets SAR21.</div>
+  <div class="eqg"><h3>Weapon by appointment</h3><div id="r-wpn"></div><button type="button" id="r-wpn-add" style="font-size:11px;">+ Add rule</button></div>
+  <div class="eqg"><h3>SFT by appointment</h3><div id="r-sft"></div><button type="button" id="r-sft-add" style="font-size:11px;">+ Add rule</button></div>
+  <div class="eqg"><h3>Weapon accessories</h3>
+    <div class="note" style="margin-bottom:6px;">Qty is per weapon. "1st only" = kit only the first holder carries.</div>
+    <div id="r-acc"></div><button type="button" id="r-acc-add" style="font-size:11px;">+ Add accessory</button></div>
+  <div class="eqg"><h3>Signal / optics by appointment</h3>
+    <div class="note" style="margin-bottom:6px;">Appointment matches exactly. Rank blank = any rank. Commanders also get MAP + COMPASS automatically.</div>
+    <div id="r-sig"></div><button type="button" id="r-sig-add" style="font-size:11px;">+ Add rule</button></div>
+  <div class="eqg"><h3>Per-man PANTES</h3><div class="grid" id="r-pm"></div>
+    <div class="note" style="margin-top:7px;">Appointments drawing no PANTES (comma separated):</div>
+    <input type="text" id="r-pmex" style="width:100%; margin-top:4px;"></div>
+  <div class="eqg"><h3>Automatic status by appointment</h3>
+    <div class="note" style="margin-bottom:6px;">These apply by themselves — e.g. ASA and SAGE move out but do not participate. Tapping a man and choosing any status overrides his automatic one.</div>
+    <div id="r-auto"></div><button type="button" id="r-auto-add" style="font-size:11px;">+ Add rule</button></div>
+  <div class="eqg"><h3>Always attached out</h3>
+    <div class="note" style="margin-bottom:6px;">Appointments automatically attached out of the company (comma separated) — e.g. MPAT. Override any individual from his name.</div>
+    <input type="text" id="r-autoatt" style="width:100%;"></div>
+  <div class="eqg"><h3>Section stores establishment</h3><div class="grid" id="r-store"></div></div>
+  <div class="eqg"><h3>TAG stores establishment</h3><div class="grid" id="r-tag"></div></div>
+  <button type="button" id="r-reset" style="font-size:11px;">Restore default rules</button>
+</details>
+
+<div class="tabs" id="tabs"></div>
+<div id="panels"></div>
+
+<div class="card">
+  <div class="bar">
+    <button type="button" class="go" id="gen">Generate report</button>
+    <button type="button" id="gencoy">Add company total</button>
+    <button type="button" id="copy">Copy to clipboard</button>
+    <button type="button" id="reset">Reset all</button>
+  </div>
+  <textarea id="out" placeholder="Report appears here — editable before you copy."></textarea>
+</div>
+
+</div>
+
+<div id="dock">
+  <span class="who" id="dock-u">HQ</span>
+  <button type="button" class="go" id="gen2">Generate report</button>
+  <button type="button" id="copy2">Copy</button>
+</div>
+<script>
+"use strict";
+
+// ============================================================================
+// DATA MODEL — the single source of truth.
+// Every person has a permanent id. Status and attachment are RECORDS keyed by
+// that id, never text. Text is only ever a rendering of these records.
+// ============================================================================
+const UNITS = ["HQ", "PL1", "PL2", "PL3"];
+const CMD_RANKS = ["CPT", "LTA", "2LT", "3WO", "MSG", "SSG", "2SG", "3SG", "ME1-1"];
+const BASE_PERSONS = [{"id": "HQ-0", "unit": "HQ", "rank": "CPT", "name": "KASHKEN RAY HODGE", "appt": "OC", "section": "HQ"}, {"id": "HQ-1", "unit": "HQ", "rank": "CPT", "name": "CHOW HANWEI", "appt": "SPARE", "section": "HQ"}, {"id": "HQ-2", "unit": "HQ", "rank": "3WO", "name": "WONG JUN WEI", "appt": "CSM", "section": "HQ"}, {"id": "HQ-3", "unit": "HQ", "rank": "LTA", "name": "MUHAMMAD RAZEEQ SYAMIE BIN ABDUL RAZAK", "appt": "PC", "section": "HQ"}, {"id": "HQ-4", "unit": "HQ", "rank": "ME1-1", "name": "TAN ZI KANG", "appt": "COY MEDIC", "section": "HQ"}, {"id": "HQ-5", "unit": "HQ", "rank": "3SG", "name": "NGAN JUN BIN", "appt": "COY MEDIC", "section": "HQ"}, {"id": "HQ-6", "unit": "HQ", "rank": "3SG", "name": "ZHANG BO CHAO", "appt": "ASA", "section": "HQ"}, {"id": "HQ-7", "unit": "HQ", "rank": "LCP", "name": "CHIA WEI HENG ACKERUS", "appt": "ASA", "section": "HQ"}, {"id": "HQ-8", "unit": "HQ", "rank": "LCP", "name": "YEO RUI KANG JOSH", "appt": "ASA", "section": "HQ"}, {"id": "HQ-9", "unit": "HQ", "rank": "PTE", "name": "ELIJAH JOHN CHIA JIAN AN", "appt": "ASA", "section": "HQ"}, {"id": "HQ-10", "unit": "HQ", "rank": "PTE", "name": "WANG WEILAN", "appt": "2IC SIG", "section": "HQ"}, {"id": "HQ-11", "unit": "HQ", "rank": "LCP", "name": "SHAHRIZZAT BIN HAIZAD", "appt": "OC SIG", "section": "HQ"}, {"id": "HQ-12", "unit": "HQ", "rank": "LCP", "name": "MUHAMMAD SYARAF BIN NORAZAM", "appt": "OC SIG", "section": "HQ"}, {"id": "HQ-13", "unit": "HQ", "rank": "3SG", "name": "LOW JIA JUN", "appt": "MM", "section": "HQ"}, {"id": "HQ-14", "unit": "HQ", "rank": "3SG", "name": "LAI SUNG KEI JOSHUA", "appt": "MM", "section": "HQ"}, {"id": "HQ-15", "unit": "HQ", "rank": "LCP", "name": "ANKAM SHREY", "appt": "MM", "section": "HQ"}, {"id": "HQ-16", "unit": "HQ", "rank": "CPL", "name": "NG ZHENG WEI", "appt": "MM", "section": "HQ"}, {"id": "HQ-17", "unit": "HQ", "rank": "3SG", "name": "PAN ZHENG WEI, RYAN", "appt": "MPAT OPR", "section": "HQ"}, {"id": "HQ-18", "unit": "HQ", "rank": "PTE", "name": "JAEVYN QUSHAIRI KHOO JIAYUN", "appt": "MPAT OPR", "section": "HQ"}, {"id": "HQ-19", "unit": "HQ", "rank": "LCP", "name": "MUHAMMAD AMIRRUL BIN SAMSURI", "appt": "MPAT OPR", "section": "HQ"}, {"id": "HQ-20", "unit": "HQ", "rank": "PTE", "name": "TECH EASON", "appt": "MPAT OPR", "section": "HQ"}, {"id": "HQ-21", "unit": "HQ", "rank": "LCP", "name": "KOH KAI EN, ASHER", "appt": "MPAT OPR", "section": "HQ"}, {"id": "HQ-22", "unit": "HQ", "rank": "PTE", "name": "AROCKIASAMY SHERVIN", "appt": "MPAT OPR", "section": "HQ"}, {"id": "HQ-23", "unit": "HQ", "rank": "3SG", "name": "ONG DING SHENG", "appt": "CQ", "section": "HQ"}, {"id": "HQ-24", "unit": "HQ", "rank": "LCP", "name": "TAN YEE HANG", "appt": "SAGE", "section": "HQ"}, {"id": "HQ-25", "unit": "HQ", "rank": "PTE", "name": "KISHHOTHARAN", "appt": "SAGE", "section": "HQ"}, {"id": "HQ-26", "unit": "HQ", "rank": "PTE", "name": "TAI KAI JIE, JAVIER", "appt": "SAGE", "section": "HQ"}, {"id": "PL1-0", "unit": "PL1", "rank": "LTA", "name": "POH KAI-EN, ASHER NATHANIEL", "appt": "PL COMD", "section": "HQ"}, {"id": "PL1-1", "unit": "PL1", "rank": "LTA", "name": "KALAISELVAN SIDDARTH", "appt": "APC", "section": "HQ"}, {"id": "PL1-2", "unit": "PL1", "rank": "LTA", "name": "MIKHAIL DANIAL LUM", "appt": "PC", "section": "HQ"}, {"id": "PL1-3", "unit": "PL1", "rank": "MSG", "name": "NIC UZZAIR BIN MOHAMMED ZAMRI", "appt": "PS", "section": "HQ"}, {"id": "PL1-4", "unit": "PL1", "rank": "LCP", "name": "SAMUEL RYAN WONG LYE EN", "appt": "SENSOR", "section": "HQ"}, {"id": "PL1-5", "unit": "PL1", "rank": "CPL", "name": "LIN YUXUAN", "appt": "RUNNER", "section": "HQ"}, {"id": "PL1-6", "unit": "PL1", "rank": "LCP", "name": "SYED ERFAN BIN FARUK ALI", "appt": "MEDIC", "section": "HQ"}, {"id": "PL1-7", "unit": "PL1", "rank": "3SG", "name": "IBRAHIM BIN NOBRAHAM", "appt": "MG COMD", "section": "HQ"}, {"id": "PL1-8", "unit": "PL1", "rank": "LCP", "name": "ADLI MANNIE TANCOCK", "appt": "MG OPR", "section": "HQ"}, {"id": "PL1-9", "unit": "PL1", "rank": "CPL", "name": "FAVIAN NG JIA QUAN", "appt": "ASST OPR", "section": "HQ"}, {"id": "PL1-10", "unit": "PL1", "rank": "3SG", "name": "JONAH RUOKUOVOR YIMSUNG", "appt": "SC", "section": "SECTION 1"}, {"id": "PL1-11", "unit": "PL1", "rank": "3SG", "name": "ANIQ RIFQY BIN MOHAMED ALFYAN", "appt": "SC", "section": "SECTION 1"}, {"id": "PL1-12", "unit": "PL1", "rank": "LCP", "name": "TALUT ALI BIN ABDULLAH", "appt": "1ST MAT", "section": "SECTION 1"}, {"id": "PL1-13", "unit": "PL1", "rank": "LCP", "name": "TAY WEI JIE, RYAN", "appt": "1ST M203", "section": "SECTION 1"}, {"id": "PL1-14", "unit": "PL1", "rank": "LCP", "name": "ONG HONG KAI, RONALD", "appt": "1ST LMG", "section": "SECTION 1"}, {"id": "PL1-15", "unit": "PL1", "rank": "LCP", "name": "YII KAH NUM", "appt": "M203 (2IC)", "section": "SECTION 1"}, {"id": "PL1-16", "unit": "PL1", "rank": "LCP", "name": "DARWYS BIN SAIFUL BHARI", "appt": "2ND LMG", "section": "SECTION 1"}, {"id": "PL1-17", "unit": "PL1", "rank": "3SG", "name": "TAN LONG KIAT DARREN", "appt": "SC", "section": "SECTION 2"}, {"id": "PL1-18", "unit": "PL1", "rank": "PTE", "name": "LIN KELI", "appt": "1ST MAT", "section": "SECTION 2"}, {"id": "PL1-19", "unit": "PL1", "rank": "PTE", "name": "MUHAMMAD NURRAIZAT BIN RAMDAN", "appt": "1ST M203", "section": "SECTION 2"}, {"id": "PL1-20", "unit": "PL1", "rank": "PTE", "name": "TITUS LIM YU HENG", "appt": "2ND MAT", "section": "SECTION 2"}, {"id": "PL1-21", "unit": "PL1", "rank": "LCP", "name": "MUHAMMAD AAQIL BIN MOHAMED JAHANKEER", "appt": "1ST LMG", "section": "SECTION 2"}, {"id": "PL1-22", "unit": "PL1", "rank": "LCP", "name": "DARIUS LEE", "appt": "M203 (2IC)", "section": "SECTION 2"}, {"id": "PL1-23", "unit": "PL1", "rank": "LCP", "name": "GABRIEL SUFIAN PIRACCI", "appt": "2ND LMG", "section": "SECTION 2"}, {"id": "PL1-24", "unit": "PL1", "rank": "PTE", "name": "AMANNDAVE SINGH BESSI", "appt": "SPARE", "section": "SECTION 2"}, {"id": "PL1-25", "unit": "PL1", "rank": "PTE", "name": "SARAVANAN RAMESH", "appt": "SPARE", "section": "SECTION 2"}, {"id": "PL1-26", "unit": "PL1", "rank": "3SG", "name": "WU JIA AN", "appt": "SC", "section": "SECTION 3"}, {"id": "PL1-27", "unit": "PL1", "rank": "PTE", "name": "JAY JAMES KWAN ZHEN CHERN", "appt": "1ST MAT", "section": "SECTION 3"}, {"id": "PL1-28", "unit": "PL1", "rank": "LCP", "name": "ABDULLAH AUFA BIN MOHAMMAD HAIZAL", "appt": "1ST M203", "section": "SECTION 3"}, {"id": "PL1-29", "unit": "PL1", "rank": "LCP", "name": "LIEW WEN WEI", "appt": "2ND MAT", "section": "SECTION 3"}, {"id": "PL1-30", "unit": "PL1", "rank": "PTE", "name": "XIAO JIEMING", "appt": "1ST LMG", "section": "SECTION 3"}, {"id": "PL1-31", "unit": "PL1", "rank": "LCP", "name": "PUZHALESWARAN S/O VIJAYARDRAN", "appt": "M203 (2IC)", "section": "SECTION 3"}, {"id": "PL1-32", "unit": "PL1", "rank": "LCP", "name": "BENJAMIN THEN KAI SHENG", "appt": "2ND LMG", "section": "SECTION 3"}, {"id": "PL2-0", "unit": "PL2", "rank": "LTA", "name": "JUSTIN KOH", "appt": "PL COMD", "section": "HQ"}, {"id": "PL2-1", "unit": "PL2", "rank": "LTA", "name": "ROSHAN AHMAD SHAQIR BIN MUHAMMAD NAZRI", "appt": "APC", "section": "HQ"}, {"id": "PL2-2", "unit": "PL2", "rank": "2LT", "name": "ETHAN LAU SEO JOON", "appt": "PC", "section": "HQ"}, {"id": "PL2-3", "unit": "PL2", "rank": "2SG", "name": "TAY YUN SENG VINCENT", "appt": "PS", "section": "HQ"}, {"id": "PL2-4", "unit": "PL2", "rank": "3SG", "name": "MUHAMMAD KHAIRY BIN SAPARI", "appt": "APS", "section": "HQ"}, {"id": "PL2-5", "unit": "PL2", "rank": "LCP", "name": "ETHAN ALEXANDER TAN TOH LUCK", "appt": "RUNNER", "section": "HQ"}, {"id": "PL2-6", "unit": "PL2", "rank": "LCP", "name": "NG JIA BAO", "appt": "MEDIC", "section": "HQ"}, {"id": "PL2-7", "unit": "PL2", "rank": "3SG", "name": "LOW BOON TSU", "appt": "GPMG COMD", "section": "HQ"}, {"id": "PL2-8", "unit": "PL2", "rank": "LCP", "name": "JARIS NABIL BIN ZANI", "appt": "GPMG OPR", "section": "HQ"}, {"id": "PL2-9", "unit": "PL2", "rank": "CPL", "name": "DEAN LOH JUN YU", "appt": "SPARE", "section": "HQ"}, {"id": "PL2-10", "unit": "PL2", "rank": "3SG", "name": "MOHAMAD ADIL BIN MOHAMAD ALI", "appt": "SC", "section": "SECTION 1"}, {"id": "PL2-11", "unit": "PL2", "rank": "LCP", "name": "MOHAMED RAIQAL BIN MOHAMED YAZID", "appt": "1ST MAT", "section": "SECTION 1"}, {"id": "PL2-12", "unit": "PL2", "rank": "LCP", "name": "SARAVANA PANDIAN RITHISH KUMAR", "appt": "1ST M203", "section": "SECTION 1"}, {"id": "PL2-13", "unit": "PL2", "rank": "LCP", "name": "THAKUR JAI ABHIJIT", "appt": "2ND MAT", "section": "SECTION 1"}, {"id": "PL2-14", "unit": "PL2", "rank": "LCP", "name": "ABDUL FATTAH BIN MOHAMMAD ANWAR", "appt": "1ST LMG", "section": "SECTION 1"}, {"id": "PL2-15", "unit": "PL2", "rank": "LCP", "name": "CHEN JIAN CONG", "appt": "M203 (2IC)", "section": "SECTION 1"}, {"id": "PL2-16", "unit": "PL2", "rank": "LCP", "name": "CHUA YU ZHE", "appt": "2ND LMG", "section": "SECTION 1"}, {"id": "PL2-17", "unit": "PL2", "rank": "LCP", "name": "MUHAMMAD SUHAIL KHAN BIN FARIS KHAN SURATTEE", "appt": "SPARE", "section": "SECTION 1"}, {"id": "PL2-18", "unit": "PL2", "rank": "3SG", "name": "ALDRICH RUZZEL BELTRAN SINGH", "appt": "SC", "section": "SECTION 2"}, {"id": "PL2-19", "unit": "PL2", "rank": "3SG", "name": "CHHAN SOON PENG", "appt": "SC", "section": "SECTION 2"}, {"id": "PL2-20", "unit": "PL2", "rank": "LCP", "name": "ERNEST SIM YEE HANG", "appt": "1ST MAT", "section": "SECTION 2"}, {"id": "PL2-21", "unit": "PL2", "rank": "LCP", "name": "KEITH CHEW JUNG KEE", "appt": "1ST M203", "section": "SECTION 2"}, {"id": "PL2-22", "unit": "PL2", "rank": "PTE", "name": "SAMUEL TAN KAIEN", "appt": "2ND MAT", "section": "SECTION 2"}, {"id": "PL2-23", "unit": "PL2", "rank": "LCP", "name": "FOO RU CHENG", "appt": "1ST LMG", "section": "SECTION 2"}, {"id": "PL2-24", "unit": "PL2", "rank": "LCP", "name": "ONG PIN JUN", "appt": "M203 (2IC)", "section": "SECTION 2"}, {"id": "PL2-25", "unit": "PL2", "rank": "LCP", "name": "MUHAMMAD AIMAN BIN SHAMSUL BAHRI", "appt": "2ND LMG", "section": "SECTION 2"}, {"id": "PL2-26", "unit": "PL2", "rank": "PTE", "name": "GABRIEL SHOON", "appt": "SPARE", "section": "SECTION 2"}, {"id": "PL2-27", "unit": "PL2", "rank": "PTE", "name": "TEYES LEE", "appt": "SPARE", "section": "SECTION 2"}, {"id": "PL2-28", "unit": "PL2", "rank": "PTE", "name": "KHOR ZI JIAN", "appt": "SPARE", "section": "SECTION 2"}, {"id": "PL2-29", "unit": "PL2", "rank": "PTE", "name": "MIKHAEL JOHNSON", "appt": "SPARE", "section": "SECTION 2"}, {"id": "PL2-30", "unit": "PL2", "rank": "3SG", "name": "MUHAMMAD ZUFAR BIN ZAKIR", "appt": "SC", "section": "SECTION 3"}, {"id": "PL2-31", "unit": "PL2", "rank": "LCP", "name": "DANILA LEAN ROD TIMOTHY BORROMEO", "appt": "1ST MAT", "section": "SECTION 3"}, {"id": "PL2-32", "unit": "PL2", "rank": "LCP", "name": "CHARLES YAP YU JING", "appt": "1ST M203", "section": "SECTION 3"}, {"id": "PL2-33", "unit": "PL2", "rank": "LCP", "name": "WONG JING WEI", "appt": "2ND MAT", "section": "SECTION 3"}, {"id": "PL2-34", "unit": "PL2", "rank": "LCP", "name": "TEO KAI DE CAYDEN", "appt": "1ST LMG", "section": "SECTION 3"}, {"id": "PL2-35", "unit": "PL2", "rank": "LCP", "name": "ADWA SHAQUILLE BIN ANDYIRWAN", "appt": "M203 (2IC)", "section": "SECTION 3"}, {"id": "PL3-0", "unit": "PL3", "rank": "LTA", "name": "TAN WEE BOON ADEN", "appt": "PL COMD", "section": "HQ"}, {"id": "PL3-1", "unit": "PL3", "rank": "LTA", "name": "LEE PIN", "appt": "APC", "section": "HQ"}, {"id": "PL3-2", "unit": "PL3", "rank": "2LT", "name": "AIKEN ANG WEI YANG", "appt": "PC", "section": "HQ"}, {"id": "PL3-3", "unit": "PL3", "rank": "2LT", "name": "LIM THENG XIANG", "appt": "PC", "section": "HQ"}, {"id": "PL3-4", "unit": "PL3", "rank": "3SG", "name": "DARYL YU ZIJUN", "appt": "PS", "section": "HQ"}, {"id": "PL3-5", "unit": "PL3", "rank": "3SG", "name": "YE YONGHONG", "appt": "APS", "section": "HQ"}, {"id": "PL3-6", "unit": "PL3", "rank": "LCP", "name": "IVAN LEONG CHENG YANG", "appt": "MEDIC", "section": "HQ"}, {"id": "PL3-7", "unit": "PL3", "rank": "3SG", "name": "RANDY ONG ZONG HUI", "appt": "GPMG COMD", "section": "HQ"}, {"id": "PL3-8", "unit": "PL3", "rank": "LCP", "name": "CHOW WERN", "appt": "GPMG OPR", "section": "HQ"}, {"id": "PL3-9", "unit": "PL3", "rank": "LCP", "name": "WONG JINGYUAN", "appt": "ASST OPR", "section": "HQ"}, {"id": "PL3-10", "unit": "PL3", "rank": "3SG", "name": "LOH JING YANG", "appt": "SC", "section": "SECTION 1"}, {"id": "PL3-11", "unit": "PL3", "rank": "LCP", "name": "CHEE ZE HONG", "appt": "1ST MAT", "section": "SECTION 1"}, {"id": "PL3-12", "unit": "PL3", "rank": "LCP", "name": "GAVAN LEE AN JIE", "appt": "1ST M203", "section": "SECTION 1"}, {"id": "PL3-13", "unit": "PL3", "rank": "LCP", "name": "SHI JIA GENG ALSTON", "appt": "2ND MAT", "section": "SECTION 1"}, {"id": "PL3-14", "unit": "PL3", "rank": "LCP", "name": "TOK GUAN LONG XAVIER", "appt": "1ST LMG", "section": "SECTION 1"}, {"id": "PL3-15", "unit": "PL3", "rank": "CPL", "name": "YEW HO WEE", "appt": "M203 (2IC)", "section": "SECTION 1"}, {"id": "PL3-16", "unit": "PL3", "rank": "PTE", "name": "CHEAH SHING HAK", "appt": "2ND LMG", "section": "SECTION 1"}, {"id": "PL3-17", "unit": "PL3", "rank": "PTE", "name": "POH JUN MING", "appt": "SPARE", "section": "SECTION 1"}, {"id": "PL3-18", "unit": "PL3", "rank": "3SG", "name": "EZRA NUR IMAN BIN ZAINAL", "appt": "SC", "section": "SECTION 2"}, {"id": "PL3-19", "unit": "PL3", "rank": "LCP", "name": "JAYDEN LIM JIE-EN", "appt": "1ST M203", "section": "SECTION 2"}, {"id": "PL3-20", "unit": "PL3", "rank": "LCP", "name": "NG JUN SIONG, JAYDEN", "appt": "2ND MAT", "section": "SECTION 2"}, {"id": "PL3-21", "unit": "PL3", "rank": "LCP", "name": "KOH CHEE SENG", "appt": "1ST MAT", "section": "SECTION 2"}, {"id": "PL3-22", "unit": "PL3", "rank": "PTE", "name": "DAMIEN ANG SHI QIANG", "appt": "1ST LMG", "section": "SECTION 2"}, {"id": "PL3-23", "unit": "PL3", "rank": "LCP", "name": "CHONG CHANG LE", "appt": "M203 (2IC)", "section": "SECTION 2"}, {"id": "PL3-24", "unit": "PL3", "rank": "PTE", "name": "ASHTON NEO KUANG WEI", "appt": "2ND LMG", "section": "SECTION 2"}, {"id": "PL3-25", "unit": "PL3", "rank": "PTE", "name": "LIM KIT TJON", "appt": "SPARE", "section": "SECTION 2"}, {"id": "PL3-26", "unit": "PL3", "rank": "3SG", "name": "AMIR HAMZAH KHAN", "appt": "SC", "section": "SECTION 3"}, {"id": "PL3-27", "unit": "PL3", "rank": "PTE", "name": "MOHAMMAD DANIAL BIN ABDULLAH", "appt": "1ST MAT", "section": "SECTION 3"}, {"id": "PL3-28", "unit": "PL3", "rank": "LCP", "name": "RAVI KARTHIKEYAN", "appt": "1ST M203", "section": "SECTION 3"}, {"id": "PL3-29", "unit": "PL3", "rank": "LCP", "name": "SKYLER ANG WEI ZHI", "appt": "2ND MAT", "section": "SECTION 3"}, {"id": "PL3-30", "unit": "PL3", "rank": "CPL", "name": "MOHAMMAD ZAKIR BIN MOHAMMAD ZAHID", "appt": "M203 (2IC)", "section": "SECTION 3"}, {"id": "PL3-31", "unit": "PL3", "rank": "LCP", "name": "MUHAMMAD DANNIE AL-AQIF BIN JUBIR", "appt": "2ND LMG", "section": "SECTION 3"}, {"id": "PL3-32", "unit": "PL3", "rank": "PTE", "name": "ONG JIAN YONG GEORGE", "appt": "SPARE", "section": "SECTION 3"}, {"id": "PL3-33", "unit": "PL3", "rank": "PTE", "name": "DYLAN ONG YE KAI", "appt": "SPARE", "section": "SECTION 3"}];
+const DEFAULT_CATS = [{"id": "mc", "label": "MC", "kind": "stayback"}, {"id": "sbf", "label": "SBF (STAY BACK)", "kind": "stayback"}, {"id": "ma", "label": "MA", "kind": "stayback"}, {"id": "duty", "label": "DUTY", "kind": "stayback"}, {"id": "moving", "label": "NOT PARTICIPATING (MOVING)", "kind": "moveout_np"}, {"id": "safety", "label": "SAFETY WALKER", "kind": "moveout_np"}, {"id": "staff", "label": "CONDUCTING STAFF", "kind": "moveout_np"}, {"id": "others", "label": "OTHERS (STATE REASON)", "kind": "moveout_np"}];
+
+const WEAPON_ITEMS = ["SAR21", "SS", "M203", "LMG", "GPMG", "MATADOR", "M110", "KN252", "M110 SILENCER", "M110 TRIPOD", "SPARE BARREL", "MG TRIPOD", "MG WALLET", "SAR21 MAG", "LMG MAG", "M110 MAG", "SAR21 BFA", "LMG BFA", "GPMG BFA", "SAR 21 AMMO POUCH", "LMG AMMO POUCH", "GPMG AMMO POUCH"], WEAPON_GROUPS = [["Weapons", ["SAR21", "SS", "M203", "LMG", "GPMG", "MATADOR", "M110"]], ["Blank firing attachments", ["SAR21 BFA", "LMG BFA", "GPMG BFA"]], ["Magazines & pouches", ["SAR21 MAG", "LMG MAG", "M110 MAG", "SAR 21 AMMO POUCH", "LMG AMMO POUCH", "GPMG AMMO POUCH"]], ["Accessories", ["KN252", "M110 SILENCER", "M110 TRIPOD", "SPARE BARREL", "MG TRIPOD", "MG WALLET"]]];
+const SIGNALS_ITEMS = ["NVG", "PRC650", "PRC940", "COMPASS", "BINO", "UTWS", "MAP", "FSS", "CDS(FSS)", "UOCE", "TTS", "KHS", "HAMMER (HEARTLANDER)", "SNIP-IT (HEARTLANDER)", "CROWBAR (HEARTLANDER)"], SIGNALS_GROUPS = [["Comms", ["PRC650", "PRC940"]], ["Optics & navigation", ["NVG", "BINO", "UTWS", "COMPASS", "MAP"]], ["Surveillance / target", ["FSS", "CDS(FSS)", "UOCE", "TTS", "KHS"]], ["Heartlander (breaching)", ["HAMMER (HEARTLANDER)", "SNIP-IT (HEARTLANDER)", "CROWBAR (HEARTLANDER)"]]];
+const PANTES_ITEMS = ["CHOCO BAR", "BFI/PU", "LH MOUNT", "RH MOUNT", "FT MOUNT", "BT MOUNT", "GAMEBOY", "GAMEBOY POUCH", "SAR 21 SFT", "LMG SFT", "M203 SFT", "M203 LAUNCHER", "M203 ROUND", "GPMG SFT", "MATADOR SFT", "CLAYMORE SFT", "M110 SFT"], PANTES_GROUPS = [["Per-man kit", ["CHOCO BAR", "BFI/PU", "GAMEBOY", "GAMEBOY POUCH"]], ["Mounts", ["LH MOUNT", "RH MOUNT", "FT MOUNT", "BT MOUNT"]], ["SFT (one per weapon)", ["SAR 21 SFT", "LMG SFT", "GPMG SFT", "M203 SFT", "MATADOR SFT", "M110 SFT", "CLAYMORE SFT"]], ["M203 attachments", ["M203 LAUNCHER", "M203 ROUND"]]];
+const STORE_ITEMS = ["SECTION GROUND SHEET", "WIRED GLOVE", "ENGINEER GLOVE", "BREACHING FLAGS", "COLOURED FLAGS", "LIGHT STICK", "VINE CUTTER", "COVER LITTER", "BANGALORE", "CLAYMORE", "TRIPFLARE", "PARANG"], TAG_ITEMS = ["PANEL MARKERS", "TENT PINS", "MARSHALLING WANDS", "MARSHALLING GLOVES", "MALLET", "LENSATIC COMPASS", "WIND METER", "GROUNDSHEET", "ET BLADE", "ET POUCH", "ET STICK", "IR MARKER", "PRC940", "GREEN LIGHT STICKS"];
+const MAP_COMPASS_EXCLUDE = ["MEDIC", "CQ", "ASA"];
+const DEFAULT_RULES = {
+  weapon: [["MAT", "MATADOR"], ["M203", "M203"], ["LMG", "LMG"], ["MG OPR", "GPMG"], ["GPMG", "GPMG"], ["MM", "M110"], ["ASA", null], ["SAGE", null], ["CQ", null]],
+  sft: [["MAT", "MATADOR SFT"], ["M203", "M203 SFT"], ["LMG", "LMG SFT"], ["MG OPR", "GPMG SFT"], ["MM", "M110 SFT"]],
+  signal: [["OC", null, ["NVG", "PRC650"]], ["PC", null, ["NVG", "PRC650"]], ["PL COMD", null, ["NVG", "PRC650"]], ["PS", null, ["NVG", "PRC650"]], ["APC", null, []], ["MG COMD", null, ["NVG", "PRC650"]], ["SC", null, ["NVG", "PRC650"]], ["1ST LMG", null, ["NVG"]], ["MM", "3SG", ["PRC650"]], ["RUNNER", null, ["PRC650"]], ["SENSOR", null, []], ["MEDIC", null, []]],
+  accessories: [["SAR21", "SAR21 BFA", 1, false], ["LMG", "LMG BFA", 1, false], ["GPMG", "GPMG BFA", 2, false], ["SAR21", "SAR 21 AMMO POUCH", 1, false], ["LMG", "LMG AMMO POUCH", 1, false], ["GPMG", "GPMG AMMO POUCH", 1, false], ["M110", "M110 TRIPOD", 1, false], ["M110", "M110 SILENCER", 1, false], ["GPMG", "SPARE BARREL", 1, false], ["M110", "KN252", 1, true], ["M203", "SAR21", 1, false], ["M203", "SAR21 BFA", 1, false], ["M203", "SAR 21 AMMO POUCH", 1, false]],
+  perman: {"CHOCO BAR": 4, "BFI/PU": 1, "LH MOUNT": 1, "RH MOUNT": 1, "FT MOUNT": 1, "BT MOUNT": 1, "GAMEBOY": 1, "GAMEBOY POUCH": 1},
+  pantesExclude: ["ASA", "CQ", "SAGE"],
+  storeEstab: {"SECTION GROUND SHEET": 3, "WIRED GLOVE": 6, "ENGINEER GLOVE": 6, "BREACHING FLAGS": 6, "COLOURED FLAGS": 6, "LIGHT STICK": 48, "VINE CUTTER": 6, "COVER LITTER": 3, "BANGALORE": 6, "CLAYMORE": 6, "TRIPFLARE": 6, "PARANG": 6},
+  tagEstab: {"PANEL MARKERS": 4, "TENT PINS": 36, "MARSHALLING WANDS": 2, "MARSHALLING GLOVES": 1, "MALLET": 1, "LENSATIC COMPASS": 1, "WIND METER": 1, "GROUNDSHEET": 1, "ET BLADE": 1, "ET POUCH": 1, "ET STICK": 1, "IR MARKER": 4, "PRC940": 1, "GREEN LIGHT STICKS": 8},
+  autoStatus: [["ASA", "sbf"], ["SAGE", "moving"]],
+  autoAttachOut: ["MPAT"]
+};
+const WEAPON_CHOICES = ["SAR21","SS","M203","LMG","GPMG","MATADOR","M110"];
+const SFT_CHOICES = ["SAR 21 SFT","LMG SFT","GPMG SFT","M203 SFT","MATADOR SFT","M110 SFT","CLAYMORE SFT"];
+// Primary weapons belong here too: a weapon can be issued WITH another weapon
+// (the M203 mounts on a SAR21). Leaving them out meant the editor could not show
+// such a rule, and rewrote it to the wrong item on the next edit.
+const ACC_CHOICES = ["SAR21","SS","M203","LMG","GPMG","MATADOR","M110",
+  "SAR21 BFA","LMG BFA","GPMG BFA","SAR 21 AMMO POUCH","LMG AMMO POUCH","GPMG AMMO POUCH",
+  "M110 TRIPOD","M110 SILENCER","SPARE BARREL","KN252","MG TRIPOD","MG WALLET","SAR21 MAG","LMG MAG","M110 MAG"];
+const RANK_CHOICES = ["","CPT","LTA","2LT","3WO","MSG","2SG","3SG","ME1-1","CPL","LCP","PTE"];
+const WEAPON_TO_SFT = {"SAR21":"SAR 21 SFT","LMG":"LMG SFT","GPMG":"GPMG SFT","M203":"M203 SFT",
+  "MATADOR":"MATADOR SFT","M110":"M110 SFT"};
+const EXTERNAL = "__EXT__";
+const BUILD_ID = "14 · 26JUL26";   // attached out of the company entirely
+
+// ---- state ----
+function freshState(){
+  return {
+    v: 3,
+    persons: BASE_PERSONS.map(p => ({...p})),   // may be replaced by an uploaded roll
+    status: {},        // personId -> catId
+    reason: {},        // personId -> free text
+    attach: {},        // personId -> {to: unit|EXTERNAL, mo: bool, pa: bool, note: str}
+    appt: {},          // personId -> appointment override
+    gear: {},          // personId -> {weapon?: str|null, signals?: [..]}
+    guests: [],        // men attached in from another coy/unit: {id,unit,rank,name,appt,from,mo,pa}
+    cats: DEFAULT_CATS.map(c => ({...c})),
+    rules: JSON.parse(JSON.stringify(DEFAULT_RULES)),
+    equip: {},         // unit -> {group -> {item -> value}}  (manual overrides / stores)
+    sOver: {},         // unit -> {tot,mo,pa} typed by hand, overriding the calculation
+    live: {},          // unit -> bool  (keep equipment in step)
+    meta: {act:"", caa:""}
+  };
+}
+let S = freshState();
+
+const personsOf = u => S.persons.filter(p => p.unit === u);
+const guestsOf = u => (S.guests || []).filter(g => g.unit === u);
+const byId = id => S.persons.find(p => p.id === id);
+const isCmd = p => CMD_RANKS.includes((p.rank||"").toUpperCase());
+const apptOf = p => (S.appt[p.id] !== undefined ? S.appt[p.id] : p.appt) || "";
+const catOf = id => S.cats.find(c => c.id === id) || null;
+const PRESENT = "__PRES__";   // explicitly present, overriding an auto rule
+const OFF = "__OFF__";        // explicitly not attached, overriding an auto rule
+
+// Status actually in force: an explicit choice always beats the automatic rule.
+function statusOf(p){
+  const v = S.status[p.id];
+  if(v === PRESENT) return null;
+  if(v !== undefined) return catOf(v);
+  const a = apptOf(p).toUpperCase();
+  for(const [k, cid] of (S.rules.autoStatus || [])){
+    if(k && a.includes(k)) return catOf(cid);
+  }
+  return null;
+}
+function isAutoStatus(p){
+  if(S.status[p.id] !== undefined) return false;
+  const a = apptOf(p).toUpperCase();
+  return (S.rules.autoStatus || []).some(([k]) => k && a.includes(k));
+}
+// Attachment actually in force: explicit record, else automatic rule.
+function attachOf(p){
+  const v = S.attach[p.id];
+  if(v === OFF) return null;
+  if(v !== undefined && v !== null) return v;
+  const a = apptOf(p).toUpperCase();
+  if((S.rules.autoAttachOut || []).some(k => k && a.includes(k)))
+    return {to: EXTERNAL, mo: true, pa: true, note: "AUTO", auto: true};
+  return null;
+}
+function isAutoAttach(p){ return S.attach[p.id] === undefined && !!(attachOf(p) || {}).auto; }
+const fmt2 = n => String(n).padStart(2,"0");
+// Accepts "30 (08 + 22)", "30(8+22)" or plain "30". Returns null if unreadable,
+// in which case the figure is shown as typed but left out of the company sum.
+function parseStrength(txt){
+  if(!txt) return null;
+  const m = String(txt).match(/(\d+)\s*\(\s*(\d+)\s*\+\s*(\d+)\s*\)/);
+  if(m) return {c:+m[2], t:+m[3]};
+  const n = String(txt).match(/^\s*(\d+)\s*$/);
+  if(n) return {c:0, t:+n[1]};
+  return null;
+}
+const overOf = (u,k) => ((S.sOver||{})[u]||{})[k] || "";
+const strength = (c,t) => `${c+t} (${fmt2(c)} + ${fmt2(t)})`;
+
+// ============================================================================
+// COUNTING — one function, driven purely by records.
+// ============================================================================
+function count(unit){
+  let rosC=0, rosT=0;
+  let heldC=0, heldT=0, moC=0, moT=0, paC=0, paT=0;
+  let outCoy=0, outPlt=0, inCnt=0, tagged=0;
+  const byCat = {};                    // catId -> how many men sit in it
+
+  personsOf(unit).forEach(p => {
+    const cmd = isCmd(p);
+    if(cmd) rosC++; else rosT++;
+    const a = attachOf(p);
+    if(a){
+      if(a.to === EXTERNAL) outCoy++; else outPlt++;
+      return;                          // off our strength for this activity
+    }
+    const c = statusOf(p);
+    if(cmd) heldC++; else heldT++;
+    if(c){ tagged++; byCat[c.id] = (byCat[c.id]||0) + 1; }
+    const kind = c ? c.kind : "present";
+    if(kind === "stayback") return;
+    if(cmd) moC++; else moT++;
+    if(kind === "moveout_np") return;
+    if(cmd) paC++; else paT++;
+  });
+
+  Object.keys(S.attach).forEach(pid => {
+    const a = S.attach[pid];
+    if(!a || a === OFF || a.to !== unit) return;
+    const p = byId(pid);
+    if(!p || p.unit === unit) return;
+    inCnt++;
+    const cmd = isCmd(p);
+    if(cmd) heldC++; else heldT++;
+    if(a.mo !== false){ if(cmd) moC++; else moT++; }
+    if(a.pa !== false){ if(cmd) paC++; else paT++; }
+  });
+
+  let guestCnt = 0;
+  guestsOf(unit).forEach(g => {
+    guestCnt++;
+    const cmd = CMD_RANKS.includes((g.rank||"").toUpperCase());
+    if(cmd) heldC++; else heldT++;
+    if(g.mo !== false){ if(cmd) moC++; else moT++; }
+    if(g.pa !== false){ if(cmd) paC++; else paT++; }
+  });
+
+  const out = outCoy + outPlt;
+  // the ledger: every line that moves a man out of a number
+  const stayLines = S.cats.filter(c => c.kind === "stayback" && byCat[c.id])
+    .map(c => ({label:c.label, n:byCat[c.id]}));
+  const npLines = S.cats.filter(c => c.kind === "moveout_np" && byCat[c.id])
+    .map(c => ({label:c.label, n:byCat[c.id]}));
+
+  return {rosC, rosT, heldC, heldT, moC, moT, paC, paT,
+          out, outCoy, outPlt, inCnt, guestCnt, tagged, byCat, stayLines, npLines,
+          calcTotal: strength(rosC, rosT),
+          calcMoveout: strength(moC, moT),
+          calcPartic: strength(paC, paT),
+          original: overOf(unit,"tot") || strength(rosC, rosT),
+          held: strength(heldC, heldT),
+          moveout: overOf(unit,"mo") || strength(moC, moT),
+          partic: overOf(unit,"pa") || strength(paC, paT),
+          overridden: !!(overOf(unit,"tot") || overOf(unit,"mo") || overOf(unit,"pa")),
+          delta: deltaText(out, inCnt + guestCnt, strength(heldC, heldT))};
+}
+
+// The red note beside Total: what changed AND the resulting strength, worked out.
+function deltaText(out, inn, held){
+  const bits = [];
+  if(out) bits.push(`−${out} out`);
+  if(inn) bits.push(`+${inn} in`);
+  if(!bits.length) return "";
+  return `${bits.join("  ")}  =  ${held}`;
+}
+
+function coyCount(){
+  let r={c:0,t:0}, h={c:0,t:0}, m={c:0,t:0}, a={c:0,t:0}, ext=0, extIn=0;
+  (S.guests||[]).forEach(() => extIn++);
+  UNITS.forEach(u => {
+    const x = count(u);
+    // a hand-typed figure is what the PS is standing behind, so the coy uses it
+    const pick = (over, dc, dt) => { const p = parseStrength(over); return p ? p : {c:dc, t:dt}; };
+    const T = pick(overOf(u,"tot"), x.rosC, x.rosT);
+    const M = pick(overOf(u,"mo"),  x.moC,  x.moT);
+    const P = pick(overOf(u,"pa"),  x.paC,  x.paT);
+    r.c+=T.c; r.t+=T.t; h.c+=x.heldC; h.t+=x.heldT;
+    m.c+=M.c; m.t+=M.t; a.c+=P.c; a.t+=P.t;
+    ext += x.outCoy;   // only men gone to ANOTHER coy leave the company total
+  });
+  // people attached IN from outside the company would add here; within-coy moves cancel out
+  return {original:strength(r.c,r.t), held:strength(h.c,h.t),
+          moveout:strength(m.c,m.t), partic:strength(a.c,a.t),
+          ext, delta: deltaText(ext, extIn, strength(h.c, h.t))};
+}
+
+// ============================================================================
+// EQUIPMENT — derived from the same records.
+// ============================================================================
+function weaponFor(p){
+  const g = S.gear[p.id];
+  if(g && "weapon" in g) return g.weapon;
+  const a = apptOf(p).toUpperCase();
+  for(const [k,w] of S.rules.weapon){ if(a.includes(k)) return w; }
+  return "SAR21";
+}
+// The M203 launcher mounts on a SAR21, so its gunner carries both. Any accessory
+// rule that issues a weapon means a second weapon in his hands.
+function weaponsOf(p){
+  const w = weaponFor(p);
+  if(!w) return [];
+  const mounted = S.rules.accessories
+    .filter(([ww, item]) => ww === w && WEAPON_CHOICES.includes(item))
+    .map(([, item]) => item);
+  return [w, ...mounted];
+}
+// One SFT per weapon carried — the appointment rule names the SFT for his primary,
+// each mounted weapon brings its own.
+function sftsFor(p){
+  const ws = weaponsOf(p);
+  if(!ws.length) return [];        // no weapon in his hands means no SFT for it
+  const out = [];
+  const primary = sftFor(p);
+  if(primary) out.push(primary);
+  ws.slice(1).forEach(w => {
+    const sft = WEAPON_TO_SFT[w];
+    if(sft && !out.includes(sft)) out.push(sft);
+  });
+  return out;
+}
+
+// SFT follows the weapon in his hands. The appointment list is only an override
+// for special cases — keeping two independent lists let them drift apart, which is
+// how a "2ND GPMG" man ended up drawing a rifle SFT.
+function sftFor(p){
+  const a = apptOf(p).toUpperCase();
+  for(const [k,sft] of S.rules.sft){ if(k && a.includes(k)) return sft; }
+  const w = weaponFor(p);
+  return w ? (WEAPON_TO_SFT[w] || null) : null;
+}
+
+function signalsFor(p){
+  const g = S.gear[p.id];
+  if(g && Array.isArray(g.signals)) return g.signals;
+  const a = apptOf(p).toUpperCase();
+  const r = S.rules.signal.find(([ap,rk]) => a === ap && (!rk || p.rank === rk));
+  const items = new Set(r ? r[2] : []);
+  if(isCmd(p) && !MAP_COMPASS_EXCLUDE.some(x => a.includes(x))){ items.add("MAP"); items.add("COMPASS"); }
+  return [...items];
+}
+// A man who stays back (MC, SBF, MA, Duty) draws no weapon or gear. Someone
+// attached out still does — he drew his kit here before he left.
+function drawsGear(p){
+  if(attachOf(p)) return true;
+  const c = statusOf(p);
+  return !c || c.kind !== "stayback";
+}
+function loadoutOf(p){
+  if(!drawsGear(p)) return [];
+  const ws = weaponsOf(p);
+  // the mounted weapon is listed after its host rifle, e.g. "SAR21, M203"
+  const ordered = ws.length > 1 ? [...ws.slice(1), ws[0]] : ws;
+  return [...ordered, ...signalsFor(p)].filter(Boolean);
+}
+
+// Who draws equipment from this unit: own roster, present or attached out
+// (gear follows the man's HOME unit), excluding stay-backs. Attached-in draw
+// nothing here — they brought their own from their parent unit.
+function drawers(unit){ return personsOf(unit).filter(drawsGear); }
+
+function computeEquip(unit){
+  const w = {}, sg = {}, pn = {};
+  WEAPON_ITEMS.forEach(i => w[i]=0); SIGNALS_ITEMS.forEach(i => sg[i]=0); PANTES_ITEMS.forEach(i => pn[i]=0);
+  const firstOnly = {};
+  drawers(unit).forEach(p => {
+    const wpn = weaponFor(p);
+    if(wpn){
+      w[wpn] = (w[wpn]||0) + 1;
+      S.rules.accessories.forEach(([ww,item,qty,fo]) => {
+        if(ww !== wpn || !item) return;
+        if(fo){ const k = ww+"::"+item; if(firstOnly[k]) return; firstOnly[k] = true; }
+        w[item] = (w[item]||0) + (Number(qty)||0);
+      });
+    }
+    signalsFor(p).forEach(i => { sg[i] = (sg[i]||0) + 1; });
+    const a = apptOf(p).toUpperCase();
+    if(S.rules.pantesExclude.some(x => x && a.includes(x))) return;
+    Object.entries(S.rules.perman).forEach(([item,qty]) => { pn[item] = (pn[item]||0) + (Number(qty)||0); });
+    sftsFor(p).forEach(sft => {
+      pn[sft] = (pn[sft]||0) + 1;
+      if(sft === "M203 SFT"){ pn["M203 LAUNCHER"] = (pn["M203 LAUNCHER"]||0)+1; pn["M203 ROUND"] = (pn["M203 ROUND"]||0)+1; }
+    });
+  });
+  return {wpn:w, sig:sg, pan:pn};
+}
+
+// ============================================================================
+// RENDERING
+// ============================================================================
+const el = id => document.getElementById(id);
+let activeUnit = UNITS[0];
+
+function buildTabs(){
+  el("tabs").innerHTML = UNITS.map(u =>
+    `<div class="tab${u===activeUnit?" on":""}" data-u="${u}">${u}<span class="s" id="tabs-${u}"></span></div>`).join("");
+  el("tabs").querySelectorAll(".tab").forEach(t => t.onclick = () => { activeUnit = t.dataset.u; buildTabs(); buildPanels(); renderAll(); });
+}
+
+function buildPanels(){
+  // remember which sections the user had open — a sync must not collapse their work
+  const wasOpen = new Set();
+  document.querySelectorAll("#panels details").forEach((d,i) => { if(d.open) wasOpen.add(i); });
+  el("panels").innerHTML = UNITS.map(u => `
+    <div id="p-${u}" ${u===activeUnit?"":'style="display:none;"'}>
+      <div class="end">
+        <div class="t"><span>${u} · End state</span>
+          <span><span class="tag" id="tag-${u}"></span>
+          <button type="button" class="adj" id="adj-${u}">Adjust by hand</button></span></div>
+        <div class="big3">
+          <div class="big sub"><label>Total strength</label>
+            <div class="v" id="e-${u}-tot">—</div>
+            <input type="text" class="vedit" id="ov-${u}-tot" style="display:none;" placeholder="e.g. 33 (09 + 24)">
+            <div class="d" id="e-${u}-td"></div></div>
+          <div class="big sub"><label>Move out</label>
+            <div class="v" id="e-${u}-mo">—</div>
+            <input type="text" class="vedit" id="ov-${u}-mo" style="display:none;" placeholder="e.g. 29 (08 + 21)"></div>
+          <div class="big sub"><label>Participating</label>
+            <div class="v" id="e-${u}-pa">—</div>
+            <input type="text" class="vedit" id="ov-${u}-pa" style="display:none;" placeholder="e.g. 28 (08 + 20)"></div>
+        </div>
+        <div class="ovnote" id="ovn-${u}" style="display:none;"></div>
+      </div>
+
+      <div class="card">
+        <h2>Strength accounting — where every man goes</h2>
+        <div class="ledger" id="led-${u}"></div>
+      </div>
+
+      <div class="card">
+        <h2><span class="step">1</span> Roster — tap a name</h2>
+        <div class="legend">
+          <span><i style="background:var(--ok);"></i> gear drawn from us</span>
+          <span><i style="background:#6E6E66;"></i> gear from another unit / coy</span>
+          <span><i style="background:var(--muted);"></i> draws no gear</span>
+        </div>
+        <input type="text" class="filter" id="f-${u}" placeholder="Filter by name, rank or appointment...">
+        <div id="chips-${u}"></div>
+        <details style="margin-top:9px;"><summary class="note" style="cursor:pointer;">Add someone not on the roll</summary>
+          <div class="bar" style="margin-top:7px;">
+            <input type="text" id="ar-${u}" placeholder="Rank" style="width:70px;">
+            <input type="text" id="an-${u}" placeholder="Name" style="flex:1; min-width:110px;">
+            <input type="text" id="aa-${u}" placeholder="Appointment" style="width:120px;">
+            <button type="button" id="ab-${u}">+ Add</button>
+          </div>
+        </details>
+      </div>
+
+      <div class="card">
+        <h2><span class="step">2</span> Attachments</h2>
+        <div class="att" id="ao-${u}"></div>
+        <div class="att" id="ai-${u}"></div>
+        <div class="note">Attach a man out from his own tab: tap his name → "Attach out". One record governs both platoons.</div>
+      </div>
+
+      <details class="card">
+        <summary><span class="step">3</span> Equipment</summary>
+        <label class="sync"><input type="checkbox" id="lv-${u}" checked>
+          <span><b>Auto-count gear from the roster.</b> Untick to type every number yourself —
+          nothing will be recalculated until you tick it again.</span></label>
+        <div class="ovnote" id="eqn-${u}" style="display:none;">
+          <span>Gear numbers are set by hand — the roster is not counting them.</span>
+          <button type="button" id="eqr-${u}">Back to auto-count</button>
+        </div>
+        <div style="margin-top:11px;">
+          <h3>Weapon</h3><div id="eq-${u}-wpn"></div>
+          <h3 style="margin-top:12px;">Signal / optics</h3><div id="eq-${u}-sig"></div>
+          <h3 style="margin-top:12px;">PANTES</h3><div id="eq-${u}-pan"></div>
+          <h3 style="margin-top:12px;">Section stores <button type="button" id="fs-${u}" style="font-size:10px; padding:3px 8px;">Auto-fill</button></h3>
+          <div id="eq-${u}-store"></div>
+          <h3 style="margin-top:12px;">TAG stores <button type="button" id="ft-${u}" style="font-size:10px; padding:3px 8px;">Auto-fill</button></h3>
+          <div id="eq-${u}-tag"></div>
+        </div>
+      </details>
+    </div>`).join("");
+
+  document.querySelectorAll("#panels details").forEach((d,i) => { if(wasOpen.has(i)) d.open = true; });
+  UNITS.forEach(u => {
+    ["wpn","sig","pan"].forEach(k => {
+      const groups = k==="wpn"?WEAPON_GROUPS : k==="sig"?SIGNALS_GROUPS : PANTES_GROUPS;
+      el(`eq-${u}-${k}`).innerHTML = groups.map(([h,items]) =>
+        `<div class="eqg"><h3>${h}</h3><div class="grid">${items.map(i =>
+          `<div class="it"><label>${i}</label><input type="number" min="0" id="q-${u}-${k}-${slug(i)}"></div>`).join("")}</div></div>`).join("");
+    });
+    [["store",STORE_ITEMS],["tag",TAG_ITEMS]].forEach(([k,items]) => {
+      el(`eq-${u}-${k}`).innerHTML = `<div class="grid">${items.map(i =>
+        `<div class="it"><label>${i}</label><input type="number" min="0" id="q-${u}-${k}-${slug(i)}"></div>`).join("")}</div>`;
+    });
+    el(`adj-${u}`).onclick = () => {
+      const on = el(`adj-${u}`).classList.toggle("on");
+      ["tot","mo","pa"].forEach(k => {
+        el(`ov-${u}-${k}`).style.display = on ? "" : "none";
+        el(`e-${u}-${k}`).style.display = on ? "none" : "";
+      });
+      el(`adj-${u}`).textContent = on ? "Done" : "Adjust by hand";
+      if(on){
+        const r = count(u);
+        el(`ov-${u}-tot`).value = overOf(u,"tot") || r.calcTotal;
+        el(`ov-${u}-mo`).value  = overOf(u,"mo")  || r.calcMoveout;
+        el(`ov-${u}-pa`).value  = overOf(u,"pa")  || r.calcPartic;
+      }
+      renderAll();
+    };
+    ["tot","mo","pa"].forEach(k => {
+      el(`ov-${u}-${k}`).addEventListener("input", e => {
+        S.sOver[u] = S.sOver[u] || {};
+        const r = count(u);
+        const calc = k==="tot" ? r.calcTotal : k==="mo" ? r.calcMoveout : r.calcPartic;
+        const v = e.target.value.trim();
+        // typing the calculated value back is the same as not overriding it
+        if(!v || v === calc) delete S.sOver[u][k]; else S.sOver[u][k] = v;
+        if(!Object.keys(S.sOver[u]).length) delete S.sOver[u];
+        renderAll(); save(u);
+      });
+    });
+    el(`f-${u}`).oninput = () => renderChips(u);
+    el(`ab-${u}`).onclick = () => addPerson(u);
+    el(`lv-${u}`).checked = S.live[u] !== false;
+    el(`lv-${u}`).onchange = e => { S.live[u] = e.target.checked; renderEquip(u); renderAll(); save(u); };
+    el(`eqr-${u}`).onclick = () => { S.live[u] = true; el(`lv-${u}`).checked = true; renderEquip(u); renderAll(); save(u); };
+    el(`fs-${u}`).onclick = () => { STORE_ITEMS.forEach(i => setQ(u,"store",i,S.rules.storeEstab[i])); save(u); };
+    el(`ft-${u}`).onclick = () => { TAG_ITEMS.forEach(i => setQ(u,"tag",i,S.rules.tagEstab[i])); save(u); };
+    ["wpn","sig","pan","store","tag"].forEach(k => {
+      el(`eq-${u}-${k}`).addEventListener("input", e => {
+        if(e.target.tagName !== "INPUT") return;
+        const item = e.target.id.replace(`q-${u}-${k}-`, "");
+        S.equip[u] = S.equip[u] || {}; S.equip[u][k] = S.equip[u][k] || {};
+        S.equip[u][k][item] = e.target.value;
+        save(u);
+      });
+    });
+  });
+}
+const slug = s => s.replace(/[^a-zA-Z0-9]/g,"_");
+function setQ(u,k,item,v){
+  const e = el(`q-${u}-${k}-${slug(item)}`);
+  if(e) e.value = (v === 0 || v === undefined || v === null) ? "" : v;
+  S.equip[u] = S.equip[u] || {}; S.equip[u][k] = S.equip[u][k] || {};
+  S.equip[u][k][slug(item)] = e ? e.value : "";
+}
+
+function renderChips(u){
+  const q = (el(`f-${u}`).value || "").trim().toUpperCase();
+  const rows = [];
+  let section = null, n = 0;
+  personsOf(u).forEach(p => {
+    if(p.section !== section){ section = p.section; rows.push({sect:section}); }
+    rows.push({p, n:++n});
+  });
+  // attached in appear at the end, clearly marked
+  const attIn = Object.keys(S.attach).map(pid => ({pid, a:S.attach[pid]}))
+    .filter(x => x.a && x.a !== OFF && x.a.to === u).map(x => byId(x.pid)).filter(p => p && p.unit !== u);
+  const guests = guestsOf(u);
+  if(attIn.length || guests.length) rows.push({sect:"ATTACHED IN"});
+  attIn.forEach(p => rows.push({p, attIn:true}));
+  guests.forEach(g => rows.push({guest:g}));
+
+  el(`chips-${u}`).innerHTML = rows.map(r => {
+    if(r.sect) return `<div class="sect" data-sect="1">${r.sect}</div>`;
+    if(r.guest){
+      const g = r.guest;
+      const f = [g.mo === false ? "no move out" : null, g.pa === false ? "not participating" : null].filter(Boolean);
+      return `<div class="chip other" data-guest="${g.id}">
+        <span class="n"></span>
+        <span class="nm">${g.rank} ${g.name}${g.appt?` <span style="color:var(--muted); font-weight:400;">(${g.appt})</span>`:""}</span>
+        <span class="ld">gear from ${g.from}</span>
+        <span class="st i">IN — FROM ${g.from}${f.length ? " · " + f.join(", ") : ""}</span>
+        <span class="x" data-dropguest="${g.id}">✕</span></div>`;
+    }
+    const p = r.p, a = attachOf(p), c = statusOf(p);
+    const auto = isAutoAttach(p) || isAutoStatus(p);
+    const ld = loadoutOf(p);
+    let tag = "";
+    if(r.attIn){
+      const flags = [a.mo === false ? "no move out" : null, a.pa === false ? "not participating" : null].filter(Boolean);
+      tag = `<span class="st i">IN — FROM ${p.unit}${flags.length ? " · " + flags.join(", ") : ""}</span><span class="x" data-detach="${p.id}">✕</span>`;
+    } else if(a){
+      const dest = a.to === EXTERNAL ? (a.note && a.note !== "AUTO" ? a.note : "ANOTHER COY") : a.to;
+      tag = `<span class="st o">OUT — TO ${dest}${auto?" · AUTO":""}</span><span class="x" data-detach="${p.id}">✕</span>`;
+    } else if(c){
+      const rsn = S.reason[p.id] ? ` (${S.reason[p.id]})` : "";
+      tag = `<span class="st o">${c.label}${rsn}${auto?" · AUTO":""}</span>`;
+    }
+    // provenance: our own men draw from us (green); men attached in from a sister
+    // platoon drew from THEIR platoon, which is still this company (green too);
+    // anyone drawing nothing is greyed.
+    const prov = r.attIn ? "ours" : (ld.length ? "ours" : "nogear");
+    const cls = ["chip", prov, (a && !r.attIn) || c ? "out" : ""].filter(Boolean).join(" ");
+    const text = `${p.rank} ${p.name} ${apptOf(p)}`.toUpperCase();
+    const hidden = q && !text.includes(q) ? " hide" : "";
+    const ldText = r.attIn ? `gear from ${p.unit}` : (ld.length ? ld.join(", ") : "no gear");
+    return `<div class="${cls}${hidden}" data-id="${p.id}">
+      <span class="n">${r.n || ""}</span>
+      <span class="nm">${p.rank} ${p.name}${apptOf(p) ? ` <span style="color:var(--muted); font-weight:400;">(${apptOf(p)})</span>` : ""}</span>
+      <span class="ld">${ldText}</span>${tag}</div>`;
+  }).join("");
+
+  // hide empty section headers while filtering
+  if(q){
+    const kids = [...el(`chips-${u}`).children];
+    kids.forEach((k,i) => {
+      if(!k.dataset.sect) return;
+      let any = false;
+      for(let j=i+1; j<kids.length && !kids[j].dataset.sect; j++) if(!kids[j].classList.contains("hide")) any = true;
+      k.classList.toggle("hide", !any);
+    });
+  }
+  el(`chips-${u}`).querySelectorAll(".chip").forEach(ch => {
+    ch.onclick = e => {
+      if(e.target.dataset.dropguest){ e.stopPropagation(); dropGuest(e.target.dataset.dropguest); return; }
+      if(e.target.dataset.detach){ e.stopPropagation(); detach(e.target.dataset.detach); return; }
+      if(ch.dataset.guest) return;                  // guests are managed in the attachments card
+      openSheet(ch.dataset.id, ch);
+    };
+  });
+}
+
+function renderLedger(u){
+  const r = count(u), L = [];
+  const row = (cls, label, val, note) =>
+    `<div class="l ${cls}"><span>${label}${note?` <span class="w">${note}</span>`:""}</span><b>${val}</b></div>`;
+
+  L.push(row("head", `${u} roster strength`, r.calcTotal));
+  if(r.outCoy) L.push(row("ded", "Attached out to another coy/unit", `− ${r.outCoy}`, "out for training under them"));
+  if(r.outPlt) L.push(row("ded", "Attached out to another platoon", `− ${r.outPlt}`, "counted by them"));
+  r.stayLines.forEach(x => L.push(row("ded", x.label, `− ${x.n}`, "stays in camp")));
+  if(r.inCnt) L.push(row("add", "Attached in from our own coy", `+ ${r.inCnt}`, "gear drawn from their platoon"));
+  if(r.guestCnt) L.push(row("add", "Attached in from another coy/unit", `+ ${r.guestCnt}`, "gear drawn from their unit"));
+  L.push(row("sum", "MOVE OUT", r.calcMoveout + (overOf(u,"mo") ? "" : "")));
+  if(overOf(u,"mo")) L.push(row("ded", "Move out set by hand", overOf(u,"mo"), "overrides the calculation"));
+  r.npLines.forEach(x => L.push(row("ded", x.label, `− ${x.n}`, "moves out, does not participate")));
+  L.push(row("sum", "PARTICIPATING", r.calcPartic));
+  if(overOf(u,"pa")) L.push(row("ded", "Participating set by hand", overOf(u,"pa"), "overrides the calculation"));
+  if(overOf(u,"tot")) L.push(row("ded", "Total set by hand", overOf(u,"tot"), "overrides the calculation"));
+  el(`led-${u}`).innerHTML = L.join("");
+}
+
+function renderAttach(u){
+  const out = personsOf(u).filter(p => attachOf(p));
+  el(`ao-${u}`).innerHTML = `<div class="hd"><span>Attached out — off ${u}'s strength</span><span>${out.length}</span></div>` +
+    (out.length ? out.map(p => {
+      const a = attachOf(p);
+      return `<div class="row"><span class="who">${p.rank} ${p.name} <span style="color:var(--muted)">(${apptOf(p)})</span>${isAutoAttach(p)?' <span style="color:var(--muted);font-size:10px;">AUTO</span>':""}</span>
+        <span class="to">→ ${a.to === EXTERNAL ? (a.note && a.note !== "AUTO" ? a.note : "ANOTHER COY") : a.to}</span>
+        <button type="button" class="del" style="font-size:10px; padding:4px 8px;" data-detach="${p.id}">Remove</button></div>`;
+    }).join("") : `<div class="empty">Nobody attached out. Tap a name → "Attach out".</div>`);
+
+  const ins = Object.keys(S.attach).filter(pid => S.attach[pid] && S.attach[pid] !== OFF && S.attach[pid].to === u).map(byId).filter(p => p && p.unit !== u);
+  el(`ai-${u}`).innerHTML = `<div class="hd"><span>Attached in — added to ${u}'s strength</span><span>${ins.length}</span></div>` +
+    (ins.length ? ins.map(p => {
+      const a = S.attach[p.id];
+      return `<div class="row"><span class="who">${p.rank} ${p.name} <span style="color:var(--muted)">(${apptOf(p)} — from ${p.unit})</span></span>
+        <span class="ticks">
+          <label><input type="checkbox" data-mo="${p.id}" ${a.mo!==false?"checked":""}> Move out</label>
+          <label><input type="checkbox" data-pa="${p.id}" ${a.pa!==false?"checked":""}> Participating</label>
+        </span>
+        <button type="button" class="del" style="font-size:10px; padding:4px 8px;" data-detach="${p.id}">Remove</button></div>`;
+    }).join("") : `<div class="empty">Nobody attached in.</div>`);
+
+  // men attached in from outside the company — their gear is not ours
+  const gs = guestsOf(u);
+  el(`ai-${u}`).innerHTML += `<div class="hd" style="margin-top:9px;"><span>Attached in from another coy / unit</span><span>${gs.length}</span></div>` +
+    (gs.length ? gs.map(g => `<div class="row">
+        <span class="who">${g.rank} ${g.name} <span style="color:var(--muted)">(${g.appt||"—"} — from ${g.from})</span>
+          <span style="color:#9A9A90; font-size:10px;">gear drawn from ${g.from}</span></span>
+        <span class="ticks">
+          <label><input type="checkbox" data-gmo="${g.id}" ${g.mo!==false?"checked":""}> Move out</label>
+          <label><input type="checkbox" data-gpa="${g.id}" ${g.pa!==false?"checked":""}> Participating</label>
+        </span>
+        <button type="button" class="del" style="font-size:10px; padding:4px 8px;" data-dropguest="${g.id}">Remove</button></div>`).join("")
+      : `<div class="empty">Nobody from outside the coy.</div>`) +
+    `<div class="row" style="gap:6px;">
+       <input type="text" id="gr-${u}" placeholder="Rank" style="width:74px;">
+       <input type="text" id="gn-${u}" placeholder="Name" style="flex:1; min-width:110px;">
+       <input type="text" id="ga-${u}" placeholder="Appt" style="width:100px;">
+       <input type="text" id="gf-${u}" placeholder="From (e.g. 42SAR)" style="width:140px;">
+       <button type="button" id="gb-${u}">+ Attach in</button>
+     </div>`;
+
+  el(`ai-${u}`).querySelectorAll("[data-dropguest]").forEach(b => b.onclick = () => dropGuest(b.dataset.dropguest));
+  el(`ai-${u}`).querySelectorAll("[data-gmo]").forEach(c => c.onchange = () => {
+    const g = S.guests.find(x => x.id === c.dataset.gmo); if(g){ g.mo = c.checked; renderAll(); save(u); } });
+  el(`ai-${u}`).querySelectorAll("[data-gpa]").forEach(c => c.onchange = () => {
+    const g = S.guests.find(x => x.id === c.dataset.gpa); if(g){ g.pa = c.checked; renderAll(); save(u); } });
+  el(`gb-${u}`).onclick = () => addGuest(u);
+
+  [`ao-${u}`,`ai-${u}`].forEach(id => {
+    el(id).querySelectorAll("[data-detach]").forEach(b => b.onclick = () => detach(b.dataset.detach));
+    el(id).querySelectorAll("[data-mo]").forEach(c => c.onchange = () => { S.attach[c.dataset.mo].mo = c.checked; renderAll(); saveAll(); });
+    el(id).querySelectorAll("[data-pa]").forEach(c => c.onchange = () => { S.attach[c.dataset.pa].pa = c.checked; renderAll(); saveAll(); });
+  });
+}
+
+function renderEquip(u){
+  if(S.live[u] === false){
+    // manual mode — restore whatever the user typed
+    const m = (S.equip[u]||{});
+    ["wpn","sig","pan","store","tag"].forEach(k => Object.entries(m[k]||{}).forEach(([item,v]) => {
+      const e = el(`q-${u}-${k}-${item}`); if(e) e.value = v;
+    }));
+    return;
+  }
+  const c = computeEquip(u);
+  [["wpn",WEAPON_ITEMS,c.wpn],["sig",SIGNALS_ITEMS,c.sig],["pan",PANTES_ITEMS,c.pan]].forEach(([k,items,vals]) => {
+    items.forEach(i => { const e = el(`q-${u}-${k}-${slug(i)}`); if(e) e.value = vals[i] ? vals[i] : ""; });
+  });
+  const m = (S.equip[u]||{});
+  [["store",STORE_ITEMS],["tag",TAG_ITEMS]].forEach(([k,items]) => items.forEach(i => {
+    const e = el(`q-${u}-${k}-${slug(i)}`);
+    if(e && m[k] && m[k][slug(i)] !== undefined) e.value = m[k][slug(i)];
+  }));
+}
+
+function renderAll(){
+  UNITS.forEach(u => {
+    const r = count(u);
+    const set = (id,v) => { const e = el(id); if(e) e.textContent = v; };
+    set(`e-${u}-tot`, r.original); set(`e-${u}-td`, r.delta);
+    set(`e-${u}-mo`, r.moveout); set(`e-${u}-pa`, r.partic);
+    const on = el(`ovn-${u}`);
+    if(on){
+      if(r.overridden){
+        const which = ["tot","mo","pa"].filter(k => overOf(u,k))
+          .map(k => k==="tot"?"total":k==="mo"?"move out":"participating").join(", ");
+        on.style.display = "";
+        on.innerHTML = `<span>Set by hand: <b>${which}</b> — the calculation says ` +
+          `${r.calcTotal} / ${r.calcMoveout} / ${r.calcPartic}.</span>` +
+          `<button type="button" data-clear="${u}">Use calculated</button>`;
+        on.querySelector("[data-clear]").onclick = () => {
+          delete S.sOver[u];
+          ["tot","mo","pa"].forEach(k => { const i = el(`ov-${u}-${k}`); if(i) i.value = ""; });
+          renderAll(); save(u);
+        };
+      } else on.style.display = "none";
+    }
+    ["tot","mo","pa"].forEach(k => {
+      const i = el(`ov-${u}-${k}`);
+      if(i && i.style.display !== "none" && document.activeElement !== i){
+        const rr = count(u);
+        i.value = overOf(u,k) || (k==="tot" ? rr.calcTotal : k==="mo" ? rr.calcMoveout : rr.calcPartic);
+      }
+    });
+    set(`tag-${u}`, r.tagged ? `${r.tagged} tagged` : "");
+    set(`tabs-${u}`, r.original.split(" ")[0] + (r.out||r.inCnt ? "*" : ""));
+    renderChips(u); renderAttach(u); renderEquip(u); renderLedger(u);
+    const eqn = el(`eqn-${u}`); if(eqn) eqn.style.display = (S.live[u] === false) ? "" : "none";
+  });
+  const c = coyCount();
+  el("c-tot").textContent = c.original; el("c-td").textContent = c.delta;
+  el("c-mo").textContent = c.moveout; el("c-pa").textContent = c.partic;
+  el("dash").innerHTML = UNITS.map(u => {
+    const r = count(u);
+    return `<div class="dcard" data-u="${u}">
+      <div class="u">${u}${r.tagged?`<span class="b">${r.tagged}</span>`:""}</div>
+      <div class="r"><span>TOTAL</span><b>${r.original}</b></div>
+      ${r.delta?`<div class="r" style="color:#FF6B4A;"><span></span><b style="color:#FF6B4A;">${r.delta}</b></div>`:""}
+      <div class="r"><span>MOVE OUT</span><b>${r.moveout}</b></div>
+      <div class="r"><span>PARTIC</span><b>${r.partic}</b></div></div>`;
+  }).join("");
+  el("dash").querySelectorAll(".dcard").forEach(d => d.onclick = () => { activeUnit = d.dataset.u; buildTabs(); buildPanels(); renderAll(); });
+  const dk = el("dock-u"); if(dk) dk.textContent = activeUnit;
+  el("coy-note").textContent = c.ext
+    ? `${c.ext} pax attached out to another coy/unit — they are not on the company's strength for this activity.`
+    : "";
+  renderRoll();
+}
+
+// ============================================================================
+// PERSON SHEET
+// ============================================================================
+let sheet = null, sheetDoc = null;
+function closeSheet(){
+  if(sheet){ sheet.remove(); sheet = null; }
+  if(sheetDoc){ document.removeEventListener("click", sheetDoc); sheetDoc = null; }
+}
+function openSheet(pid, anchor){
+  const p = byId(pid); if(!p) return;
+  closeSheet();
+  const a = attachOf(pid ? p : p), curCat = statusOf(p);
+  const cur = S.status[pid] !== undefined ? S.status[pid] : (curCat ? curCat.id : PRESENT);
+  const autoS = isAutoStatus(p), autoA = isAutoAttach(p);
+  const g = S.gear[pid] || {};
+  const home = p.unit;
+  const dests = UNITS.filter(x => x !== home);
+
+  const d = document.createElement("div");
+  d.className = "sheet";
+  d.innerHTML = `
+    <div class="who">${p.rank} ${p.name} — ${home}</div>
+    ${a ? `<div class="note">${autoA?`Automatically attached out (rule: appointment contains ${(S.rules.autoAttachOut||[]).find(k=>apptOf(p).toUpperCase().includes(k))||""}).`:`Attached out to ${a.to===EXTERNAL?(a.note&&a.note!=="AUTO"?a.note:"outside the coy"):a.to}.`} Off ${home}'s strength.</div>
+           <button type="button" class="danger" id="s-detach">${autoA?"Override — keep him with "+home:"Cancel attachment — bring him back"}</button>` : ""}
+    ${autoS ? `<div class="note" style="background:rgba(138,110,36,0.3); color:#E8C547;">Automatic status from his appointment — moves out, does not participate. Pick another status below to override.</div>` : ""}
+    <div class="lab">Status</div>
+    <button type="button" class="opt pres${cur===PRESENT&&!a?" on":""}" data-cat="${PRESENT}">PRESENT — moves out &amp; participates</button>
+    ${S.cats.map(c => `<button type="button" class="opt${cur===c.id?" on":""}" data-cat="${c.id}">${c.label}</button>`).join("")}
+    <div class="row"><span>Reason</span><input type="text" id="s-reason" value="${(S.reason[pid]||"").replace(/"/g,"&quot;")}" placeholder="optional, shown in report"></div>
+    ${a ? "" : `
+    <div class="lab">Attach out — he goes out for training under someone else</div>
+    <div class="row"><span>Attached to</span>
+      <select id="s-to">
+        <option value="${EXTERNAL}">Another coy / unit (outside our coy)</option>
+        ${dests.map(x=>`<option value="${x}">${x} (our own coy)</option>`).join("")}
+      </select>
+      <button type="button" id="s-attach">Attach out</button>
+    </div>
+    <div class="note" style="background:transparent; color:var(--muted); padding:2px 4px;">
+      He comes off ${home}'s move out and participating. Another coy → the company total drops too.
+      Another platoon → he counts under them instead, company total unchanged.
+    </div>`}
+    <div class="lab">Role &amp; loadout</div>
+    <div class="row"><span>Appointment</span><input type="text" id="s-appt" value="${apptOf(p).replace(/"/g,"&quot;")}"></div>
+    <div class="row"><span>Weapon</span>
+      <select id="s-wpn">
+        <option value="__AUTO__">Auto by role (${(() => { const sv=S.gear[pid]; delete S.gear[pid]; const w=weaponFor(p)||"none"; if(sv) S.gear[pid]=sv; return w; })()})</option>
+        ${WEAPON_CHOICES.map(w=>`<option value="${w}"${g.weapon===w?" selected":""}>${w}</option>`).join("")}
+        <option value="__NONE__"${g.weapon===null?" selected":""}>No weapon</option>
+      </select></div>
+    <div class="row"><span>Signals</span><label style="display:flex;align-items:center;gap:5px;color:var(--text);">
+      <input type="checkbox" id="s-sigauto" ${Array.isArray(g.signals)?"":"checked"}> Auto by role</label></div>
+    <div class="sigs" id="s-sigs" style="${Array.isArray(g.signals)?"":"display:none;"}">
+      ${SIGNALS_ITEMS.map(i=>`<label><input type="checkbox" class="s-sig" value="${i}"${signalsFor(p).includes(i)?" checked":""}> ${i}</label>`).join("")}
+    </div>
+    <div class="acts"><button type="button" class="save" id="s-save">Save</button>
+      <button type="button" id="s-rules">Back to rules</button>
+      <button type="button" id="s-cancel">Cancel</button></div>`;
+  document.querySelector(".rw").appendChild(d);
+  sheet = d;
+
+  if(anchor && window.innerWidth > 640){
+    const r = anchor.getBoundingClientRect();
+    d.style.top = (window.scrollY + Math.min(r.bottom + 4, window.innerHeight - d.offsetHeight - 10)) + "px";
+    d.style.left = (window.scrollX + Math.min(r.left, window.innerWidth - d.offsetWidth - 12)) + "px";
+  }
+
+  d.querySelectorAll("[data-cat]").forEach(b => b.onclick = () => {
+    const c = b.dataset.cat;
+    S.status[pid] = c;                      // explicit choice, including PRESENT
+    if(c === PRESENT) delete S.reason[pid];
+    closeSheet(); renderAll(); save(home);
+  });
+  const dt = d.querySelector("#s-detach"); if(dt) dt.onclick = () => detach(pid);
+  const at = d.querySelector("#s-attach");
+  if(at) at.onclick = () => {
+    const to = d.querySelector("#s-to").value;
+    let note = "";
+    if(to === EXTERNAL){ note = (prompt("Which coy / unit is he attached to? (shown on the report)", "") || "").trim().toUpperCase() || "ANOTHER COY"; }
+    S.attach[pid] = {to, mo:true, pa:true, note};
+    delete S.status[pid];
+    closeSheet(); renderAll(); saveAll();
+  };
+  const sa = d.querySelector("#s-sigauto");
+  sa.onchange = () => d.querySelector("#s-sigs").style.display = sa.checked ? "none" : "";
+  d.querySelector("#s-save").onclick = () => {
+    const na = d.querySelector("#s-appt").value.trim().toUpperCase();
+    if(na !== (p.appt||"").toUpperCase()) S.appt[pid] = na; else delete S.appt[pid];
+    const w = d.querySelector("#s-wpn").value;
+    const gg = S.gear[pid] || {};
+    if(w === "__AUTO__") delete gg.weapon; else gg.weapon = (w === "__NONE__") ? null : w;
+    if(sa.checked) delete gg.signals;
+    else gg.signals = [...d.querySelectorAll(".s-sig:checked")].map(x => x.value);
+    if(Object.keys(gg).length) S.gear[pid] = gg; else delete S.gear[pid];
+    const rs = d.querySelector("#s-reason").value.trim();
+    if(rs) S.reason[pid] = rs; else delete S.reason[pid];
+    closeSheet(); renderAll(); save(home);
+  };
+  d.querySelector("#s-rules").onclick = () => { delete S.gear[pid]; closeSheet(); renderAll(); save(home); };
+  d.querySelector("#s-cancel").onclick = closeSheet;
+
+  sheetDoc = e => { if(sheet && !sheet.contains(e.target)) closeSheet(); };
+  setTimeout(() => document.addEventListener("click", sheetDoc), 0);
+}
+
+// Removing an attachment is deleting ONE record — both platoons restore at once.
+function addGuest(u){
+  const rank = (el(`gr-${u}`).value||"").trim().toUpperCase();
+  const name = (el(`gn-${u}`).value||"").trim().toUpperCase();
+  const from = (el(`gf-${u}`).value||"").trim().toUpperCase();
+  if(!rank || !name){ alert("Rank and name are both needed."); return; }
+  S.guests = S.guests || [];
+  S.guests.push({id:"g-"+Date.now()+"-"+Math.floor(Math.random()*999), unit:u, rank, name,
+                 appt:(el(`ga-${u}`).value||"").trim().toUpperCase(), from: from || "ANOTHER UNIT", mo:true, pa:true});
+  renderAll(); save(u);
+}
+function dropGuest(id){
+  const g = (S.guests||[]).find(x => x.id === id);
+  S.guests = (S.guests||[]).filter(x => x.id !== id);
+  renderAll(); if(g) save(g.unit);
+}
+
+function detach(pid){
+  const p = byId(pid);
+  // If an automatic rule would re-attach him, record an explicit override instead
+  // of just deleting — otherwise the rule would simply put him straight back.
+  if(p && isAutoAttach(p)) S.attach[pid] = OFF;
+  else delete S.attach[pid];
+  closeSheet(); renderAll(); saveAll();
+}
+
+function addPerson(u){
+  const r = el(`ar-${u}`).value.trim().toUpperCase();
+  const n = el(`an-${u}`).value.trim().toUpperCase();
+  if(!r || !n){ alert("Rank and name are both needed."); return; }
+  const id = `x-${Date.now()}-${Math.floor(Math.random()*999)}`;
+  S.persons.push({id, unit:u, rank:r, name:n, appt:el(`aa-${u}`).value.trim().toUpperCase(), section:"ADDED", added:true});
+  el(`ar-${u}`).value = el(`an-${u}`).value = el(`aa-${u}`).value = "";
+  renderAll(); save(u);
+}
+
+// ============================================================================
+// NOMINAL ROLL
+// ============================================================================
+function statusText(p){
+  const a = attachOf(p);
+  if(a) return `ATTACHED OUT — ${a.to===EXTERNAL?(a.note&&a.note!=="AUTO"?a.note:"ANOTHER COY"):a.to}`;
+  const c = statusOf(p);
+  if(!c) return "PRESENT";
+  return c.label + (S.reason[p.id] ? ` (${S.reason[p.id]})` : "");
+}
+function renderRoll(){
+  const q = (el("rollq").value||"").trim().toUpperCase();
+  let n = 0;
+  el("rollb").innerHTML = S.persons.map(p => {
+    n++;
+    const ld = loadoutOf(p);
+    const row = [n, p.unit, p.section, p.rank, p.name, apptOf(p), ld.length ? ld.join(", ") : "—", statusText(p)];
+    const hay = row.join(" ").toUpperCase();
+    if(q && !hay.includes(q)) return "";
+    return `<tr${p.added?' style="background:rgba(201,162,39,0.08);"':""}>` +
+      row.map((c,i) => `<td${i===6?' style="font-size:11px;color:var(--muted);"':""}>${c}</td>`).join("") + "</tr>";
+  }).join("");
+}
+el("rollq").oninput = renderRoll;
+el("rollcopy").onclick = () => {
+  const head = ["S/N","Unit","Section","Rank","Name","Appointment","Loadout","Status"].join("\t");
+  const rows = S.persons.map((p,i) => [i+1,p.unit,p.section,p.rank,p.name,apptOf(p),loadoutOf(p).join(", "),statusText(p)].join("\t"));
+  copyText([head,...rows].join("\n"), "Roll copied — paste into Excel");
+};
+
+// ============================================================================
+// REPORT
+// ============================================================================
+function unitReport(u){
+  const r = count(u), L = [];
+  const act = el("act").value.trim() || "[ACTIVITY]";
+  L.push(`*${u} ${act}*`);
+  if(el("caa").value.trim()) L.push(`CAA: ${el("caa").value.trim()}`);
+  L.push("───────────────", "");
+  L.push(`*TOTAL: ${r.original}*`);
+  if(r.out || r.inCnt){
+    const bits = [];
+    if(r.out) bits.push(`${fmt2(r.out)} attached out`);
+    if(r.inCnt) bits.push(`${fmt2(r.inCnt)} attached in`);
+    L.push(`(${bits.join(", ")} — strength held: ${r.held})`);
+  }
+  L.push(`*MOVE OUT: ${r.moveout}*`, `*PARTICIPATING: ${r.partic}*`, "");
+
+  S.cats.forEach(c => {
+    const list = personsOf(u).filter(p => { const st = statusOf(p); return !attachOf(p) && st && st.id === c.id; });
+    if(!list.length) return;
+    L.push("───────────────", `*${c.label}: ${fmt2(list.length)}*`);
+    list.forEach((p,i) => L.push(`${i+1}. ${p.rank} ${p.name} (${apptOf(p)})${S.reason[p.id]?` — ${S.reason[p.id]}`:""}`));
+    L.push("");
+  });
+  const out = personsOf(u).filter(p => attachOf(p));
+  if(out.length){
+    L.push("───────────────", `*ATTACHED OUT: ${fmt2(out.length)}*`);
+    out.forEach((p,i) => { const a = attachOf(p);
+      L.push(`${i+1}. ${p.rank} ${p.name} (${apptOf(p)}) — TO ${a.to===EXTERNAL?(a.note&&a.note!=="AUTO"?a.note:"ANOTHER COY"):a.to}`); });
+    L.push("");
+  }
+  const ins = Object.keys(S.attach).filter(pid => S.attach[pid] && S.attach[pid] !== OFF && S.attach[pid].to === u).map(byId).filter(p => p && p.unit !== u);
+  if(ins.length){
+    L.push("───────────────", `*ATTACHED IN: ${fmt2(ins.length)}*`);
+    ins.forEach((p,i) => { const a = S.attach[p.id];
+      const f = [a.mo===false?"not moving out":null, a.pa===false?"not participating":null].filter(Boolean);
+      L.push(`${i+1}. ${p.rank} ${p.name} (${apptOf(p)}) — FROM ${p.unit}${f.length?` [${f.join(", ")}]`:""}`); });
+    L.push("");
+  }
+  const gs = guestsOf(u);
+  if(gs.length){
+    L.push("───────────────", `*ATTACHED IN (OTHER COY/UNIT): ${fmt2(gs.length)}*`);
+    gs.forEach((g,i) => {
+      const f = [g.mo===false?"not moving out":null, g.pa===false?"not participating":null].filter(Boolean);
+      L.push(`${i+1}. ${g.rank} ${g.name}${g.appt?` (${g.appt})`:""} — FROM ${g.from}${f.length?` [${f.join(", ")}]`:""} (gear from ${g.from})`);
+    });
+    L.push("");
+  }
+  const eq = computeEquip(u);
+  // e.g. SAR21: 21 (06 with M203 mounted) — the mounted pair is one weapon system
+  const mountNote = {};
+  S.rules.accessories.forEach(([host, item]) => {
+    if(!WEAPON_CHOICES.includes(item)) return;
+    const n = eq.wpn[host] || 0;
+    if(!n) return;
+    mountNote[item] = (mountNote[item] || []).concat(`${fmt2(n)} with ${host} mounted`);
+  });
+  const sect = (title, items, vals) => {
+    const lines = items.map(i => {
+      const e = el(`q-${u}-${vals}-${slug(i)}`);
+      const v = e ? e.value : "";
+      if(!v || Number(v) === 0) return null;
+      const note = (vals === "wpn" && mountNote[i]) ? ` (${mountNote[i].join(", ")})` : "";
+      return `• ${i}: ${v}${note}`;
+    }).filter(Boolean);
+    if(lines.length){ L.push("───────────────", `*${title}*`, ...lines, ""); }
+  };
+  sect("WEAPON", WEAPON_ITEMS, "wpn");
+  sect("SIGNAL/OPTICS/UOCE", SIGNALS_ITEMS, "sig");
+  sect("PANTES EQUIPMENT", PANTES_ITEMS, "pan");
+  sect("SECTION STORES", STORE_ITEMS, "store");
+  sect("TAG STORES", TAG_ITEMS, "tag");
+  L.push("───────────────", `_build ${BUILD_ID}_`);
+  return L.join("\n").replace(/\n{3,}/g,"\n\n").trim();
+}
+function doGenerate(){
+  try {
+    el("out").value = unitReport(activeUnit);
+    const o = el("out");
+    o.scrollIntoView({block:"center", behavior:"smooth"});   // show the result, don't leave it off-screen
+    o.classList.add("flash");
+    setTimeout(() => o.classList.remove("flash"), 1200);
+    setStat(`${activeUnit} report generated`);
+  } catch(err){
+    setStat("Generate failed: " + (err && err.message ? err.message : err));
+  }
+}
+el("gen").onclick = doGenerate;
+el("gen2").onclick = doGenerate;
+el("copy2").onclick = () => copyText(el("out").value, "Copied to clipboard");
+el("gencoy").onclick = () => {
+  const c = coyCount();
+  const head = [`*COY*`, "───────────────", `*TOTAL: ${c.original}*`];
+  if(c.ext) head.push(`(${fmt2(c.ext)} attached out of the coy — strength held: ${c.held})`);
+  head.push(`*MOVE OUT: ${c.moveout}*`, `*PARTICIPATING: ${c.partic}*`);
+  el("out").value = head.join("\n") + "\n\n" + (el("out").value || "");
+};
+function copyText(t, msg){
+  const o = el("out");
+  const prev = o.value; o.value = t;
+  o.focus(); o.setSelectionRange(0, o.value.length);
+  const done = ok => { setStat(ok ? msg : "Copy failed — select the text and copy manually"); if(t !== prev && msg.includes("Roll")) o.value = prev; };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(() => done(true)).catch(() => { try{ done(document.execCommand("copy")); }catch(e){ done(false); } });
+  } else { try{ done(document.execCommand("copy")); }catch(e){ done(false); } }
+}
+el("copy").onclick = () => copyText(el("out").value, "Copied to clipboard");
+el("now").onclick = () => {
+  const d = new Date(), p = n => String(n).padStart(2,"0");
+  el("caa").value = `${p(d.getDate())}${p(d.getMonth()+1)}${String(d.getFullYear()).slice(-2)} ${p(d.getHours())}${p(d.getMinutes())}HRS`;
+  saveGlobal();
+};
+el("act").oninput = () => { S.meta.act = el("act").value; saveGlobal(); };
+el("caa").oninput = () => { S.meta.caa = el("caa").value; saveGlobal(); };
+
+el("reset").onclick = () => {
+  if(!confirm("Reset everything back to the built-in roll?")) return;
+  S = freshState();
+  el("act").value = ""; el("caa").value = ""; el("out").value = "";
+  buildTabs(); buildPanels(); renderRules(); renderAll(); saveAll();
+  setStat("Reset");
+};
+
+// ============================================================================
+// RULES EDITOR
+// ============================================================================
+function rw(kind, m, v){
+  const ch = kind==="wpn"?WEAPON_CHOICES:SFT_CHOICES;
+  return `<div class="rrow" data-k="${kind}"><input type="text" class="m" value="${m}" placeholder="Appt contains...">
+    <span class="arrow">→</span><select class="v">${kind==="wpn"?`<option value="__NONE__"${v===null?" selected":""}>No weapon</option>`:""}
+    ${ch.map(c=>`<option${c===v?" selected":""}>${c}</option>`).join("")}</select>
+    <button type="button" class="del">✕</button></div>`;
+}
+function sigw(ap, rk, items){
+  return `<div class="rrow" data-k="sig"><input type="text" class="ap" value="${ap}" placeholder="Appt (exact)" style="width:120px;">
+    <select class="rk">${RANK_CHOICES.map(r=>`<option value="${r}"${r===(rk||"")?" selected":""}>${r||"Any rank"}</option>`).join("")}</select>
+    <input type="text" class="items" value="${items.join(", ")}" placeholder="NVG, PRC650" style="flex:1; min-width:150px;">
+    <button type="button" class="del">✕</button></div>`;
+}
+function accw(w,i,q,f){
+  return `<div class="rrow" data-k="acc"><select class="w">${WEAPON_CHOICES.map(x=>`<option${x===w?" selected":""}>${x}</option>`).join("")}</select>
+    <span class="arrow">→</span><select class="i">${ACC_CHOICES.map(x=>`<option${x===i?" selected":""}>${x}</option>`).join("")}</select>
+    <input type="number" min="0" class="qty" value="${q}"><label class="fo"><input type="checkbox" class="fo1"${f?" checked":""}> 1st only</label>
+    <button type="button" class="del">✕</button></div>`;
+}
+function autow(k, cid){
+  return `<div class="rrow" data-k="auto"><input type="text" class="ak" value="${k}" placeholder="Appt contains..." style="width:150px;">
+    <span class="arrow">→</span><select class="ac">${S.cats.map(c=>`<option value="${c.id}"${c.id===cid?" selected":""}>${c.label}</option>`).join("")}</select>
+    <button type="button" class="del">✕</button></div>`;
+}
+function renderRules(){
+  el("r-wpn").innerHTML = S.rules.weapon.map(([m,v]) => rw("wpn",m,v)).join("");
+  el("r-sft").innerHTML = S.rules.sft.map(([m,v]) => rw("sft",m,v)).join("");
+  el("r-sig").innerHTML = S.rules.signal.map(([a,r,i]) => sigw(a,r,i)).join("");
+  el("r-acc").innerHTML = S.rules.accessories.map(([w,i,q,f]) => accw(w,i,q,f)).join("");
+  el("r-pm").innerHTML = Object.entries(S.rules.perman).map(([i,q]) =>
+    `<div class="it"><label>${i}</label><input type="number" min="0" class="pm" data-i="${i}" value="${q}"></div>`).join("");
+  el("r-pmex").value = S.rules.pantesExclude.join(", ");
+  el("r-auto").innerHTML = (S.rules.autoStatus||[]).map(([k,c]) => autow(k,c)).join("");
+  el("r-autoatt").value = (S.rules.autoAttachOut||[]).join(", ");
+  el("r-store").innerHTML = Object.entries(S.rules.storeEstab).map(([i,q]) =>
+    `<div class="it"><label>${i}</label><input type="number" min="0" class="se" data-i="${i}" value="${q}"></div>`).join("");
+  el("r-tag").innerHTML = Object.entries(S.rules.tagEstab).map(([i,q]) =>
+    `<div class="it"><label>${i}</label><input type="number" min="0" class="te" data-i="${i}" value="${q}"></div>`).join("");
+}
+function readRules(){
+  const rows = k => [...document.querySelectorAll(`.rrow[data-k="${k}"]`)].map(r => {
+    const m = r.querySelector(".m").value.trim().toUpperCase();
+    let v = r.querySelector(".v").value; if(v === "__NONE__") v = null;
+    return m ? [m,v] : null;
+  }).filter(Boolean);
+  S.rules.weapon = rows("wpn"); S.rules.sft = rows("sft");
+  S.rules.signal = [...document.querySelectorAll('.rrow[data-k="sig"]')].map(r => {
+    const a = r.querySelector(".ap").value.trim().toUpperCase();
+    const rk = r.querySelector(".rk").value || null;
+    const it = r.querySelector(".items").value.split(",").map(x=>x.trim().toUpperCase()).filter(x=>SIGNALS_ITEMS.includes(x));
+    return a ? [a,rk,it] : null;
+  }).filter(Boolean);
+  S.rules.accessories = [...document.querySelectorAll('.rrow[data-k="acc"]')].map(r =>
+    [r.querySelector(".w").value, r.querySelector(".i").value, Number(r.querySelector(".qty").value)||0, r.querySelector(".fo1").checked]);
+  const pm = {}; document.querySelectorAll(".pm").forEach(i => pm[i.dataset.i] = Number(i.value)||0); S.rules.perman = pm;
+  S.rules.pantesExclude = el("r-pmex").value.split(",").map(x=>x.trim().toUpperCase()).filter(Boolean);
+  S.rules.autoStatus = [...document.querySelectorAll('.rrow[data-k="auto"]')].map(r => {
+    const k = r.querySelector(".ak").value.trim().toUpperCase();
+    return k ? [k, r.querySelector(".ac").value] : null;
+  }).filter(Boolean);
+  S.rules.autoAttachOut = el("r-autoatt").value.split(",").map(x=>x.trim().toUpperCase()).filter(Boolean);
+  const se = {}; document.querySelectorAll(".se").forEach(i => se[i.dataset.i] = Number(i.value)||0); S.rules.storeEstab = se;
+  const te = {}; document.querySelectorAll(".te").forEach(i => te[i.dataset.i] = Number(i.value)||0); S.rules.tagEstab = te;
+}
+(function(){
+  const box = el("r-wpn").closest("details");
+  const apply = () => { readRules(); renderAll(); saveGlobal(); };
+  box.addEventListener("input", e => { if(e.target.closest(".rrow") || e.target.classList.contains("pm") ||
+    e.target.classList.contains("se") || e.target.classList.contains("te") ||
+    e.target.id === "r-pmex" || e.target.id === "r-autoatt") apply(); });
+  box.addEventListener("change", e => { if(e.target.closest(".rrow")) apply(); });
+  box.addEventListener("click", e => { if(e.target.classList.contains("del")){ e.target.closest(".rrow").remove(); apply(); } });
+  el("r-wpn-add").onclick = () => el("r-wpn").insertAdjacentHTML("beforeend", rw("wpn","","SAR21"));
+  el("r-sft-add").onclick = () => el("r-sft").insertAdjacentHTML("beforeend", rw("sft","","SAR 21 SFT"));
+  el("r-sig-add").onclick = () => el("r-sig").insertAdjacentHTML("beforeend", sigw("",null,[]));
+  el("r-acc-add").onclick = () => el("r-acc").insertAdjacentHTML("beforeend", accw("SAR21","SAR21 BFA",1,false));
+  el("r-auto-add").onclick = () => el("r-auto").insertAdjacentHTML("beforeend", autow("", S.cats[0].id));
+  el("r-reset").onclick = () => { S.rules = JSON.parse(JSON.stringify(DEFAULT_RULES)); renderRules(); renderAll(); saveGlobal(); };
+})();
+
+// ============================================================================
+// NOMINAL ROLL UPLOAD
+// ============================================================================
+const UNIT_ALIAS = {HQ:"HQ",COYHQ:"HQ",PL1:"PL1",PLT1:"PL1",PL2:"PL2",PLT2:"PL2",PL3:"PL3",PLT3:"PL3"};
+function splitLine(l, d){
+  const o=[]; let c="", q=false;
+  for(let i=0;i<l.length;i++){ const ch=l[i];
+    if(q){ if(ch==='"'&&l[i+1]==='"'){c+='"';i++;} else if(ch==='"') q=false; else c+=ch; }
+    else { if(ch==='"') q=true; else if(ch===d){o.push(c);c="";} else c+=ch; } }
+  o.push(c); return o.map(x=>x.trim());
+}
+function parseRoll(text){
+  const lines = text.split(/\r?\n/).map(l=>l.replace(/\u00A0/g," ")).filter(l=>l.trim());
+  if(!lines.length) return {error:"Nothing to read."};
+  const d = lines[0].includes("\t") ? "\t" : ",";
+  let rows = lines.map(l => splitLine(l,d));
+  let ix = {u:0,s:1,r:2,n:3,a:4};
+  const head = rows[0].map(c=>c.toUpperCase().replace(/[^A-Z]/g,""));
+  if(head.includes("RANK") && head.includes("NAME")){
+    const f = (...ns) => head.findIndex(c => ns.includes(c));
+    ix = {u:f("UNIT"), s:f("SECTION","SEC"), r:f("RANK"), n:f("NAME"), a:f("APPOINTMENT","APPT")};
+    if(ix.u<0||ix.r<0||ix.n<0) return {error:"Header found but Unit / Rank / Name column missing."};
+    rows = rows.slice(1);
+  } else if(rows[0].length >= 6 && /^\d+$/.test(rows[0][0])){ ix = {u:1,s:2,r:3,n:4,a:5}; }
+  const out = []; const skipped = [];
+  rows.forEach((r,i) => {
+    const u = UNIT_ALIAS[(r[ix.u]||"").toUpperCase().replace(/[^A-Z0-9]/g,"")];
+    const rk = (r[ix.r]||"").toUpperCase(), nm = (r[ix.n]||"").toUpperCase();
+    if(!u){ skipped.push(`Row ${i+1}: unit "${r[ix.u]||""}" not recognised`); return; }
+    if(!rk||!nm){ skipped.push(`Row ${i+1}: missing rank or name`); return; }
+    out.push({unit:u, rank:rk, name:nm, appt:(r[ix.a]||"").toUpperCase(), section:((ix.s>=0&&r[ix.s])||"HQ").toUpperCase()});
+  });
+  if(!out.length) return {error:"No valid rows found.\n" + skipped.slice(0,5).join("\n")};
+  return {rows:out, skipped};
+}
+let pending = null;
+el("nrfile").onchange = e => {
+  const f = e.target.files && e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = () => el("nrpaste").value = r.result;
+  r.readAsText(f);
+};
+el("nrprev").onclick = () => {
+  const res = parseRoll(el("nrpaste").value);
+  if(res.error){ el("nrstat").textContent = res.error; el("nrapply").style.display = "none"; pending = null; return; }
+  pending = res.rows;
+  const per = {}; UNITS.forEach(u => per[u] = res.rows.filter(r => r.unit === u).length);
+  el("nrstat").textContent = `Found ${res.rows.length} pax — ` + UNITS.map(u=>`${u}: ${per[u]}`).join("  ") +
+    (res.skipped.length ? `\n${res.skipped.length} skipped:\n` + res.skipped.slice(0,5).join("\n") : "") +
+    `\nApplying clears all statuses and attachments.`;
+  el("nrapply").style.display = "";
+};
+el("nrapply").onclick = () => {
+  if(!pending) return;
+  const order = {}; UNITS.forEach((u,i) => order[u] = i);
+  const sorted = pending.slice().sort((a,b) => order[a.unit] - order[b.unit]);
+  S.persons = sorted.map((r,i) => ({id:`${r.unit}-${i}`, ...r}));
+  S.status = {}; S.reason = {}; S.attach = {}; S.appt = {}; S.gear = {}; S.guests = [];
+  pending = null; el("nrapply").style.display = "none";
+  el("nrstat").textContent = "New roll applied.";
+  renderAll(); saveAll();
+};
+
+// ============================================================================
+// PERSISTENCE — one structured blob per unit, plus a global one.
+// Records, not text: a restore cannot half-match or resurrect anything.
+// ============================================================================
+const PREFIX = "rawdy_v3_";
+const GKEY = PREFIX + "global";
+const ukey = u => PREFIX + "unit_" + u;
+let shareOn = false, ready = null, timers = {}, failed = 0, offSave = false;
+// Which slices THIS device has actually changed. Sync must only write these —
+// otherwise one PS pressing Sync would overwrite another platoon's newer work
+// with his own stale copy of it.
+let dirty = {};
+function setStat(t){ el("stat").textContent = t; }
+function showShareBanner(){
+  const b = el("sharebanner");
+  if(!b) return;
+  b.style.display = "";
+  if(backend === "shared"){
+    b.style.background = "rgba(122,155,90,0.18)"; b.style.color = "#9BBC7A";
+    b.innerHTML = "<b>Sharing is ON</b> — your platoon saves automatically and syncs with the other platoons.";
+  } else if(backend === "device"){
+    b.style.background = "rgba(201,162,39,0.16)"; b.style.color = "#E8C547";
+    b.innerHTML = "<b>Saving on this phone</b> — your work survives closing or reloading, but it is not shared with other phones. " +
+      "To pass it on: <b>Copy session code</b> → WhatsApp it → the other phone presses <b>Load session code</b>.";
+  } else {
+    b.style.background = "rgba(138,59,36,0.3)"; b.style.color = "#F0A98A";
+    b.innerHTML = "<b>Not saving</b> — this window blocks all storage, so nothing survives a reload. " +
+      "Finish in one sitting, and use <b>Copy session code</b> to move work between phones. Press <b>Show saved data</b> for the reason.";
+  }
+}
+
+let probeReport = "";      // exact reason a backend failed, for the diagnostic
+let sharedArg = true;      // some hosts want set(k,v,true), others set(k,v)
+let backend = "none";      // "shared" | "device" | "none"
+
+// Storage is tried in order of usefulness:
+//   shared  — the host's cross-device store: every PS sees each other's work
+//   device  — this browser only: work survives closing the tab, but is not shared
+//   none    — nothing persists; session codes are the way to move work about
+// Every call is feature-detected and wrapped, so a missing or hostile backend
+// can never break the tool.
+const mem = {};
+const backends = {
+  shared: {
+    ok: () => !!(window.storage && typeof window.storage.set === "function" && typeof window.storage.get === "function"),
+    set: (k,v) => sharedArg ? window.storage.set(k,v,true) : window.storage.set(k,v),
+    get: k => sharedArg ? window.storage.get(k,true) : window.storage.get(k),
+    del: k => sharedArg ? window.storage.delete(k,true) : window.storage.delete(k)
+  },
+  device: {
+    ok: () => { try { const t="__rw_t"; window.localStorage.setItem(t,"1"); window.localStorage.removeItem(t); return true; }
+                catch(e){ return false; } },
+    set: async (k,v) => { window.localStorage.setItem(k,v); return {key:k,value:v}; },
+    get: async k => { const v = window.localStorage.getItem(k); if(v===null) throw new Error("nf"); return {key:k,value:v}; },
+    del: async k => { window.localStorage.removeItem(k); return {key:k,deleted:true}; }
+  },
+  none: {
+    ok: () => true,
+    set: async (k,v) => { mem[k]=v; return {key:k,value:v}; },
+    get: async k => { if(!(k in mem)) throw new Error("nf"); return {key:k,value:mem[k]}; },
+    del: async k => { delete mem[k]; return {key:k,deleted:true}; }
+  }
+};
+const sSet = (k,v) => backends[backend].set(k,v);
+const sGet = k => backends[backend].get(k);
+const sDel = k => backends[backend].del(k);
+
+async function probe(){
+  const log = [];
+  const key = PREFIX + "probe";
+  backend = "none";
+
+  // 1) host's shared store, trying both call shapes
+  if(!window.storage){
+    log.push("shared: window.storage not present in this window");
+  } else if(!backends.shared.ok()){
+    log.push("shared: window.storage present but missing get/set (keys: " + Object.keys(window.storage).join(", ") + ")");
+  } else {
+    try { await window.storage.set(key,"1",true); await window.storage.get(key,true); sharedArg = true; backend = "shared"; log.push("shared 3-arg: OK"); }
+    catch(e1){
+      log.push("shared 3-arg: " + (e1 && e1.message ? e1.message : e1));
+      try { await window.storage.set(key,"1"); await window.storage.get(key); sharedArg = false; backend = "shared"; log.push("shared 2-arg: OK"); }
+      catch(e2){ log.push("shared 2-arg: " + (e2 && e2.message ? e2.message : e2)); }
+    }
+  }
+
+  // 2) this device only
+  if(backend === "none"){
+    if(backends.device.ok()){ backend = "device"; log.push("device storage: OK"); }
+    else log.push("device storage: blocked by the browser");
+  }
+
+  probeReport = log.join("\n");
+  ready = backend !== "none";
+  offSave = !ready;
+  return ready;
+}
+
+// A unit's slice: only what belongs to its own people, so PSes never overwrite each other.
+function unitPayload(u){
+  const ids = personsOf(u).map(p => p.id);
+  const pick = o => { const r={}; ids.forEach(i => { if(o[i] !== undefined) r[i] = o[i]; }); return r; };
+  return {
+    persons: S.persons.filter(p => p.unit === u),
+    status: pick(S.status), reason: pick(S.reason), attach: pick(S.attach),
+    appt: pick(S.appt), gear: pick(S.gear),
+    guests: guestsOf(u),
+    sOver: (S.sOver||{})[u] || {},
+    equip: S.equip[u] || {}, live: S.live[u] !== false
+  };
+}
+function globalPayload(){ return {cats:S.cats, rules:S.rules, meta:{act:el("act").value, caa:el("caa").value}}; }
+
+async function put(key, obj, attempt=1){
+  if(!shareOn || offSave || ready !== true) return;
+  try { await sSet(key, JSON.stringify(obj)); failed = 0; setStat("Saved " + new Date().toLocaleTimeString()); }
+  catch(e){
+    if(attempt < 3){ setTimeout(() => put(key,obj,attempt+1), attempt*800); return; }
+    if(++failed >= 3 && !offSave){ offSave = true; setStat("Sharing paused — storage not responding. Use Generate + Copy, or press Sync now."); }
+  }
+}
+function save(u){ dirty[u] = true; if(!shareOn) return; clearTimeout(timers[u]); timers[u] = setTimeout(() => put(ukey(u), unitPayload(u)), 700); }
+function saveGlobal(){ dirty.g = true; if(!shareOn) return; clearTimeout(timers.g); timers.g = setTimeout(() => put(GKEY, globalPayload()), 700); }
+function saveAll(){ UNITS.forEach(save); saveGlobal(); }
+// after adopting shared state there is nothing of ours left unwritten
+function clearDirty(){ dirty = {}; }
+async function flush(){
+  Object.keys(timers).forEach(k => clearTimeout(timers[k]));
+  if(ready !== true) return;
+  const jobs = [];
+  if(dirty.g) jobs.push(put(GKEY, globalPayload()));
+  UNITS.forEach(u => { if(dirty[u]) jobs.push(put(ukey(u), unitPayload(u))); });
+  await Promise.all(jobs);
+  dirty = {};   // written; from here the shared copy is authoritative again
+}
+
+async function loadAll(){
+  if(ready !== true) return;
+  let g = null;
+  try { const r = await sGet(GKEY); g = r && JSON.parse(r.value); } catch(e){}
+  if(g){
+    if(Array.isArray(g.cats) && g.cats.length) S.cats = g.cats;
+    if(g.rules) S.rules = {...JSON.parse(JSON.stringify(DEFAULT_RULES)), ...g.rules};
+    if(g.meta){ el("act").value = g.meta.act || ""; el("caa").value = g.meta.caa || ""; }
+  }
+  for(const u of UNITS){
+    let d = null;
+    try { const r = await sGet(ukey(u)); d = r && JSON.parse(r.value); } catch(e){}
+    if(!d) continue;
+    if(Array.isArray(d.persons) && d.persons.length){
+      S.persons = S.persons.filter(p => p.unit !== u).concat(d.persons);
+    }
+    Object.assign(S.status, d.status||{}); Object.assign(S.reason, d.reason||{});
+    Object.assign(S.attach, d.attach||{}); Object.assign(S.appt, d.appt||{});
+    Object.assign(S.gear, d.gear||{});
+    S.guests = (S.guests||[]).filter(g => g.unit !== u).concat(Array.isArray(d.guests) ? d.guests : []);
+    if(d.sOver && Object.keys(d.sOver).length) S.sOver[u] = d.sOver; else delete S.sOver[u];
+    S.equip[u] = d.equip || {}; S.live[u] = d.live !== false;
+  }
+  // integrity: drop any attachment whose person or destination no longer exists
+  Object.keys(S.attach).forEach(pid => {
+    const a = S.attach[pid];
+    if(!byId(pid)){ delete S.attach[pid]; return; }
+    if(a === OFF) return;
+    if(!a || (a.to !== EXTERNAL && !UNITS.includes(a.to))) delete S.attach[pid];
+  });
+  // sort persons back into unit order so the roll reads correctly
+  const oi = {}; UNITS.forEach((u,i) => oi[u] = i);
+  S.persons.sort((a,b) => oi[a.unit] - oi[b.unit]);
+  buildPanels(); renderRules(); renderAll();
+  clearDirty();
+}
+
+el("enable").onclick = async () => {
+  setStat("Turning on sharing...");
+  shareOn = true; offSave = false; failed = 0; ready = null;
+  if(await probe()){
+    el("sync").style.display = ""; el("enable").style.display = "none";
+    await loadAll(); showShareBanner();
+    setStat((backend === "shared" ? "Sharing on" : "Saving on this phone") + " — " + new Date().toLocaleTimeString());
+  } else { shareOn = false; showShareBanner(); }
+};
+el("sync").onclick = async () => {
+  setStat("Syncing...");
+  offSave = false; failed = 0; shareOn = true;
+  if(ready !== true){ ready = null; await probe(); }
+  await flush();          // your screen is saved BEFORE anything is loaded
+  await loadAll();
+  setStat((backend === "shared" ? "Synced " : "Saved on this phone ") + new Date().toLocaleTimeString());
+};
+el("wipe").onclick = async () => {
+  if(!confirm("Erase ALL saved data for every platoon and rebuild from the built-in roll?\n\nThis cannot be undone. Generate + Copy anything you still need first.")) return;
+  setStat("Erasing...");
+  Object.keys(timers).forEach(k => clearTimeout(timers[k]));
+  shareOn = false;
+  try {
+    if(ready === null) await probe();
+    await Promise.all([GKEY, PREFIX+"probe", ...UNITS.map(ukey)].map(k => sDel(k).catch(()=>{})));
+  } catch(e){}
+  S = freshState();
+  el("act").value = ""; el("caa").value = ""; el("out").value = "";
+  buildTabs(); buildPanels(); renderRules(); renderAll();
+  el("enable").style.display = ""; el("sync").style.display = "none";
+  ready = null; offSave = false; failed = 0; showShareBanner();
+  setStat("Everything erased — back to the built-in roll (" + coyCount().original + "). Sharing is OFF.");
+};
+// A compact, self-contained snapshot of everything — no storage needed.
+function sessionSnapshot(){
+  return {v:3, persons:S.persons, status:S.status, reason:S.reason, attach:S.attach,
+          appt:S.appt, gear:S.gear, guests:S.guests, sOver:S.sOver, cats:S.cats, rules:S.rules, equip:S.equip, live:S.live,
+          meta:{act:el("act").value, caa:el("caa").value}};
+}
+el("exp").onclick = () => {
+  const code = "RAWDY-SESSION " + JSON.stringify(sessionSnapshot());
+  copyText(code, "Session code copied — paste it to the other phone");
+};
+el("imp").onclick = () => {
+  const raw = prompt("Paste the session code here:", "");
+  if(!raw) return;
+  const txt = raw.trim().replace(/^RAWDY-SESSION\s*/, "");
+  let d;
+  try { d = JSON.parse(txt); } catch(e){ setStat("That does not look like a session code."); return; }
+  if(!d || !Array.isArray(d.persons)){ setStat("Session code is incomplete — nothing loaded."); return; }
+  S.persons = d.persons;
+  S.status = d.status || {}; S.reason = d.reason || {}; S.attach = d.attach || {};
+  S.appt = d.appt || {}; S.gear = d.gear || {}; S.guests = d.guests || [];
+  if(Array.isArray(d.cats) && d.cats.length) S.cats = d.cats;
+  if(d.rules) S.rules = {...JSON.parse(JSON.stringify(DEFAULT_RULES)), ...d.rules};
+  S.equip = d.equip || {}; S.live = d.live || {}; S.sOver = d.sOver || {};
+  if(d.meta){ el("act").value = d.meta.act || ""; el("caa").value = d.meta.caa || ""; }
+  buildTabs(); buildPanels(); renderRules(); renderAll();
+  setStat("Session loaded — " + coyCount().original);
+};
+
+el("diag").onclick = async () => {
+  const L = ["=== SAVED DATA ==="];
+  if(ready === null) await probe();
+  L.push("Backend in use: " + backend + (backend === "shared" ? " (" + (sharedArg ? "3-arg" : "2-arg") + ")" : ""));
+  if(probeReport) L.push("Probe detail:\n" + probeReport);
+  L.push("");
+  for(const [nm,k] of [["GLOBAL",GKEY], ...UNITS.map(u => [u, ukey(u)])]){
+    let v = null;
+    try { const r = await sGet(k); v = r && r.value; } catch(e){}
+    if(!v){ L.push(`${nm}: (nothing stored)`); continue; }
+    try {
+      const d = JSON.parse(v);
+      if(d.persons){
+        L.push(`${nm}: ${d.persons.length} pax, ${Object.keys(d.status||{}).length} tagged, ${Object.keys(d.attach||{}).length} attachments`);
+        Object.entries(d.attach||{}).forEach(([pid,a]) => {
+          const p = byId(pid);
+          L.push(`   ATTACH ${p?p.rank+" "+p.name:pid} → ${a.to} mo=${a.mo!==false} pa=${a.pa!==false}`);
+        });
+      } else L.push(`${nm}: ${v.slice(0,150)}`);
+    } catch(e){ L.push(`${nm}: UNREADABLE`); }
+  }
+  el("out").value = L.join("\n");
+  setStat("Diagnostic written to the output box.");
+};
+
+// ============================================================================
+// BOOT
+// ============================================================================
+buildTabs(); buildPanels(); renderRules(); renderAll();
+el("now").click();
+
+// Try to connect sharing by itself — if the shared storage is there, the PS should
+// not have to find a button for it. Silent when unavailable; the banner explains.
+(async function autoConnect(){
+  shareOn = true;
+  await probe();
+  if(ready){
+    el("sync").style.display = ""; el("enable").style.display = "none";
+    await loadAll();
+    setStat(backend === "shared"
+      ? "Sharing on — synced " + new Date().toLocaleTimeString()
+      : "Saving on this phone — loaded " + new Date().toLocaleTimeString());
+  } else {
+    shareOn = false;
+  }
+  showShareBanner();
+})();
+</script>
+</body>
+</html>
