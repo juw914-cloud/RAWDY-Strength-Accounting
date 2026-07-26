@@ -103,7 +103,8 @@ body{margin:0; background:#0E100C; }
 .chip.ours .ld{color:var(--ok2);}
 .chip.other{border-left:3px solid #6E6E66; background:rgba(120,120,110,0.07);}
 .chip.other .ld{color:#9A9A90;}
-.chip.nogear .ld{color:var(--muted); font-style:italic;}
+.chip.nogear{border-left:3px solid #C9A227; background:rgba(201,162,39,0.06);}
+.chip.nogear .ld{color:#E8C547; font-style:italic;}
 .legend{display:flex; gap:14px; flex-wrap:wrap; font-size:11px; color:var(--dim); margin-bottom:8px;}
 .legend span{display:flex; align-items:center; gap:5px;}
 .legend i{width:11px; height:11px; border-radius:2px; display:inline-block;}
@@ -111,11 +112,14 @@ body{margin:0; background:#0E100C; }
 .hide{display:none !important;}
 
 /* ---- person sheet ---- */
-.sheet{position:absolute; z-index:200; width:330px; max-width:94vw; background:var(--surface2);
+.sheet{position:absolute; z-index:200; width:362px; max-width:94vw; background:var(--surface2);
   border:1px solid var(--border2); border-radius:6px; padding:9px; color:var(--text);
   box-shadow:0 14px 44px rgba(0,0,0,0.65); display:flex; flex-direction:column; gap:4px;}
-.sheet .who{font-family:var(--fm); font-size:11.5px; color:var(--dim); padding:2px 3px 7px;
-  border-bottom:1px solid var(--border);}
+.sheet .who{font-family:var(--fh); font-size:13.5px; font-weight:700; color:var(--text); padding:2px 3px 8px;
+  border-bottom:1px solid var(--border2); line-height:1.5;}
+.sheet .cur{display:inline-block; margin-left:7px; padding:1px 8px; border-radius:9px; vertical-align:1px;
+  background:var(--surface3); border:1px solid var(--border); color:var(--acc2);
+  font-family:var(--fm); font-size:10px; font-weight:400;}
 .sheet .lab{font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--accdim);
   padding:8px 3px 3px; border-top:1px solid var(--border); margin-top:3px;}
 .sheet .lab:first-of-type{border-top:none; margin-top:0;}
@@ -124,7 +128,17 @@ body{margin:0; background:#0E100C; }
 .sheet .opt:hover{background:var(--surface3); border-color:var(--border);}
 .sheet .opt.on{border-color:var(--acc); background:var(--surface3);}
 .sheet .opt.on::after{content:' ✓'; color:var(--acc2);}
-.sheet .opt.pres{color:var(--ok2); font-weight:600;}
+.sheet .opt.pres{color:var(--ok2); font-weight:600; border:1px solid var(--border); border-radius:4px;
+  background:rgba(122,155,90,0.08);}
+.sheet .opt small{display:block; font-size:9.5px; color:var(--muted); font-weight:400;
+  letter-spacing:0.02em; margin-top:2px;}
+/* status groups in the person sheet — colour dot tells you the behaviour at a glance */
+.gcap{display:flex; align-items:center; gap:6px; font-size:9.5px; letter-spacing:0.07em;
+  text-transform:uppercase; color:var(--dim); padding:9px 3px 4px; border-top:1px solid var(--border); margin-top:5px;}
+.gcap i{width:9px; height:9px; border-radius:2px; flex:0 0 auto;}
+.optgrid{display:grid; grid-template-columns:1fr 1fr; gap:4px;}
+.optgrid .opt{border:1px solid var(--border); background:var(--surface); border-radius:4px;
+  padding:8px 9px; font-size:12px; line-height:1.3;}
 .sheet .row{display:flex; align-items:center; gap:7px; padding:3px; font-size:11.5px; color:var(--dim);}
 .sheet .row>span{flex:0 0 70px;}
 .sheet .row input[type=text],.sheet .row select{flex:1; min-width:0; font-size:13px;}
@@ -149,6 +163,13 @@ body{margin:0; background:#0E100C; }
 .att .ticks label{display:flex; align-items:center; gap:4px; cursor:pointer;}
 .att .ticks input{width:auto;}
 .att .empty{font-size:11.5px; color:var(--muted); padding:4px 0;}
+/* pull-in search suggestions — whole row is the tap target */
+.pisug{display:flex; justify-content:space-between; align-items:center; gap:8px; padding:9px 10px;
+  border:1px solid var(--border); border-top:none; background:var(--bg); cursor:pointer; font-size:12.5px;}
+.pisug:first-child{border-top:1px solid var(--border); border-radius:3px 3px 0 0;}
+.pisug:last-child{border-radius:0 0 3px 3px;}
+.pisug:hover{background:var(--surface3); border-color:var(--acc);}
+.pisug .u{font-family:var(--fm); font-size:10.5px; color:var(--acc2); white-space:nowrap;}
 
 /* ---- equipment ---- */
 .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(148px,1fr)); gap:7px;}
@@ -204,6 +225,13 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
 #dock button{flex:0 0 auto; font-size:13px;}
 #dock .go{background:var(--acc); color:#161810; border-color:var(--acc2); flex:1;}
 #out.flash{border-color:var(--acc2); box-shadow:0 0 0 2px rgba(232,197,71,0.35);}
+#updbar{position:fixed; left:0; right:0; bottom:62px; z-index:130; display:flex; gap:10px;
+  align-items:center; justify-content:space-between; flex-wrap:wrap;
+  padding:10px 12px; background:var(--acc); color:#161810; font-size:12.5px; font-weight:600;
+  box-shadow:0 -4px 16px rgba(0,0,0,0.4);}
+#updbar button{background:#161810; color:var(--acc2); border:1px solid #161810; font-size:12px; padding:7px 12px;}
+#updbar #upd-later{background:transparent; color:#161810; border-color:rgba(22,24,16,0.4);}
+@media (max-width:480px){ #updbar{bottom:70px; font-size:12px;} }
 
 @media (pointer:coarse){
   .rw input,.rw select,.rw textarea{font-size:16px !important;}
@@ -211,6 +239,8 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
   .rw input[type=checkbox]{width:22px; height:22px; accent-color:var(--acc);}
   .chip{min-height:50px;}
   .sheet .opt{padding:13px 11px; font-size:15px;}
+  .optgrid .opt{padding:11px 9px; font-size:13px;}
+  .sheet .opt small{font-size:10px;}
 }
 @media (max-width:640px){
   .dash{grid-template-columns:1fr 1fr;}
@@ -231,7 +261,7 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
 <div class="card hdr">
   <h1>RAWDY — Strength &amp; Equipment Accounting</h1>
   <div class="note">Company-level manpower and equipment accounting for HQ, PL1, PL2, PL3.
-    <span id="build" style="float:right; font-family:var(--fm); color:var(--muted);">BUILD 14 · 26JUL26</span></div>
+    <span id="build" style="float:right; font-family:var(--fm); color:var(--muted);">BUILD 19 · 26JUL26</span></div>
 </div>
 
 <div class="card">
@@ -258,6 +288,7 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
   <div style="display:none;">
   </div>
   <div class="note" style="margin-bottom:5px;"><b>Copy session code</b> shares everything — statuses, attachments, roles — as text you can WhatsApp to another phone; they press <b>Load session code</b>. This always works, even when auto-sharing is unavailable.</div>
+  <div class="note" style="margin-bottom:5px;"><b>Working as separate PSes:</b> each platoon panel has <b>Copy PL code</b> — it carries that platoon only. Loading it <b>merges just that platoon</b> and leaves the rest untouched, so each PS updates his own platoon on his own phone, WhatsApps the code, and the CSM loads all three into one picture.</div>
   <div class="note" style="margin-bottom:5px;"><b>Erase everything &amp; start fresh</b> wipes all saved data for every platoon and rebuilds from the built-in roll — use it if the shared session is ever in a bad state. <b>Show saved data</b> prints what is stored into the output box.</div>
   <div class="note">Sharing is <b>off by default</b> — the tool works fully without it. Turn it on so each PS edits their own platoon on one shared link; every platoon saves separately.</div>
 </div>
@@ -289,7 +320,10 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
     The <b>Strength accounting</b> panel on each platoon tab lists every one of these deductions by name,
     so you can trace the figures from roster strength down to participating.<br><br>
     An attachment is a single record shared by both platoons: remove it from either side and both restore instantly.
-    His weapon and gear stay counted at his <i>home</i> platoon, because that is where he drew them.
+    <b>Within the company, his weapon and gear move with him</b> — the platoon he is attached to counts his
+    equipment, so every PS's end state is exactly what is physically inside his platoon.
+    Attached out to <b>another coy/unit</b>, his gear still counts at home (drawn from our armskote),
+    unless his gear source is set to theirs from his name.
   </div>
 </details>
 
@@ -341,13 +375,33 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
   <button type="button" id="r-reset" style="font-size:11px;">Restore default rules</button>
 </details>
 
+<details class="card">
+  <summary>Status categories — add, remove, customise</summary>
+  <div class="note" style="margin:9px 0;">Every status a man can be tagged with, and how each behaves. Applies to all platoons.
+    <b>Out of camp</b> = MC / MA / leave / course (off strength, no gear). <b>In camp, not moving</b> = SBF / duty (off move-out, no gear).
+    <b>Moves out, no participate, no gear</b> = safety walker / conducting staff (they move out but don't train and draw no gear).</div>
+  <div id="catlist"></div>
+  <div class="bar" style="margin-top:9px; align-items:center;">
+    <input type="text" id="cat-new" placeholder="New status, e.g. RSO / DETENTION" style="flex:1; min-width:150px;">
+    <select id="cat-newkind">
+      <option value="stayback:out">Out of camp — no gear</option>
+      <option value="stayback:in">In camp, not moving — no gear</option>
+      <option value="moveout_np">Moves out, no participate (draws gear)</option>
+      <option value="moveout_np_ng">Moves out, no participate, no gear</option>
+      <option value="participate">Participates (moves out + gear)</option>
+    </select>
+    <button type="button" id="cat-add">+ Add status</button>
+  </div>
+  <button type="button" id="cat-reset" style="font-size:11px; margin-top:9px;">Restore default statuses</button>
+</details>
+
 <div class="tabs" id="tabs"></div>
 <div id="panels"></div>
 
 <div class="card">
   <div class="bar">
     <button type="button" class="go" id="gen">Generate report</button>
-    <button type="button" id="gencoy">Add company total</button>
+    <button type="button" id="gencoy">Company report (HQ + PL1–3)</button>
     <button type="button" id="copy">Copy to clipboard</button>
     <button type="button" id="reset">Reset all</button>
   </div>
@@ -372,18 +426,38 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
 const UNITS = ["HQ", "PL1", "PL2", "PL3"];
 const CMD_RANKS = ["CPT", "LTA", "2LT", "3WO", "MSG", "SSG", "2SG", "3SG", "ME1-1"];
 const BASE_PERSONS = [{"id": "HQ-0", "unit": "HQ", "rank": "CPT", "name": "KASHKEN RAY HODGE", "appt": "OC", "section": "HQ"}, {"id": "HQ-1", "unit": "HQ", "rank": "CPT", "name": "CHOW HANWEI", "appt": "SPARE", "section": "HQ"}, {"id": "HQ-2", "unit": "HQ", "rank": "3WO", "name": "WONG JUN WEI", "appt": "CSM", "section": "HQ"}, {"id": "HQ-3", "unit": "HQ", "rank": "LTA", "name": "MUHAMMAD RAZEEQ SYAMIE BIN ABDUL RAZAK", "appt": "PC", "section": "HQ"}, {"id": "HQ-4", "unit": "HQ", "rank": "ME1-1", "name": "TAN ZI KANG", "appt": "COY MEDIC", "section": "HQ"}, {"id": "HQ-5", "unit": "HQ", "rank": "3SG", "name": "NGAN JUN BIN", "appt": "COY MEDIC", "section": "HQ"}, {"id": "HQ-6", "unit": "HQ", "rank": "3SG", "name": "ZHANG BO CHAO", "appt": "ASA", "section": "HQ"}, {"id": "HQ-7", "unit": "HQ", "rank": "LCP", "name": "CHIA WEI HENG ACKERUS", "appt": "ASA", "section": "HQ"}, {"id": "HQ-8", "unit": "HQ", "rank": "LCP", "name": "YEO RUI KANG JOSH", "appt": "ASA", "section": "HQ"}, {"id": "HQ-9", "unit": "HQ", "rank": "PTE", "name": "ELIJAH JOHN CHIA JIAN AN", "appt": "ASA", "section": "HQ"}, {"id": "HQ-10", "unit": "HQ", "rank": "PTE", "name": "WANG WEILAN", "appt": "2IC SIG", "section": "HQ"}, {"id": "HQ-11", "unit": "HQ", "rank": "LCP", "name": "SHAHRIZZAT BIN HAIZAD", "appt": "OC SIG", "section": "HQ"}, {"id": "HQ-12", "unit": "HQ", "rank": "LCP", "name": "MUHAMMAD SYARAF BIN NORAZAM", "appt": "OC SIG", "section": "HQ"}, {"id": "HQ-13", "unit": "HQ", "rank": "3SG", "name": "LOW JIA JUN", "appt": "MM", "section": "HQ"}, {"id": "HQ-14", "unit": "HQ", "rank": "3SG", "name": "LAI SUNG KEI JOSHUA", "appt": "MM", "section": "HQ"}, {"id": "HQ-15", "unit": "HQ", "rank": "LCP", "name": "ANKAM SHREY", "appt": "MM", "section": "HQ"}, {"id": "HQ-16", "unit": "HQ", "rank": "CPL", "name": "NG ZHENG WEI", "appt": "MM", "section": "HQ"}, {"id": "HQ-17", "unit": "HQ", "rank": "3SG", "name": "PAN ZHENG WEI, RYAN", "appt": "MPAT OPR", "section": "HQ"}, {"id": "HQ-18", "unit": "HQ", "rank": "PTE", "name": "JAEVYN QUSHAIRI KHOO JIAYUN", "appt": "MPAT OPR", "section": "HQ"}, {"id": "HQ-19", "unit": "HQ", "rank": "LCP", "name": "MUHAMMAD AMIRRUL BIN SAMSURI", "appt": "MPAT OPR", "section": "HQ"}, {"id": "HQ-20", "unit": "HQ", "rank": "PTE", "name": "TECH EASON", "appt": "MPAT OPR", "section": "HQ"}, {"id": "HQ-21", "unit": "HQ", "rank": "LCP", "name": "KOH KAI EN, ASHER", "appt": "MPAT OPR", "section": "HQ"}, {"id": "HQ-22", "unit": "HQ", "rank": "PTE", "name": "AROCKIASAMY SHERVIN", "appt": "MPAT OPR", "section": "HQ"}, {"id": "HQ-23", "unit": "HQ", "rank": "3SG", "name": "ONG DING SHENG", "appt": "CQ", "section": "HQ"}, {"id": "HQ-24", "unit": "HQ", "rank": "LCP", "name": "TAN YEE HANG", "appt": "SAGE", "section": "HQ"}, {"id": "HQ-25", "unit": "HQ", "rank": "PTE", "name": "KISHHOTHARAN", "appt": "SAGE", "section": "HQ"}, {"id": "HQ-26", "unit": "HQ", "rank": "PTE", "name": "TAI KAI JIE, JAVIER", "appt": "SAGE", "section": "HQ"}, {"id": "PL1-0", "unit": "PL1", "rank": "LTA", "name": "POH KAI-EN, ASHER NATHANIEL", "appt": "PL COMD", "section": "HQ"}, {"id": "PL1-1", "unit": "PL1", "rank": "LTA", "name": "KALAISELVAN SIDDARTH", "appt": "APC", "section": "HQ"}, {"id": "PL1-2", "unit": "PL1", "rank": "LTA", "name": "MIKHAIL DANIAL LUM", "appt": "PC", "section": "HQ"}, {"id": "PL1-3", "unit": "PL1", "rank": "MSG", "name": "NIC UZZAIR BIN MOHAMMED ZAMRI", "appt": "PS", "section": "HQ"}, {"id": "PL1-4", "unit": "PL1", "rank": "LCP", "name": "SAMUEL RYAN WONG LYE EN", "appt": "SENSOR", "section": "HQ"}, {"id": "PL1-5", "unit": "PL1", "rank": "CPL", "name": "LIN YUXUAN", "appt": "RUNNER", "section": "HQ"}, {"id": "PL1-6", "unit": "PL1", "rank": "LCP", "name": "SYED ERFAN BIN FARUK ALI", "appt": "MEDIC", "section": "HQ"}, {"id": "PL1-7", "unit": "PL1", "rank": "3SG", "name": "IBRAHIM BIN NOBRAHAM", "appt": "MG COMD", "section": "HQ"}, {"id": "PL1-8", "unit": "PL1", "rank": "LCP", "name": "ADLI MANNIE TANCOCK", "appt": "MG OPR", "section": "HQ"}, {"id": "PL1-9", "unit": "PL1", "rank": "CPL", "name": "FAVIAN NG JIA QUAN", "appt": "ASST OPR", "section": "HQ"}, {"id": "PL1-10", "unit": "PL1", "rank": "3SG", "name": "JONAH RUOKUOVOR YIMSUNG", "appt": "SC", "section": "SECTION 1"}, {"id": "PL1-11", "unit": "PL1", "rank": "3SG", "name": "ANIQ RIFQY BIN MOHAMED ALFYAN", "appt": "SC", "section": "SECTION 1"}, {"id": "PL1-12", "unit": "PL1", "rank": "LCP", "name": "TALUT ALI BIN ABDULLAH", "appt": "1ST MAT", "section": "SECTION 1"}, {"id": "PL1-13", "unit": "PL1", "rank": "LCP", "name": "TAY WEI JIE, RYAN", "appt": "1ST M203", "section": "SECTION 1"}, {"id": "PL1-14", "unit": "PL1", "rank": "LCP", "name": "ONG HONG KAI, RONALD", "appt": "1ST LMG", "section": "SECTION 1"}, {"id": "PL1-15", "unit": "PL1", "rank": "LCP", "name": "YII KAH NUM", "appt": "M203 (2IC)", "section": "SECTION 1"}, {"id": "PL1-16", "unit": "PL1", "rank": "LCP", "name": "DARWYS BIN SAIFUL BHARI", "appt": "2ND LMG", "section": "SECTION 1"}, {"id": "PL1-17", "unit": "PL1", "rank": "3SG", "name": "TAN LONG KIAT DARREN", "appt": "SC", "section": "SECTION 2"}, {"id": "PL1-18", "unit": "PL1", "rank": "PTE", "name": "LIN KELI", "appt": "1ST MAT", "section": "SECTION 2"}, {"id": "PL1-19", "unit": "PL1", "rank": "PTE", "name": "MUHAMMAD NURRAIZAT BIN RAMDAN", "appt": "1ST M203", "section": "SECTION 2"}, {"id": "PL1-20", "unit": "PL1", "rank": "PTE", "name": "TITUS LIM YU HENG", "appt": "2ND MAT", "section": "SECTION 2"}, {"id": "PL1-21", "unit": "PL1", "rank": "LCP", "name": "MUHAMMAD AAQIL BIN MOHAMED JAHANKEER", "appt": "1ST LMG", "section": "SECTION 2"}, {"id": "PL1-22", "unit": "PL1", "rank": "LCP", "name": "DARIUS LEE", "appt": "M203 (2IC)", "section": "SECTION 2"}, {"id": "PL1-23", "unit": "PL1", "rank": "LCP", "name": "GABRIEL SUFIAN PIRACCI", "appt": "2ND LMG", "section": "SECTION 2"}, {"id": "PL1-24", "unit": "PL1", "rank": "PTE", "name": "AMANNDAVE SINGH BESSI", "appt": "SPARE", "section": "SECTION 2"}, {"id": "PL1-25", "unit": "PL1", "rank": "PTE", "name": "SARAVANAN RAMESH", "appt": "SPARE", "section": "SECTION 2"}, {"id": "PL1-26", "unit": "PL1", "rank": "3SG", "name": "WU JIA AN", "appt": "SC", "section": "SECTION 3"}, {"id": "PL1-27", "unit": "PL1", "rank": "PTE", "name": "JAY JAMES KWAN ZHEN CHERN", "appt": "1ST MAT", "section": "SECTION 3"}, {"id": "PL1-28", "unit": "PL1", "rank": "LCP", "name": "ABDULLAH AUFA BIN MOHAMMAD HAIZAL", "appt": "1ST M203", "section": "SECTION 3"}, {"id": "PL1-29", "unit": "PL1", "rank": "LCP", "name": "LIEW WEN WEI", "appt": "2ND MAT", "section": "SECTION 3"}, {"id": "PL1-30", "unit": "PL1", "rank": "PTE", "name": "XIAO JIEMING", "appt": "1ST LMG", "section": "SECTION 3"}, {"id": "PL1-31", "unit": "PL1", "rank": "LCP", "name": "PUZHALESWARAN S/O VIJAYARDRAN", "appt": "M203 (2IC)", "section": "SECTION 3"}, {"id": "PL1-32", "unit": "PL1", "rank": "LCP", "name": "BENJAMIN THEN KAI SHENG", "appt": "2ND LMG", "section": "SECTION 3"}, {"id": "PL2-0", "unit": "PL2", "rank": "LTA", "name": "JUSTIN KOH", "appt": "PL COMD", "section": "HQ"}, {"id": "PL2-1", "unit": "PL2", "rank": "LTA", "name": "ROSHAN AHMAD SHAQIR BIN MUHAMMAD NAZRI", "appt": "APC", "section": "HQ"}, {"id": "PL2-2", "unit": "PL2", "rank": "2LT", "name": "ETHAN LAU SEO JOON", "appt": "PC", "section": "HQ"}, {"id": "PL2-3", "unit": "PL2", "rank": "2SG", "name": "TAY YUN SENG VINCENT", "appt": "PS", "section": "HQ"}, {"id": "PL2-4", "unit": "PL2", "rank": "3SG", "name": "MUHAMMAD KHAIRY BIN SAPARI", "appt": "APS", "section": "HQ"}, {"id": "PL2-5", "unit": "PL2", "rank": "LCP", "name": "ETHAN ALEXANDER TAN TOH LUCK", "appt": "RUNNER", "section": "HQ"}, {"id": "PL2-6", "unit": "PL2", "rank": "LCP", "name": "NG JIA BAO", "appt": "MEDIC", "section": "HQ"}, {"id": "PL2-7", "unit": "PL2", "rank": "3SG", "name": "LOW BOON TSU", "appt": "GPMG COMD", "section": "HQ"}, {"id": "PL2-8", "unit": "PL2", "rank": "LCP", "name": "JARIS NABIL BIN ZANI", "appt": "GPMG OPR", "section": "HQ"}, {"id": "PL2-9", "unit": "PL2", "rank": "CPL", "name": "DEAN LOH JUN YU", "appt": "SPARE", "section": "HQ"}, {"id": "PL2-10", "unit": "PL2", "rank": "3SG", "name": "MOHAMAD ADIL BIN MOHAMAD ALI", "appt": "SC", "section": "SECTION 1"}, {"id": "PL2-11", "unit": "PL2", "rank": "LCP", "name": "MOHAMED RAIQAL BIN MOHAMED YAZID", "appt": "1ST MAT", "section": "SECTION 1"}, {"id": "PL2-12", "unit": "PL2", "rank": "LCP", "name": "SARAVANA PANDIAN RITHISH KUMAR", "appt": "1ST M203", "section": "SECTION 1"}, {"id": "PL2-13", "unit": "PL2", "rank": "LCP", "name": "THAKUR JAI ABHIJIT", "appt": "2ND MAT", "section": "SECTION 1"}, {"id": "PL2-14", "unit": "PL2", "rank": "LCP", "name": "ABDUL FATTAH BIN MOHAMMAD ANWAR", "appt": "1ST LMG", "section": "SECTION 1"}, {"id": "PL2-15", "unit": "PL2", "rank": "LCP", "name": "CHEN JIAN CONG", "appt": "M203 (2IC)", "section": "SECTION 1"}, {"id": "PL2-16", "unit": "PL2", "rank": "LCP", "name": "CHUA YU ZHE", "appt": "2ND LMG", "section": "SECTION 1"}, {"id": "PL2-17", "unit": "PL2", "rank": "LCP", "name": "MUHAMMAD SUHAIL KHAN BIN FARIS KHAN SURATTEE", "appt": "SPARE", "section": "SECTION 1"}, {"id": "PL2-18", "unit": "PL2", "rank": "3SG", "name": "ALDRICH RUZZEL BELTRAN SINGH", "appt": "SC", "section": "SECTION 2"}, {"id": "PL2-19", "unit": "PL2", "rank": "3SG", "name": "CHHAN SOON PENG", "appt": "SC", "section": "SECTION 2"}, {"id": "PL2-20", "unit": "PL2", "rank": "LCP", "name": "ERNEST SIM YEE HANG", "appt": "1ST MAT", "section": "SECTION 2"}, {"id": "PL2-21", "unit": "PL2", "rank": "LCP", "name": "KEITH CHEW JUNG KEE", "appt": "1ST M203", "section": "SECTION 2"}, {"id": "PL2-22", "unit": "PL2", "rank": "PTE", "name": "SAMUEL TAN KAIEN", "appt": "2ND MAT", "section": "SECTION 2"}, {"id": "PL2-23", "unit": "PL2", "rank": "LCP", "name": "FOO RU CHENG", "appt": "1ST LMG", "section": "SECTION 2"}, {"id": "PL2-24", "unit": "PL2", "rank": "LCP", "name": "ONG PIN JUN", "appt": "M203 (2IC)", "section": "SECTION 2"}, {"id": "PL2-25", "unit": "PL2", "rank": "LCP", "name": "MUHAMMAD AIMAN BIN SHAMSUL BAHRI", "appt": "2ND LMG", "section": "SECTION 2"}, {"id": "PL2-26", "unit": "PL2", "rank": "PTE", "name": "GABRIEL SHOON", "appt": "SPARE", "section": "SECTION 2"}, {"id": "PL2-27", "unit": "PL2", "rank": "PTE", "name": "TEYES LEE", "appt": "SPARE", "section": "SECTION 2"}, {"id": "PL2-28", "unit": "PL2", "rank": "PTE", "name": "KHOR ZI JIAN", "appt": "SPARE", "section": "SECTION 2"}, {"id": "PL2-29", "unit": "PL2", "rank": "PTE", "name": "MIKHAEL JOHNSON", "appt": "SPARE", "section": "SECTION 2"}, {"id": "PL2-30", "unit": "PL2", "rank": "3SG", "name": "MUHAMMAD ZUFAR BIN ZAKIR", "appt": "SC", "section": "SECTION 3"}, {"id": "PL2-31", "unit": "PL2", "rank": "LCP", "name": "DANILA LEAN ROD TIMOTHY BORROMEO", "appt": "1ST MAT", "section": "SECTION 3"}, {"id": "PL2-32", "unit": "PL2", "rank": "LCP", "name": "CHARLES YAP YU JING", "appt": "1ST M203", "section": "SECTION 3"}, {"id": "PL2-33", "unit": "PL2", "rank": "LCP", "name": "WONG JING WEI", "appt": "2ND MAT", "section": "SECTION 3"}, {"id": "PL2-34", "unit": "PL2", "rank": "LCP", "name": "TEO KAI DE CAYDEN", "appt": "1ST LMG", "section": "SECTION 3"}, {"id": "PL2-35", "unit": "PL2", "rank": "LCP", "name": "ADWA SHAQUILLE BIN ANDYIRWAN", "appt": "M203 (2IC)", "section": "SECTION 3"}, {"id": "PL3-0", "unit": "PL3", "rank": "LTA", "name": "TAN WEE BOON ADEN", "appt": "PL COMD", "section": "HQ"}, {"id": "PL3-1", "unit": "PL3", "rank": "LTA", "name": "LEE PIN", "appt": "APC", "section": "HQ"}, {"id": "PL3-2", "unit": "PL3", "rank": "2LT", "name": "AIKEN ANG WEI YANG", "appt": "PC", "section": "HQ"}, {"id": "PL3-3", "unit": "PL3", "rank": "2LT", "name": "LIM THENG XIANG", "appt": "PC", "section": "HQ"}, {"id": "PL3-4", "unit": "PL3", "rank": "3SG", "name": "DARYL YU ZIJUN", "appt": "PS", "section": "HQ"}, {"id": "PL3-5", "unit": "PL3", "rank": "3SG", "name": "YE YONGHONG", "appt": "APS", "section": "HQ"}, {"id": "PL3-6", "unit": "PL3", "rank": "LCP", "name": "IVAN LEONG CHENG YANG", "appt": "MEDIC", "section": "HQ"}, {"id": "PL3-7", "unit": "PL3", "rank": "3SG", "name": "RANDY ONG ZONG HUI", "appt": "GPMG COMD", "section": "HQ"}, {"id": "PL3-8", "unit": "PL3", "rank": "LCP", "name": "CHOW WERN", "appt": "GPMG OPR", "section": "HQ"}, {"id": "PL3-9", "unit": "PL3", "rank": "LCP", "name": "WONG JINGYUAN", "appt": "ASST OPR", "section": "HQ"}, {"id": "PL3-10", "unit": "PL3", "rank": "3SG", "name": "LOH JING YANG", "appt": "SC", "section": "SECTION 1"}, {"id": "PL3-11", "unit": "PL3", "rank": "LCP", "name": "CHEE ZE HONG", "appt": "1ST MAT", "section": "SECTION 1"}, {"id": "PL3-12", "unit": "PL3", "rank": "LCP", "name": "GAVAN LEE AN JIE", "appt": "1ST M203", "section": "SECTION 1"}, {"id": "PL3-13", "unit": "PL3", "rank": "LCP", "name": "SHI JIA GENG ALSTON", "appt": "2ND MAT", "section": "SECTION 1"}, {"id": "PL3-14", "unit": "PL3", "rank": "LCP", "name": "TOK GUAN LONG XAVIER", "appt": "1ST LMG", "section": "SECTION 1"}, {"id": "PL3-15", "unit": "PL3", "rank": "CPL", "name": "YEW HO WEE", "appt": "M203 (2IC)", "section": "SECTION 1"}, {"id": "PL3-16", "unit": "PL3", "rank": "PTE", "name": "CHEAH SHING HAK", "appt": "2ND LMG", "section": "SECTION 1"}, {"id": "PL3-17", "unit": "PL3", "rank": "PTE", "name": "POH JUN MING", "appt": "SPARE", "section": "SECTION 1"}, {"id": "PL3-18", "unit": "PL3", "rank": "3SG", "name": "EZRA NUR IMAN BIN ZAINAL", "appt": "SC", "section": "SECTION 2"}, {"id": "PL3-19", "unit": "PL3", "rank": "LCP", "name": "JAYDEN LIM JIE-EN", "appt": "1ST M203", "section": "SECTION 2"}, {"id": "PL3-20", "unit": "PL3", "rank": "LCP", "name": "NG JUN SIONG, JAYDEN", "appt": "2ND MAT", "section": "SECTION 2"}, {"id": "PL3-21", "unit": "PL3", "rank": "LCP", "name": "KOH CHEE SENG", "appt": "1ST MAT", "section": "SECTION 2"}, {"id": "PL3-22", "unit": "PL3", "rank": "PTE", "name": "DAMIEN ANG SHI QIANG", "appt": "1ST LMG", "section": "SECTION 2"}, {"id": "PL3-23", "unit": "PL3", "rank": "LCP", "name": "CHONG CHANG LE", "appt": "M203 (2IC)", "section": "SECTION 2"}, {"id": "PL3-24", "unit": "PL3", "rank": "PTE", "name": "ASHTON NEO KUANG WEI", "appt": "2ND LMG", "section": "SECTION 2"}, {"id": "PL3-25", "unit": "PL3", "rank": "PTE", "name": "LIM KIT TJON", "appt": "SPARE", "section": "SECTION 2"}, {"id": "PL3-26", "unit": "PL3", "rank": "3SG", "name": "AMIR HAMZAH KHAN", "appt": "SC", "section": "SECTION 3"}, {"id": "PL3-27", "unit": "PL3", "rank": "PTE", "name": "MOHAMMAD DANIAL BIN ABDULLAH", "appt": "1ST MAT", "section": "SECTION 3"}, {"id": "PL3-28", "unit": "PL3", "rank": "LCP", "name": "RAVI KARTHIKEYAN", "appt": "1ST M203", "section": "SECTION 3"}, {"id": "PL3-29", "unit": "PL3", "rank": "LCP", "name": "SKYLER ANG WEI ZHI", "appt": "2ND MAT", "section": "SECTION 3"}, {"id": "PL3-30", "unit": "PL3", "rank": "CPL", "name": "MOHAMMAD ZAKIR BIN MOHAMMAD ZAHID", "appt": "M203 (2IC)", "section": "SECTION 3"}, {"id": "PL3-31", "unit": "PL3", "rank": "LCP", "name": "MUHAMMAD DANNIE AL-AQIF BIN JUBIR", "appt": "2ND LMG", "section": "SECTION 3"}, {"id": "PL3-32", "unit": "PL3", "rank": "PTE", "name": "ONG JIAN YONG GEORGE", "appt": "SPARE", "section": "SECTION 3"}, {"id": "PL3-33", "unit": "PL3", "rank": "PTE", "name": "DYLAN ONG YE KAI", "appt": "SPARE", "section": "SECTION 3"}];
-const DEFAULT_CATS = [{"id": "mc", "label": "MC", "kind": "stayback"}, {"id": "sbf", "label": "SBF (STAY BACK)", "kind": "stayback"}, {"id": "ma", "label": "MA", "kind": "stayback"}, {"id": "duty", "label": "DUTY", "kind": "stayback"}, {"id": "moving", "label": "NOT PARTICIPATING (MOVING)", "kind": "moveout_np"}, {"id": "safety", "label": "SAFETY WALKER", "kind": "moveout_np"}, {"id": "staff", "label": "CONDUCTING STAFF", "kind": "moveout_np"}, {"id": "others", "label": "OTHERS (STATE REASON)", "kind": "moveout_np"}];
+// kind: "stayback"       — off move-out entirely, no gear (MC, MA, leave, course, SBF, duty)
+//       "moveout_np"     — moves out, does NOT participate, but DOES draw gear
+//       "moveout_np_ng"  — moves out, does NOT participate, and draws NO gear (safety walker, conducting staff)
+//       "participate"    — moves out AND participates, draws gear (a labelled participating role)
+// camp: only for staybacks — "out" (not in camp: MC, MA, leave, course) | "in" (in camp, not moving: SBF, duty)
+const DEFAULT_CATS = [
+  {"id": "mc",     "label": "MC",                       "kind": "stayback",   "camp": "out"},
+  {"id": "ma",     "label": "MA (MEDICAL APPT)",        "kind": "stayback",   "camp": "out"},
+  {"id": "rso",    "label": "RSO (REPORT SICK OUT)",    "kind": "stayback",   "camp": "out"},
+  {"id": "rsi",    "label": "RSI (REPORT SICK IN)",     "kind": "stayback",   "camp": "in"},
+  {"id": "leave",  "label": "LEAVE",                    "kind": "stayback",   "camp": "out"},
+  {"id": "course", "label": "COURSE",                   "kind": "stayback",   "camp": "out"},
+  {"id": "sbf",    "label": "SBF (STAY BACK)",          "kind": "stayback",   "camp": "in"},
+  {"id": "duty",   "label": "DUTY (COS/GUARD/BOS/DOS)", "kind": "stayback",   "camp": "in"},
+  {"id": "moving", "label": "NOT PARTICIPATING (MOVING)","kind": "moveout_np"},
+  {"id": "safety", "label": "SAFETY WALKER",            "kind": "moveout_np_ng"},
+  {"id": "staff",  "label": "CONDUCTING STAFF",         "kind": "moveout_np_ng"},
+  {"id": "others", "label": "OTHERS (STATE REASON)",    "kind": "moveout_np"}
+];
 
-const WEAPON_ITEMS = ["SAR21", "SS", "M203", "LMG", "GPMG", "MATADOR", "M110", "KN252", "M110 SILENCER", "M110 TRIPOD", "SPARE BARREL", "MG TRIPOD", "MG WALLET", "SAR21 MAG", "LMG MAG", "M110 MAG", "SAR21 BFA", "LMG BFA", "GPMG BFA", "SAR 21 AMMO POUCH", "LMG AMMO POUCH", "GPMG AMMO POUCH"], WEAPON_GROUPS = [["Weapons", ["SAR21", "SS", "M203", "LMG", "GPMG", "MATADOR", "M110"]], ["Blank firing attachments", ["SAR21 BFA", "LMG BFA", "GPMG BFA"]], ["Magazines & pouches", ["SAR21 MAG", "LMG MAG", "M110 MAG", "SAR 21 AMMO POUCH", "LMG AMMO POUCH", "GPMG AMMO POUCH"]], ["Accessories", ["KN252", "M110 SILENCER", "M110 TRIPOD", "SPARE BARREL", "MG TRIPOD", "MG WALLET"]]];
-const SIGNALS_ITEMS = ["NVG", "PRC650", "PRC940", "COMPASS", "BINO", "UTWS", "MAP", "FSS", "CDS(FSS)", "UOCE", "TTS", "KHS", "HAMMER (HEARTLANDER)", "SNIP-IT (HEARTLANDER)", "CROWBAR (HEARTLANDER)"], SIGNALS_GROUPS = [["Comms", ["PRC650", "PRC940"]], ["Optics & navigation", ["NVG", "BINO", "UTWS", "COMPASS", "MAP"]], ["Surveillance / target", ["FSS", "CDS(FSS)", "UOCE", "TTS", "KHS"]], ["Heartlander (breaching)", ["HAMMER (HEARTLANDER)", "SNIP-IT (HEARTLANDER)", "CROWBAR (HEARTLANDER)"]]];
+const WEAPON_ITEMS = ["SAR21", "SS", "M203", "LMG", "GPMG", "MATADOR", "M110", "KN252", "M110 SILENCER", "M110 TRIPOD", "SPARE BARREL", "MG TRIPOD", "GPMG CARTRIDGE POUCH", "GPMG AMMO FEEDER", "PYTHON BELT", "SAR21 MAG", "LMG MAG", "M110 MAG", "SAR21 BFA", "LMG BFA", "GPMG BFA", "SAR 21 AMMO POUCH", "LMG AMMO POUCH", "GPMG AMMO POUCH"], WEAPON_GROUPS = [["Weapons", ["SAR21", "SS", "M203", "LMG", "GPMG", "MATADOR", "M110"]], ["Blank firing attachments", ["SAR21 BFA", "LMG BFA", "GPMG BFA"]], ["Magazines & pouches", ["SAR21 MAG", "LMG MAG", "M110 MAG", "SAR 21 AMMO POUCH", "LMG AMMO POUCH", "GPMG AMMO POUCH"]], ["GPMG detail", ["GPMG CARTRIDGE POUCH", "GPMG AMMO FEEDER", "PYTHON BELT", "SPARE BARREL", "MG TRIPOD"]], ["Accessories", ["KN252", "M110 SILENCER", "M110 TRIPOD"]]];
+const SIGNALS_ITEMS = ["NVG", "PRC650", "PRC940", "COMPASS", "BINO", "UTWS", "MAP", "MG WALLET", "FSS", "CDS(FSS)", "UOCE", "TTS", "KHS", "HAMMER (HEARTLANDER)", "SNIP-IT (HEARTLANDER)", "CROWBAR (HEARTLANDER)"], SIGNALS_GROUPS = [["Comms", ["PRC650", "PRC940"]], ["Optics & navigation", ["NVG", "BINO", "UTWS", "COMPASS", "MAP"]], ["MG detail", ["MG WALLET"]], ["Surveillance / target", ["FSS", "CDS(FSS)", "UOCE", "TTS", "KHS"]], ["Heartlander (breaching)", ["HAMMER (HEARTLANDER)", "SNIP-IT (HEARTLANDER)", "CROWBAR (HEARTLANDER)"]]];
 const PANTES_ITEMS = ["CHOCO BAR", "BFI/PU", "LH MOUNT", "RH MOUNT", "FT MOUNT", "BT MOUNT", "GAMEBOY", "GAMEBOY POUCH", "SAR 21 SFT", "LMG SFT", "M203 SFT", "M203 LAUNCHER", "M203 ROUND", "GPMG SFT", "MATADOR SFT", "CLAYMORE SFT", "M110 SFT"], PANTES_GROUPS = [["Per-man kit", ["CHOCO BAR", "BFI/PU", "GAMEBOY", "GAMEBOY POUCH"]], ["Mounts", ["LH MOUNT", "RH MOUNT", "FT MOUNT", "BT MOUNT"]], ["SFT (one per weapon)", ["SAR 21 SFT", "LMG SFT", "GPMG SFT", "M203 SFT", "MATADOR SFT", "M110 SFT", "CLAYMORE SFT"]], ["M203 attachments", ["M203 LAUNCHER", "M203 ROUND"]]];
 const STORE_ITEMS = ["SECTION GROUND SHEET", "WIRED GLOVE", "ENGINEER GLOVE", "BREACHING FLAGS", "COLOURED FLAGS", "LIGHT STICK", "VINE CUTTER", "COVER LITTER", "BANGALORE", "CLAYMORE", "TRIPFLARE", "PARANG"], TAG_ITEMS = ["PANEL MARKERS", "TENT PINS", "MARSHALLING WANDS", "MARSHALLING GLOVES", "MALLET", "LENSATIC COMPASS", "WIND METER", "GROUNDSHEET", "ET BLADE", "ET POUCH", "ET STICK", "IR MARKER", "PRC940", "GREEN LIGHT STICKS"];
 const MAP_COMPASS_EXCLUDE = ["MEDIC", "CQ", "ASA"];
 const DEFAULT_RULES = {
-  weapon: [["MAT", "MATADOR"], ["M203", "M203"], ["LMG", "LMG"], ["MG OPR", "GPMG"], ["GPMG", "GPMG"], ["MM", "M110"], ["ASA", null], ["SAGE", null], ["CQ", null]],
+  // A commander carries his own SAR21, NOT the section/platoon MG — his gunner does.
+  weapon: [["MAT", "MATADOR"], ["M203", "M203"], ["GPMG COMD", "SAR21"], ["MG COMD", "SAR21"], ["LMG", "LMG"], ["MG OPR", "GPMG"], ["GPMG", "GPMG"], ["MM", "M110"], ["ASA", null], ["SAGE", null], ["CQ", null]],
   sft: [["MAT", "MATADOR SFT"], ["M203", "M203 SFT"], ["LMG", "LMG SFT"], ["MG OPR", "GPMG SFT"], ["MM", "M110 SFT"]],
-  signal: [["OC", null, ["NVG", "PRC650"]], ["PC", null, ["NVG", "PRC650"]], ["PL COMD", null, ["NVG", "PRC650"]], ["PS", null, ["NVG", "PRC650"]], ["APC", null, []], ["MG COMD", null, ["NVG", "PRC650"]], ["SC", null, ["NVG", "PRC650"]], ["1ST LMG", null, ["NVG"]], ["MM", "3SG", ["PRC650"]], ["RUNNER", null, ["PRC650"]], ["SENSOR", null, []], ["MEDIC", null, []]],
-  accessories: [["SAR21", "SAR21 BFA", 1, false], ["LMG", "LMG BFA", 1, false], ["GPMG", "GPMG BFA", 2, false], ["SAR21", "SAR 21 AMMO POUCH", 1, false], ["LMG", "LMG AMMO POUCH", 1, false], ["GPMG", "GPMG AMMO POUCH", 1, false], ["M110", "M110 TRIPOD", 1, false], ["M110", "M110 SILENCER", 1, false], ["GPMG", "SPARE BARREL", 1, false], ["M110", "KN252", 1, true], ["M203", "SAR21", 1, false], ["M203", "SAR21 BFA", 1, false], ["M203", "SAR 21 AMMO POUCH", 1, false]],
+  signal: [["OC", null, ["NVG", "PRC650"]], ["PC", null, ["NVG", "PRC650"]], ["PL COMD", null, ["NVG", "PRC650"]], ["PS", null, ["NVG", "PRC650"]], ["APC", null, []], ["MG COMD", null, ["NVG", "PRC650"]], ["GPMG COMD", null, ["NVG", "PRC650"]], ["GPMG OPR", null, ["UTWS"]], ["MG OPR", null, ["UTWS"]], ["ASST OPR", null, ["MG WALLET"]], ["SC", null, ["NVG", "PRC650"]], ["1ST LMG", null, ["NVG"]], ["MM", "3SG", ["PRC650"]], ["RUNNER", null, ["PRC650"]], ["SENSOR", null, []], ["MEDIC", null, []]],
+  // GPMG gunner draws the belt-fed detail: cartridge pouch, ammo feeder, python belt, spare barrel (2 barrels), BFA. Tripod is mission-dependent (off by default). Wallet sits on the assistant (issued via the signal rule above).
+  accessories: [["SAR21", "SAR21 BFA", 1, false], ["LMG", "LMG BFA", 1, false], ["GPMG", "GPMG BFA", 2, false], ["SAR21", "SAR 21 AMMO POUCH", 1, false], ["LMG", "LMG AMMO POUCH", 1, false], ["GPMG", "GPMG AMMO POUCH", 1, false], ["GPMG", "GPMG CARTRIDGE POUCH", 1, false], ["GPMG", "GPMG AMMO FEEDER", 1, false], ["GPMG", "PYTHON BELT", 1, false], ["GPMG", "SPARE BARREL", 1, false], ["M110", "M110 TRIPOD", 1, false], ["M110", "M110 SILENCER", 1, false], ["M110", "KN252", 1, true], ["M203", "SAR21", 1, false], ["M203", "SAR21 BFA", 1, false], ["M203", "SAR 21 AMMO POUCH", 1, false]],
   perman: {"CHOCO BAR": 4, "BFI/PU": 1, "LH MOUNT": 1, "RH MOUNT": 1, "FT MOUNT": 1, "BT MOUNT": 1, "GAMEBOY": 1, "GAMEBOY POUCH": 1},
   pantesExclude: ["ASA", "CQ", "SAGE"],
   storeEstab: {"SECTION GROUND SHEET": 3, "WIRED GLOVE": 6, "ENGINEER GLOVE": 6, "BREACHING FLAGS": 6, "COLOURED FLAGS": 6, "LIGHT STICK": 48, "VINE CUTTER": 6, "COVER LITTER": 3, "BANGALORE": 6, "CLAYMORE": 6, "TRIPFLARE": 6, "PARANG": 6},
@@ -398,12 +472,14 @@ const SFT_CHOICES = ["SAR 21 SFT","LMG SFT","GPMG SFT","M203 SFT","MATADOR SFT",
 // such a rule, and rewrote it to the wrong item on the next edit.
 const ACC_CHOICES = ["SAR21","SS","M203","LMG","GPMG","MATADOR","M110",
   "SAR21 BFA","LMG BFA","GPMG BFA","SAR 21 AMMO POUCH","LMG AMMO POUCH","GPMG AMMO POUCH",
-  "M110 TRIPOD","M110 SILENCER","SPARE BARREL","KN252","MG TRIPOD","MG WALLET","SAR21 MAG","LMG MAG","M110 MAG"];
+  "GPMG CARTRIDGE POUCH","GPMG AMMO FEEDER","PYTHON BELT",
+  "M110 TRIPOD","M110 SILENCER","SPARE BARREL","KN252","MG TRIPOD","SAR21 MAG","LMG MAG","M110 MAG"];
 const RANK_CHOICES = ["","CPT","LTA","2LT","3WO","MSG","2SG","3SG","ME1-1","CPL","LCP","PTE"];
 const WEAPON_TO_SFT = {"SAR21":"SAR 21 SFT","LMG":"LMG SFT","GPMG":"GPMG SFT","M203":"M203 SFT",
   "MATADOR":"MATADOR SFT","M110":"M110 SFT"};
 const EXTERNAL = "__EXT__";
-const BUILD_ID = "14 · 26JUL26";   // attached out of the company entirely
+const BUILD_ID = "19 · 26JUL26";
+const BUILD_NO = 19;   // attached out of the company entirely
 
 // ---- state ----
 function freshState(){
@@ -417,7 +493,9 @@ function freshState(){
     gear: {},          // personId -> {weapon?: str|null, signals?: [..]}
     guests: [],        // men attached in from another coy/unit: {id,unit,rank,name,appt,from,mo,pa}
     cats: DEFAULT_CATS.map(c => ({...c})),
+    catsRemoved: [],   // built-in statuses the user deliberately deleted — never resurrect these
     rules: JSON.parse(JSON.stringify(DEFAULT_RULES)),
+    notes: {},         // unit -> free-text additional items/notes appended to the report
     equip: {},         // unit -> {group -> {item -> value}}  (manual overrides / stores)
     sOver: {},         // unit -> {tot,mo,pa} typed by hand, overriding the calculation
     live: {},          // unit -> bool  (keep equipment in step)
@@ -425,6 +503,16 @@ function freshState(){
   };
 }
 let S = freshState();
+
+// New built-in statuses (like RSO/RSI) must appear on phones that already have
+// saved data: merge in any default the user has not deliberately deleted, at its
+// proper position. Called after every load/merge, so no "restore defaults" ritual.
+function ensureDefaultCats(){
+  DEFAULT_CATS.forEach((c, i) => {
+    if((S.catsRemoved || []).includes(c.id)) return;
+    if(!S.cats.some(x => x.id === c.id)) S.cats.splice(Math.min(i, S.cats.length), 0, {...c});
+  });
+}
 
 const personsOf = u => S.persons.filter(p => p.unit === u);
 const guestsOf = u => (S.guests || []).filter(g => g.unit === u);
@@ -483,6 +571,7 @@ function count(unit){
   let rosC=0, rosT=0;
   let heldC=0, heldT=0, moC=0, moT=0, paC=0, paT=0;
   let outCoy=0, outPlt=0, inCnt=0, tagged=0;
+  let outCoyC=0, outCoyT=0, outPltC=0, outPltT=0, inC=0, inT=0, gC=0, gT=0;
   const byCat = {};                    // catId -> how many men sit in it
 
   personsOf(unit).forEach(p => {
@@ -490,7 +579,8 @@ function count(unit){
     if(cmd) rosC++; else rosT++;
     const a = attachOf(p);
     if(a){
-      if(a.to === EXTERNAL) outCoy++; else outPlt++;
+      if(a.to === EXTERNAL){ outCoy++; if(cmd) outCoyC++; else outCoyT++; }
+      else { outPlt++; if(cmd) outPltC++; else outPltT++; }
       return;                          // off our strength for this activity
     }
     const c = statusOf(p);
@@ -499,7 +589,7 @@ function count(unit){
     const kind = c ? c.kind : "present";
     if(kind === "stayback") return;
     if(cmd) moC++; else moT++;
-    if(kind === "moveout_np") return;
+    if(kind === "moveout_np" || kind === "moveout_np_ng") return;
     if(cmd) paC++; else paT++;
   });
 
@@ -510,6 +600,7 @@ function count(unit){
     if(!p || p.unit === unit) return;
     inCnt++;
     const cmd = isCmd(p);
+    if(cmd) inC++; else inT++;
     if(cmd) heldC++; else heldT++;
     if(a.mo !== false){ if(cmd) moC++; else moT++; }
     if(a.pa !== false){ if(cmd) paC++; else paT++; }
@@ -519,6 +610,7 @@ function count(unit){
   guestsOf(unit).forEach(g => {
     guestCnt++;
     const cmd = CMD_RANKS.includes((g.rank||"").toUpperCase());
+    if(cmd) gC++; else gT++;
     if(cmd) heldC++; else heldT++;
     if(g.mo !== false){ if(cmd) moC++; else moT++; }
     if(g.pa !== false){ if(cmd) paC++; else paT++; }
@@ -527,12 +619,16 @@ function count(unit){
   const out = outCoy + outPlt;
   // the ledger: every line that moves a man out of a number
   const stayLines = S.cats.filter(c => c.kind === "stayback" && byCat[c.id])
-    .map(c => ({label:c.label, n:byCat[c.id]}));
-  const npLines = S.cats.filter(c => c.kind === "moveout_np" && byCat[c.id])
+    .map(c => ({label:c.label, n:byCat[c.id], camp:(c.camp === "out" ? "out" : "in")}));
+  const npLines = S.cats.filter(c => (c.kind === "moveout_np" || c.kind === "moveout_np_ng") && byCat[c.id])
+    .map(c => ({label:c.label, n:byCat[c.id], ng:c.kind === "moveout_np_ng"}));
+  const partLines = S.cats.filter(c => c.kind === "participate" && byCat[c.id])
     .map(c => ({label:c.label, n:byCat[c.id]}));
 
   return {rosC, rosT, heldC, heldT, moC, moT, paC, paT,
-          out, outCoy, outPlt, inCnt, guestCnt, tagged, byCat, stayLines, npLines,
+          out, outCoy, outPlt, inCnt, guestCnt, tagged, byCat, stayLines, npLines, partLines,
+          outCoyC, outCoyT, outC: outCoyC + outPltC, outT: outCoyT + outPltT,
+          inC, inT, gC, gT,
           calcTotal: strength(rosC, rosT),
           calcMoveout: strength(moC, moT),
           calcPartic: strength(paC, paT),
@@ -555,7 +651,8 @@ function deltaText(out, inn, held){
 
 function coyCount(){
   let r={c:0,t:0}, h={c:0,t:0}, m={c:0,t:0}, a={c:0,t:0}, ext=0, extIn=0;
-  (S.guests||[]).forEach(() => extIn++);
+  let extC=0, extT=0, extInC=0, extInT=0;
+  (S.guests||[]).forEach(g => { extIn++; if(CMD_RANKS.includes((g.rank||"").toUpperCase())) extInC++; else extInT++; });
   UNITS.forEach(u => {
     const x = count(u);
     // a hand-typed figure is what the PS is standing behind, so the coy uses it
@@ -566,11 +663,12 @@ function coyCount(){
     r.c+=T.c; r.t+=T.t; h.c+=x.heldC; h.t+=x.heldT;
     m.c+=M.c; m.t+=M.t; a.c+=P.c; a.t+=P.t;
     ext += x.outCoy;   // only men gone to ANOTHER coy leave the company total
+    extC += x.outCoyC; extT += x.outCoyT;
   });
   // people attached IN from outside the company would add here; within-coy moves cancel out
   return {original:strength(r.c,r.t), held:strength(h.c,h.t),
           moveout:strength(m.c,m.t), partic:strength(a.c,a.t),
-          ext, delta: deltaText(ext, extIn, strength(h.c, h.t))};
+          ext, extC, extT, extIn, extInC, extInT, delta: deltaText(ext, extIn, strength(h.c, h.t))};
 }
 
 // ============================================================================
@@ -632,7 +730,16 @@ function signalsFor(p){
 function drawsGear(p){
   if(attachOf(p)) return true;
   const c = statusOf(p);
-  return !c || c.kind !== "stayback";
+  // stayback (in/out of camp) and the "no-gear" not-participating kinds draw nothing.
+  return !c || (c.kind !== "stayback" && c.kind !== "moveout_np_ng");
+}
+// Where a man's gear comes from:
+//   'ours'  = our (Alpha) armskote — default/auto, counted in our equipment tally (green)
+//   'other' = drawn from another unit/coy's armskote — NOT counted in ours (grey)
+// A man drawing no gear at all is shown yellow; that is loadout-driven, not a source.
+function gearSrcOf(p){
+  const g = S.gear[p.id];
+  return (g && g.src === "other") ? "other" : "ours";
 }
 function loadoutOf(p){
   if(!drawsGear(p)) return [];
@@ -642,16 +749,32 @@ function loadoutOf(p){
   return [...ordered, ...signalsFor(p)].filter(Boolean);
 }
 
-// Who draws equipment from this unit: own roster, present or attached out
-// (gear follows the man's HOME unit), excluding stay-backs. Attached-in draw
-// nothing here — they brought their own from their parent unit.
-function drawers(unit){ return personsOf(unit).filter(drawsGear); }
+// Who draws equipment from this unit's count. Within the company, gear moves
+// WITH the man: attached out to a sister platoon → counted THERE, not here;
+// attached in from a sister platoon → counted HERE. So each PS's end state is
+// exactly what is physically inside his platoon — no cross-checking, no confusion.
+// Attached out to another coy/unit still counts at home (he drew from our
+// armskote and took it out), unless his gear source is flagged as theirs.
+function drawers(unit){
+  const own = personsOf(unit).filter(p => {
+    if(!drawsGear(p)) return false;
+    const a = attachOf(p);
+    if(a && a.to !== EXTERNAL) return false;    // his gear went with him to the sister platoon
+    return true;
+  });
+  const ins = Object.keys(S.attach)
+    .filter(pid => { const a = S.attach[pid]; return a && a !== OFF && a.to === unit; })
+    .map(byId).filter(p => p && p.unit !== unit);
+  return own.concat(ins);
+}
 
 function computeEquip(unit){
   const w = {}, sg = {}, pn = {};
   WEAPON_ITEMS.forEach(i => w[i]=0); SIGNALS_ITEMS.forEach(i => sg[i]=0); PANTES_ITEMS.forEach(i => pn[i]=0);
   const firstOnly = {};
-  drawers(unit).forEach(p => {
+  // Only gear drawn from OUR armskote counts here. A man set to draw from
+  // another unit/coy (attached out, or manually flagged) is excluded.
+  drawers(unit).filter(p => gearSrcOf(p) === "ours").forEach(p => {
     const wpn = weaponFor(p);
     if(wpn){
       w[wpn] = (w[wpn]||0) + 1;
@@ -663,6 +786,34 @@ function computeEquip(unit){
     }
     signalsFor(p).forEach(i => { sg[i] = (sg[i]||0) + 1; });
     const a = apptOf(p).toUpperCase();
+    if(S.rules.pantesExclude.some(x => x && a.includes(x))) return;
+    Object.entries(S.rules.perman).forEach(([item,qty]) => { pn[item] = (pn[item]||0) + (Number(qty)||0); });
+    sftsFor(p).forEach(sft => {
+      pn[sft] = (pn[sft]||0) + 1;
+      if(sft === "M203 SFT"){ pn["M203 LAUNCHER"] = (pn["M203 LAUNCHER"]||0)+1; pn["M203 ROUND"] = (pn["M203 ROUND"]||0)+1; }
+    });
+  });
+  return {wpn:w, sig:sg, pan:pn};
+}
+// Equipment for men attached IN from another coy/unit. They draw from THEIR own
+// armskote, so it is tallied separately (point 10) and never mixed with ours.
+function computeGuestEquip(unit){
+  const w={}, sg={}, pn={};
+  WEAPON_ITEMS.forEach(i=>w[i]=0); SIGNALS_ITEMS.forEach(i=>sg[i]=0); PANTES_ITEMS.forEach(i=>pn[i]=0);
+  const firstOnly={};
+  guestsOf(unit).forEach(gp => {
+    const p = {id:gp.id, rank:gp.rank, name:gp.name, appt:gp.appt||"", unit:gp.from||"EXT"};
+    const wpn = weaponFor(p);
+    if(wpn){
+      w[wpn] = (w[wpn]||0) + 1;
+      S.rules.accessories.forEach(([ww,item,qty,fo]) => {
+        if(ww !== wpn || !item) return;
+        if(fo){ const k = ww+"::"+item; if(firstOnly[k]) return; firstOnly[k] = true; }
+        w[item] = (w[item]||0) + (Number(qty)||0);
+      });
+    }
+    signalsFor(p).forEach(i => { sg[i] = (sg[i]||0) + 1; });
+    const a = (p.appt||"").toUpperCase();
     if(S.rules.pantesExclude.some(x => x && a.includes(x))) return;
     Object.entries(S.rules.perman).forEach(([item,qty]) => { pn[item] = (pn[item]||0) + (Number(qty)||0); });
     sftsFor(p).forEach(sft => {
@@ -694,6 +845,7 @@ function buildPanels(){
       <div class="end">
         <div class="t"><span>${u} · End state</span>
           <span><span class="tag" id="tag-${u}"></span>
+          <button type="button" class="adj" id="cs-${u}">Copy ${u} code</button>
           <button type="button" class="adj" id="adj-${u}">Adjust by hand</button></span></div>
         <div class="big3">
           <div class="big sub"><label>Total strength</label>
@@ -718,9 +870,9 @@ function buildPanels(){
       <div class="card">
         <h2><span class="step">1</span> Roster — tap a name</h2>
         <div class="legend">
-          <span><i style="background:var(--ok);"></i> gear drawn from us</span>
-          <span><i style="background:#6E6E66;"></i> gear from another unit / coy</span>
-          <span><i style="background:var(--muted);"></i> draws no gear</span>
+          <span><i style="background:var(--ok);"></i> drawn from our (Alpha) armskote</span>
+          <span><i style="background:#6E6E66;"></i> drawn from another unit / coy</span>
+          <span><i style="background:#C9A227;"></i> no gear drawn</span>
         </div>
         <input type="text" class="filter" id="f-${u}" placeholder="Filter by name, rank or appointment...">
         <div id="chips-${u}"></div>
@@ -758,6 +910,9 @@ function buildPanels(){
           <div id="eq-${u}-store"></div>
           <h3 style="margin-top:12px;">TAG stores <button type="button" id="ft-${u}" style="font-size:10px; padding:3px 8px;">Auto-fill</button></h3>
           <div id="eq-${u}-tag"></div>
+          <h3 style="margin-top:12px;">Additional items / notes</h3>
+          <div class="note" style="margin-bottom:6px;">Anything extra for the bottom of this platoon's report — one per line. Use it for whatever pops up.</div>
+          <textarea id="nt-${u}" rows="3" style="width:100%; font-family:var(--fm); font-size:12px;" placeholder="e.g. 2x SPARE RADIO BATTERY&#10;1x CASEVAC STRETCHER"></textarea>
         </div>
       </details>
     </div>`).join("");
@@ -774,6 +929,10 @@ function buildPanels(){
       el(`eq-${u}-${k}`).innerHTML = `<div class="grid">${items.map(i =>
         `<div class="it"><label>${i}</label><input type="number" min="0" id="q-${u}-${k}-${slug(i)}"></div>`).join("")}</div>`;
     });
+    // one platoon's slice as text — WhatsApp it, the other phone merges just this platoon
+    el(`cs-${u}`).onclick = () => copyText(
+      "RAWDY-PL " + JSON.stringify({v:3, unit:u, cats:S.cats, data:unitPayload(u)}),
+      u + " code copied — WhatsApp it; the other phone presses Load session code to merge " + u + " only");
     el(`adj-${u}`).onclick = () => {
       const on = el(`adj-${u}`).classList.toggle("on");
       ["tot","mo","pa"].forEach(k => {
@@ -802,6 +961,8 @@ function buildPanels(){
       });
     });
     el(`f-${u}`).oninput = () => renderChips(u);
+    el(`nt-${u}`).value = (S.notes && S.notes[u]) || "";
+    el(`nt-${u}`).oninput = e => { S.notes = S.notes || {}; const v = e.target.value; if(v.trim()) S.notes[u] = v; else delete S.notes[u]; save(u); };
     el(`ab-${u}`).onclick = () => addPerson(u);
     el(`lv-${u}`).checked = S.live[u] !== false;
     el(`lv-${u}`).onchange = e => { S.live[u] = e.target.checked; renderEquip(u); renderAll(); save(u); };
@@ -869,14 +1030,25 @@ function renderChips(u){
       const rsn = S.reason[p.id] ? ` (${S.reason[p.id]})` : "";
       tag = `<span class="st o">${c.label}${rsn}${auto?" · AUTO":""}</span>`;
     }
-    // provenance: our own men draw from us (green); men attached in from a sister
-    // platoon drew from THEIR platoon, which is still this company (green too);
-    // anyone drawing nothing is greyed.
-    const prov = r.attIn ? "ours" : (ld.length ? "ours" : "nogear");
+    // provenance: green = our (Alpha) armskote; grey = another unit/coy OR gear moved
+    // with him to a sister platoon; yellow = no gear. Within the coy the gear travels
+    // with the man, so attached-in loadouts count HERE and show in full.
+    let prov, ldText;
+    if(r.attIn){
+      prov = !ld.length ? "nogear" : (gearSrcOf(p) === "other" ? "other" : "ours");
+      ldText = ld.length ? ld.join(", ") + " · came with him" : "no gear";
+    } else if(a && a.to !== EXTERNAL){
+      prov = "other"; ldText = `gear with ${a.to}`;
+    } else if(!ld.length){
+      prov = "nogear"; ldText = "no gear";
+    } else if(gearSrcOf(p) === "other"){
+      prov = "other"; ldText = ld.join(", ") + " · another unit";
+    } else {
+      prov = "ours"; ldText = ld.join(", ");
+    }
     const cls = ["chip", prov, (a && !r.attIn) || c ? "out" : ""].filter(Boolean).join(" ");
     const text = `${p.rank} ${p.name} ${apptOf(p)}`.toUpperCase();
     const hidden = q && !text.includes(q) ? " hide" : "";
-    const ldText = r.attIn ? `gear from ${p.unit}` : (ld.length ? ld.join(", ") : "no gear");
     return `<div class="${cls}${hidden}" data-id="${p.id}">
       <span class="n">${r.n || ""}</span>
       <span class="nm">${p.rank} ${p.name}${apptOf(p) ? ` <span style="color:var(--muted); font-weight:400;">(${apptOf(p)})</span>` : ""}</span>
@@ -910,14 +1082,15 @@ function renderLedger(u){
 
   L.push(row("head", `${u} roster strength`, r.calcTotal));
   if(r.outCoy) L.push(row("ded", "Attached out to another coy/unit", `− ${r.outCoy}`, "out for training under them"));
-  if(r.outPlt) L.push(row("ded", "Attached out to another platoon", `− ${r.outPlt}`, "counted by them"));
-  r.stayLines.forEach(x => L.push(row("ded", x.label, `− ${x.n}`, "stays in camp")));
-  if(r.inCnt) L.push(row("add", "Attached in from our own coy", `+ ${r.inCnt}`, "gear drawn from their platoon"));
+  if(r.outPlt) L.push(row("ded", "Attached out to another platoon", `− ${r.outPlt}`, "strength & gear counted by them"));
+  r.stayLines.forEach(x => L.push(row("ded", x.label, `− ${x.n}`, x.camp === "out" ? "out of camp — no gear" : "in camp, not moving — no gear")));
+  if(r.inCnt) L.push(row("add", "Attached in from our own coy", `+ ${r.inCnt}`, "gear comes with him — counted here"));
   if(r.guestCnt) L.push(row("add", "Attached in from another coy/unit", `+ ${r.guestCnt}`, "gear drawn from their unit"));
   L.push(row("sum", "MOVE OUT", r.calcMoveout + (overOf(u,"mo") ? "" : "")));
   if(overOf(u,"mo")) L.push(row("ded", "Move out set by hand", overOf(u,"mo"), "overrides the calculation"));
-  r.npLines.forEach(x => L.push(row("ded", x.label, `− ${x.n}`, "moves out, does not participate")));
+  r.npLines.forEach(x => L.push(row("ded", x.label, `− ${x.n}`, x.ng ? "moves out, no participate, no gear" : "moves out, no participate (draws gear)")));
   L.push(row("sum", "PARTICIPATING", r.calcPartic));
+  r.partLines.forEach(x => L.push(row("add", `of which ${x.label.toLowerCase()}`, `${x.n}`, "moves out & participates, gear drawn")));
   if(overOf(u,"pa")) L.push(row("ded", "Participating set by hand", overOf(u,"pa"), "overrides the calculation"));
   if(overOf(u,"tot")) L.push(row("ded", "Total set by hand", overOf(u,"tot"), "overrides the calculation"));
   el(`led-${u}`).innerHTML = L.join("");
@@ -943,7 +1116,13 @@ function renderAttach(u){
           <label><input type="checkbox" data-pa="${p.id}" ${a.pa!==false?"checked":""}> Participating</label>
         </span>
         <button type="button" class="del" style="font-size:10px; padding:4px 8px;" data-detach="${p.id}">Remove</button></div>`;
-    }).join("") : `<div class="empty">Nobody attached in.</div>`);
+    }).join("") : `<div class="empty">Nobody attached in.</div>`) +
+    // pull a man in from HIS tab's side — type to search, no scrolling
+    `<div class="row" style="gap:6px;">
+       <input type="text" id="pi-q-${u}" placeholder="Type a name to pull in from HQ / other platoons..." style="flex:1; min-width:170px;">
+     </div>
+     <div id="pi-r-${u}"></div>
+     <div class="empty" style="font-size:10.5px;">Type a few letters, tap the name — he attaches into ${u} and his home strength updates by itself.</div>`;
 
   // men attached in from outside the company — their gear is not ours
   const gs = guestsOf(u);
@@ -971,6 +1150,26 @@ function renderAttach(u){
   el(`ai-${u}`).querySelectorAll("[data-gpa]").forEach(c => c.onchange = () => {
     const g = S.guests.find(x => x.id === c.dataset.gpa); if(g){ g.pa = c.checked; renderAll(); save(u); } });
   el(`gb-${u}`).onclick = () => addGuest(u);
+
+  // pull-in search: type a few letters, matches across every OTHER unit, tap to attach
+  const piQ = el(`pi-q-${u}`), piR = el(`pi-r-${u}`);
+  piQ.oninput = () => {
+    const q = piQ.value.trim().toUpperCase();
+    if(!q){ piR.innerHTML = ""; return; }
+    const hits = S.persons.filter(p => p.unit !== u && !attachOf(p) &&
+      `${p.rank} ${p.name} ${apptOf(p)} ${p.unit}`.toUpperCase().includes(q)).slice(0, 8);
+    piR.innerHTML = hits.length
+      ? hits.map(p => `<div class="pisug" data-pull="${p.id}">
+          <span>${p.rank} ${p.name} <span style="color:var(--muted);">(${apptOf(p)})</span></span>
+          <span class="u">${p.unit} → ${u}</span></div>`).join("")
+      : `<div class="pisug" style="cursor:default; color:var(--muted);">No match — he may already be attached somewhere.</div>`;
+    piR.querySelectorAll("[data-pull]").forEach(row => row.onclick = () => {
+      const pid = row.dataset.pull;
+      S.attach[pid] = {to: u, mo: true, pa: true, note: ""};   // same shared record as attach-out
+      delete S.status[pid];
+      renderAll(); saveAll();
+    });
+  };
 
   [`ao-${u}`,`ai-${u}`].forEach(id => {
     el(id).querySelectorAll("[data-detach]").forEach(b => b.onclick = () => detach(b.dataset.detach));
@@ -1071,16 +1270,39 @@ function openSheet(pid, anchor){
   const home = p.unit;
   const dests = UNITS.filter(x => x !== home);
 
+  // statuses grouped by what they DO, so the PS reads behaviour, not just a label
+  const subOf = c => c.kind==="moveout_np" ? "moves out · draws gear"
+                   : c.kind==="moveout_np_ng" ? "moves out · no gear"
+                   : c.kind==="participate" ? "participates · gear" : "";
+  const GROUPS = [
+    ["#E07A5A", "Not in camp — off strength · no gear",      S.cats.filter(c=>c.kind==="stayback"&&c.camp==="out")],
+    ["#E8C547", "In camp, not moving out — no gear",          S.cats.filter(c=>c.kind==="stayback"&&c.camp!=="out")],
+    ["#8FB4D9", "Moves out — not participating",              S.cats.filter(c=>c.kind==="moveout_np"||c.kind==="moveout_np_ng")],
+    ["#9BBC7A", "Moves out — participating",                  S.cats.filter(c=>c.kind==="participate")]
+  ];
   const d = document.createElement("div");
   d.className = "sheet";
   d.innerHTML = `
-    <div class="who">${p.rank} ${p.name} — ${home}</div>
+    <div class="who">${p.rank} ${p.name} — ${home}<span class="cur">${statusText(p)}</span></div>
     ${a ? `<div class="note">${autoA?`Automatically attached out (rule: appointment contains ${(S.rules.autoAttachOut||[]).find(k=>apptOf(p).toUpperCase().includes(k))||""}).`:`Attached out to ${a.to===EXTERNAL?(a.note&&a.note!=="AUTO"?a.note:"outside the coy"):a.to}.`} Off ${home}'s strength.</div>
            <button type="button" class="danger" id="s-detach">${autoA?"Override — keep him with "+home:"Cancel attachment — bring him back"}</button>` : ""}
     ${autoS ? `<div class="note" style="background:rgba(138,110,36,0.3); color:#E8C547;">Automatic status from his appointment — moves out, does not participate. Pick another status below to override.</div>` : ""}
-    <div class="lab">Status</div>
-    <button type="button" class="opt pres${cur===PRESENT&&!a?" on":""}" data-cat="${PRESENT}">PRESENT — moves out &amp; participates</button>
-    ${S.cats.map(c => `<button type="button" class="opt${cur===c.id?" on":""}" data-cat="${c.id}">${c.label}</button>`).join("")}
+    <div class="lab">Status — tap one</div>
+    <button type="button" class="opt pres${cur===PRESENT&&!a?" on":""}" data-cat="${PRESENT}">PRESENT<small>moves out · participates · draws gear</small></button>
+    ${GROUPS.map(([col,cap,cats]) => cats.length ? `
+      <div class="gcap"><i style="background:${col};"></i>${cap}</div>
+      <div class="optgrid">${cats.map(c => `<button type="button" class="opt${cur===c.id?" on":""}" data-cat="${c.id}">${c.label}${subOf(c)?`<small>${subOf(c)}</small>`:""}</button>`).join("")}</div>` : "").join("")}
+    <div class="lab">Custom status — free play</div>
+    <div class="row"><span>Status</span><input type="text" id="s-cust" placeholder="type anything, e.g. HOSPITALISED"></div>
+    <div class="row"><span>Behaves as</span>
+      <select id="s-custkind">
+        <option value="stayback:out">Not in camp — no gear</option>
+        <option value="stayback:in">In camp, not moving — no gear</option>
+        <option value="moveout_np">Moves out, no participate — gear</option>
+        <option value="moveout_np_ng">Moves out, no participate — no gear</option>
+        <option value="participate">Participates — gear</option>
+      </select>
+      <button type="button" id="s-custgo">Tag</button></div>
     <div class="row"><span>Reason</span><input type="text" id="s-reason" value="${(S.reason[pid]||"").replace(/"/g,"&quot;")}" placeholder="optional, shown in report"></div>
     ${a ? "" : `
     <div class="lab">Attach out — he goes out for training under someone else</div>
@@ -1102,6 +1324,11 @@ function openSheet(pid, anchor){
         <option value="__AUTO__">Auto by role (${(() => { const sv=S.gear[pid]; delete S.gear[pid]; const w=weaponFor(p)||"none"; if(sv) S.gear[pid]=sv; return w; })()})</option>
         ${WEAPON_CHOICES.map(w=>`<option value="${w}"${g.weapon===w?" selected":""}>${w}</option>`).join("")}
         <option value="__NONE__"${g.weapon===null?" selected":""}>No weapon</option>
+      </select></div>
+    <div class="row"><span>Gear source</span>
+      <select id="s-gsrc">
+        <option value="ours"${gearSrcOf(p)!=="other"?" selected":""}>Our armskote (Alpha) — counts</option>
+        <option value="other"${gearSrcOf(p)==="other"?" selected":""}>Another unit / coy — not in our count</option>
       </select></div>
     <div class="row"><span>Signals</span><label style="display:flex;align-items:center;gap:5px;color:var(--text);">
       <input type="checkbox" id="s-sigauto" ${Array.isArray(g.signals)?"":"checked"}> Auto by role</label></div>
@@ -1126,6 +1353,21 @@ function openSheet(pid, anchor){
     if(c === PRESENT) delete S.reason[pid];
     closeSheet(); renderAll(); save(home);
   });
+  // Free-play custom status: reuse an existing category with the same label,
+  // otherwise create one on the spot with the chosen behaviour. It joins the
+  // shared list, so it shows in the editor, the report and the other platoons.
+  d.querySelector("#s-custgo").onclick = () => {
+    const lab = d.querySelector("#s-cust").value.trim().toUpperCase();
+    if(!lab){ alert("Type the custom status first."); return; }
+    let c = S.cats.find(x => (x.label||"").toUpperCase() === lab);
+    if(!c){
+      c = {id:"c-"+Date.now()+"-"+Math.floor(Math.random()*999), label:lab};
+      applyKindVal(c, d.querySelector("#s-custkind").value);
+      S.cats.push(c);
+    }
+    S.status[pid] = c.id;
+    closeSheet(); renderCats(); renderAll(); save(home); saveGlobal();
+  };
   const dt = d.querySelector("#s-detach"); if(dt) dt.onclick = () => detach(pid);
   const at = d.querySelector("#s-attach");
   if(at) at.onclick = () => {
@@ -1146,6 +1388,8 @@ function openSheet(pid, anchor){
     if(w === "__AUTO__") delete gg.weapon; else gg.weapon = (w === "__NONE__") ? null : w;
     if(sa.checked) delete gg.signals;
     else gg.signals = [...d.querySelectorAll(".s-sig:checked")].map(x => x.value);
+    const src = d.querySelector("#s-gsrc").value;
+    if(src === "other") gg.src = "other"; else delete gg.src;
     if(Object.keys(gg).length) S.gear[pid] = gg; else delete S.gear[pid];
     const rs = d.querySelector("#s-reason").value.trim();
     if(rs) S.reason[pid] = rs; else delete S.reason[pid];
@@ -1227,54 +1471,90 @@ el("rollcopy").onclick = () => {
 // ============================================================================
 // REPORT
 // ============================================================================
-function unitReport(u){
-  const r = count(u), L = [];
-  const act = el("act").value.trim() || "[ACTIVITY]";
-  L.push(`*${u} ${act}*`);
-  if(el("caa").value.trim()) L.push(`CAA: ${el("caa").value.trim()}`);
-  L.push("───────────────", "");
-  L.push(`*TOTAL: ${r.original}*`);
-  if(r.out || r.inCnt){
-    const bits = [];
-    if(r.out) bits.push(`${fmt2(r.out)} attached out`);
-    if(r.inCnt) bits.push(`${fmt2(r.inCnt)} attached in`);
-    L.push(`(${bits.join(", ")} — strength held: ${r.held})`);
-  }
-  L.push(`*MOVE OUT: ${r.moveout}*`, `*PARTICIPATING: ${r.partic}*`, "");
+// A WhatsApp monospace block (```...```). Columns are padded so labels and
+// numbers line up when the message is read on a phone. `right` right-aligns the value.
+function monoBlock(rows, right){
+  const clean = rows.filter(Boolean);
+  if(!clean.length) return null;
+  const lw = Math.max(...clean.map(([k]) => String(k).length));
+  const vw = Math.max(...clean.map(([,v]) => String(v).length));
+  const body = clean.map(([k,v]) =>
+    `${String(k).padEnd(lw)}  ${right ? String(v).padStart(vw) : String(v)}`).join("\n");
+  return "```\n" + body + "\n```";
+}
+// Visual hierarchy, kept strict so the eye learns it instantly:
+//   ━ thick banner  = a NEW UNIT starts here (company report)
+//   ─ thin line     = a new section INSIDE the same unit
+const HR = "━━━━━━━━━━━━━━━━━━━";
+const THIN = "───────────────";
+const sCnt = (c,t) => `${fmt2(c+t)} (${fmt2(c)} + ${fmt2(t)})`;
+const unitName = u => u === "HQ" ? "COY HQ" : u.replace("PL", "PLATOON ");
 
+function unitReport(u, opts){
+  opts = opts || {};
+  const r = count(u), L = [];
+  const act = (el("act").value.trim() || "[ACTIVITY]").toUpperCase();
+  const caa = el("caa").value.trim();
+
+  // ---- header ----
+  if(opts.sub){
+    L.push(HR, `*▣  ${unitName(u)}*`, HR, "");   // unmistakable unit break
+  } else {
+    L.push(`*${unitName(u)}  —  ${act}*`);
+    if(caa) L.push(`_CAA ${caa}_`);
+    L.push(HR, "");
+  }
+
+  // ---- parade state (aligned) ----
+  L.push("*🧮 STRENGTH PARADE STATE*");
+  L.push(monoBlock([
+    ["TOTAL", r.original],
+    ["MOVE OUT", r.moveout],
+    ["PARTICIPATING", r.partic]
+  ], false));
+  const flow = [];
+  if(r.out) flow.push(`ATTACHED OUT ${sCnt(r.outC, r.outT)}`);
+  if(r.inCnt + r.guestCnt) flow.push(`ATTACHED IN ${sCnt(r.inC + r.gC, r.inT + r.gT)}`);
+  if(flow.length) L.push(`_${flow.join("  ·  ")} — strength held ${r.held}_`);
+  L.push("");
+
+  // ---- status breakdown (numbered name lists) ----
   S.cats.forEach(c => {
     const list = personsOf(u).filter(p => { const st = statusOf(p); return !attachOf(p) && st && st.id === c.id; });
     if(!list.length) return;
-    L.push("───────────────", `*${c.label}: ${fmt2(list.length)}*`);
-    list.forEach((p,i) => L.push(`${i+1}. ${p.rank} ${p.name} (${apptOf(p)})${S.reason[p.id]?` — ${S.reason[p.id]}`:""}`));
+    L.push(`*${c.label}  ·  ${fmt2(list.length)}*`);
+    list.forEach((p,i) => L.push(`${i+1}. ${p.rank} ${p.name} _(${apptOf(p)})_${S.reason[p.id]?` — ${S.reason[p.id]}`:""}`));
     L.push("");
   });
+
+  // ---- attachments ----
   const out = personsOf(u).filter(p => attachOf(p));
   if(out.length){
-    L.push("───────────────", `*ATTACHED OUT: ${fmt2(out.length)}*`);
+    L.push(`*➡️ ATTACHED OUT  ·  ${fmt2(out.length)}*`);
     out.forEach((p,i) => { const a = attachOf(p);
-      L.push(`${i+1}. ${p.rank} ${p.name} (${apptOf(p)}) — TO ${a.to===EXTERNAL?(a.note&&a.note!=="AUTO"?a.note:"ANOTHER COY"):a.to}`); });
+      L.push(`${i+1}. ${p.rank} ${p.name} _(${apptOf(p)})_ → ${a.to===EXTERNAL?(a.note&&a.note!=="AUTO"?a.note:"ANOTHER COY"):a.to}${a.to!==EXTERNAL?" _· gear follows him_":""}`); });
     L.push("");
   }
   const ins = Object.keys(S.attach).filter(pid => S.attach[pid] && S.attach[pid] !== OFF && S.attach[pid].to === u).map(byId).filter(p => p && p.unit !== u);
   if(ins.length){
-    L.push("───────────────", `*ATTACHED IN: ${fmt2(ins.length)}*`);
+    L.push(`*⬅️ ATTACHED IN  ·  ${fmt2(ins.length)}*`);
     ins.forEach((p,i) => { const a = S.attach[p.id];
-      const f = [a.mo===false?"not moving out":null, a.pa===false?"not participating":null].filter(Boolean);
-      L.push(`${i+1}. ${p.rank} ${p.name} (${apptOf(p)}) — FROM ${p.unit}${f.length?` [${f.join(", ")}]`:""}`); });
-    L.push("");
+      const f = [a.mo===false?"no move out":null, a.pa===false?"no participate":null].filter(Boolean);
+      L.push(`${i+1}. ${p.rank} ${p.name} _(${apptOf(p)})_ ← ${p.unit}${f.length?` _[${f.join(", ")}]_`:""}`); });
+    L.push("_Gear came with them — counted in the equipment below._", "");
   }
   const gs = guestsOf(u);
   if(gs.length){
-    L.push("───────────────", `*ATTACHED IN (OTHER COY/UNIT): ${fmt2(gs.length)}*`);
+    L.push(`*⬅️ ATTACHED IN · OTHER COY/UNIT  ·  ${fmt2(gs.length)}*`);
     gs.forEach((g,i) => {
-      const f = [g.mo===false?"not moving out":null, g.pa===false?"not participating":null].filter(Boolean);
-      L.push(`${i+1}. ${g.rank} ${g.name}${g.appt?` (${g.appt})`:""} — FROM ${g.from}${f.length?` [${f.join(", ")}]`:""} (gear from ${g.from})`);
+      const f = [g.mo===false?"no move out":null, g.pa===false?"no participate":null].filter(Boolean);
+      L.push(`${i+1}. ${g.rank} ${g.name}${g.appt?` _(${g.appt})_`:""} ← ${g.from}${f.length?` _[${f.join(", ")}]_`:""}`);
     });
-    L.push("");
+    L.push("_Gear from their own unit — tallied separately below._", "");
   }
+
+  // ---- equipment drawn from our armskote (aligned monospace tables) ----
   const eq = computeEquip(u);
-  // e.g. SAR21: 21 (06 with M203 mounted) — the mounted pair is one weapon system
   const mountNote = {};
   S.rules.accessories.forEach(([host, item]) => {
     if(!WEAPON_CHOICES.includes(item)) return;
@@ -1282,22 +1562,79 @@ function unitReport(u){
     if(!n) return;
     mountNote[item] = (mountNote[item] || []).concat(`${fmt2(n)} with ${host} mounted`);
   });
-  const sect = (title, items, vals) => {
-    const lines = items.map(i => {
+  let eqShown = false;
+  const eqSect = (title, items, vals) => {
+    const rows = items.map(i => {
       const e = el(`q-${u}-${vals}-${slug(i)}`);
       const v = e ? e.value : "";
       if(!v || Number(v) === 0) return null;
-      const note = (vals === "wpn" && mountNote[i]) ? ` (${mountNote[i].join(", ")})` : "";
-      return `• ${i}: ${v}${note}`;
+      return [i, v];
     }).filter(Boolean);
-    if(lines.length){ L.push("───────────────", `*${title}*`, ...lines, ""); }
+    if(!rows.length) return;
+    if(!eqShown){ L.push(THIN, "*📦 EQUIPMENT — DRAWN FROM ALPHA ARMSKOTE*", ""); eqShown = true; }
+    L.push(`*${title}*`, monoBlock(rows, true));
+    if(vals === "wpn"){
+      rows.forEach(([i]) => { if(mountNote[i]) L.push(`_${i}: ${mountNote[i].join(", ")}_`); });
+    }
+    L.push("");
   };
-  sect("WEAPON", WEAPON_ITEMS, "wpn");
-  sect("SIGNAL/OPTICS/UOCE", SIGNALS_ITEMS, "sig");
-  sect("PANTES EQUIPMENT", PANTES_ITEMS, "pan");
-  sect("SECTION STORES", STORE_ITEMS, "store");
-  sect("TAG STORES", TAG_ITEMS, "tag");
-  L.push("───────────────", `_build ${BUILD_ID}_`);
+  eqSect("WEAPON", WEAPON_ITEMS, "wpn");
+  eqSect("SIGNAL / OPTICS / UOCE", SIGNALS_ITEMS, "sig");
+  eqSect("PANTES", PANTES_ITEMS, "pan");
+  eqSect("SECTION STORES", STORE_ITEMS, "store");
+  eqSect("TAG STORES", TAG_ITEMS, "tag");
+
+  // ---- attached-in equipment (from their own unit) — kept separate ----
+  if(gs.length){
+    const ge = computeGuestEquip(u);
+    const rowsOf = (items,vals) => items.map(i => vals[i] ? [i, vals[i]] : null).filter(Boolean);
+    const any = [ge.wpn, ge.sig, ge.pan].some(o => Object.values(o).some(v => v));
+    if(any){
+      L.push(THIN, `*⬅️ ATTACHED-IN EQUIPMENT  ·  ${fmt2(gs.length)} PAX*`, "_From their own unit — do not add to our figures._", "");
+      [["WEAPON",WEAPON_ITEMS,ge.wpn],["SIGNAL / OPTICS",SIGNALS_ITEMS,ge.sig],["PANTES",PANTES_ITEMS,ge.pan]].forEach(([t,items,vals]) => {
+        const rows = rowsOf(items, vals);
+        if(rows.length) L.push(`*${t}*`, monoBlock(rows, true), "");
+      });
+    }
+  }
+
+  // ---- additional (free text) ----
+  const nt = (S.notes && S.notes[u]) ? String(S.notes[u]).trim() : "";
+  if(nt){
+    L.push(THIN, "*📝 ADDITIONAL*",
+      ...nt.split(/\r?\n/).map(x => x.trim()).filter(Boolean).map(x => `- ${x}`), "");
+  }
+  if(!opts.sub) L.push(HR, `_RAWDY · build ${BUILD_ID}_`);
+  return L.join("\n").replace(/\n{3,}/g,"\n\n").trim();
+}
+
+// The whole company in one message: company end state first, then HQ and every
+// platoon in full — what the CSM sends up after merging all the platoon codes.
+function companyReport(){
+  const c = coyCount(), L = [];
+  const act = (el("act").value.trim() || "[ACTIVITY]").toUpperCase();
+  const caa = el("caa").value.trim();
+  L.push(`*${act}*`);
+  if(caa) L.push(`_CAA ${caa}_`);
+  L.push(HR, "", "*🧮 COMPANY PARADE STATE*");
+  L.push(monoBlock([
+    ["TOTAL", c.original],
+    ["MOVE OUT", c.moveout],
+    ["PARTICIPATING", c.partic]
+  ], false));
+  const flow = [];
+  if(c.ext) flow.push(`ATTACHED OUT ${sCnt(c.extC, c.extT)}`);
+  if(c.extIn) flow.push(`ATTACHED IN ${sCnt(c.extInC, c.extInT)}`);
+  if(flow.length) L.push(`_${flow.join("  ·  ")} — strength held ${c.held}_`);
+  // one line per unit so the reader sees the spread before the detail
+  L.push("", "*BY UNIT*");
+  L.push(monoBlock(UNITS.map(u => {
+    const r = count(u);
+    return [u, `${r.original}  ▸ MO ${r.moveout}  ▸ PT ${r.partic}`];
+  }), false));
+  L.push("");
+  UNITS.forEach(u => { L.push(unitReport(u, {sub:true}), ""); });
+  L.push(HR, `_RAWDY · build ${BUILD_ID}_`);
   return L.join("\n").replace(/\n{3,}/g,"\n\n").trim();
 }
 function doGenerate(){
@@ -1316,11 +1653,16 @@ el("gen").onclick = doGenerate;
 el("gen2").onclick = doGenerate;
 el("copy2").onclick = () => copyText(el("out").value, "Copied to clipboard");
 el("gencoy").onclick = () => {
-  const c = coyCount();
-  const head = [`*COY*`, "───────────────", `*TOTAL: ${c.original}*`];
-  if(c.ext) head.push(`(${fmt2(c.ext)} attached out of the coy — strength held: ${c.held})`);
-  head.push(`*MOVE OUT: ${c.moveout}*`, `*PARTICIPATING: ${c.partic}*`);
-  el("out").value = head.join("\n") + "\n\n" + (el("out").value || "");
+  try {
+    el("out").value = companyReport();
+    const o = el("out");
+    o.scrollIntoView({block:"center", behavior:"smooth"});
+    o.classList.add("flash");
+    setTimeout(() => o.classList.remove("flash"), 1200);
+    setStat("Company report generated — HQ + PL1–PL3");
+  } catch(err){
+    setStat("Company report failed: " + (err && err.message ? err.message : err));
+  }
 };
 function copyText(t, msg){
   const o = el("out");
@@ -1389,7 +1731,75 @@ function renderRules(){
     `<div class="it"><label>${i}</label><input type="number" min="0" class="se" data-i="${i}" value="${q}"></div>`).join("");
   el("r-tag").innerHTML = Object.entries(S.rules.tagEstab).map(([i,q]) =>
     `<div class="it"><label>${i}</label><input type="number" min="0" class="te" data-i="${i}" value="${q}"></div>`).join("");
+  renderCats();
 }
+// ---- status category editor ----
+function catKindVal(c){ return c.kind === "stayback" ? "stayback:" + (c.camp === "out" ? "out" : "in") : c.kind; }
+function applyKindVal(c, val){
+  if(val.indexOf("stayback") === 0){ c.kind = "stayback"; c.camp = val.slice(-3) === "out" ? "out" : "in"; }
+  else { c.kind = val; delete c.camp; }
+}
+function renderCats(){
+  const box = el("catlist"); if(!box) return;
+  const opt = (c,val,txt) => `<option value="${val}"${catKindVal(c)===val?" selected":""}>${txt}</option>`;
+  box.innerHTML = S.cats.map((c,i) => `
+    <div class="rrow" data-ci="${i}">
+      <input type="text" class="cat-label" value="${(c.label||"").replace(/"/g,"&quot;")}" style="flex:1; min-width:150px;">
+      <select class="cat-kind">
+        ${opt(c,"stayback:out","Out of camp — no gear")}
+        ${opt(c,"stayback:in","In camp, not moving — no gear")}
+        ${opt(c,"moveout_np","Moves out, no participate (draws gear)")}
+        ${opt(c,"moveout_np_ng","Moves out, no participate, no gear")}
+        ${opt(c,"participate","Participates + gear")}
+      </select>
+      <button type="button" class="del" data-delcat="${c.id}">✕</button>
+    </div>`).join("");
+}
+(function(){
+  const box = el("catlist"); if(!box) return;
+  const readCats = () => {
+    [...box.querySelectorAll(".rrow")].forEach(r => {
+      const c = S.cats[+r.dataset.ci]; if(!c) return;
+      const lab = r.querySelector(".cat-label").value.trim().toUpperCase();
+      if(lab) c.label = lab;
+      applyKindVal(c, r.querySelector(".cat-kind").value);
+    });
+    renderAll(); saveGlobal();
+  };
+  box.addEventListener("input", e => { if(e.target.classList.contains("cat-label")) readCats(); });
+  box.addEventListener("change", e => { if(e.target.classList.contains("cat-kind")) readCats(); });
+  box.addEventListener("click", e => {
+    const id = e.target.dataset.delcat; if(!id) return;
+    if(S.cats.length <= 1){ alert("Keep at least one status."); return; }
+    // deleting a built-in is a deliberate choice — remember it so updates don't resurrect it
+    if(DEFAULT_CATS.some(c => c.id === id)){
+      S.catsRemoved = S.catsRemoved || [];
+      if(!S.catsRemoved.includes(id)) S.catsRemoved.push(id);
+    }
+    S.cats = S.cats.filter(c => c.id !== id);
+    Object.keys(S.status).forEach(pid => { if(S.status[pid] === id) delete S.status[pid]; });
+    S.rules.autoStatus = (S.rules.autoStatus||[]).filter(a => a[1] !== id);
+    renderCats(); renderRules(); renderAll(); saveGlobal();
+  });
+  el("cat-add").onclick = () => {
+    const lab = el("cat-new").value.trim().toUpperCase();
+    if(!lab){ alert("Type a label for the new status."); return; }
+    const c = {id:"c-"+Date.now()+"-"+Math.floor(Math.random()*999), label:lab};
+    applyKindVal(c, el("cat-newkind").value);
+    S.cats.push(c);
+    el("cat-new").value = "";
+    renderCats(); renderRules(); renderAll(); saveGlobal();
+  };
+  el("cat-reset").onclick = () => {
+    if(!confirm("Restore the default status list? Custom statuses are removed; anyone tagged with a removed status becomes PRESENT.")) return;
+    const keep = new Set(DEFAULT_CATS.map(c => c.id));
+    Object.keys(S.status).forEach(pid => { const v = S.status[pid]; if(v && v !== PRESENT && !keep.has(v)) delete S.status[pid]; });
+    S.cats = DEFAULT_CATS.map(c => ({...c}));
+    S.catsRemoved = [];
+    S.rules.autoStatus = (S.rules.autoStatus||[]).filter(a => keep.has(a[1]));
+    renderCats(); renderRules(); renderAll(); saveGlobal();
+  };
+})();
 function readRules(){
   const rows = k => [...document.querySelectorAll(`.rrow[data-k="${k}"]`)].map(r => {
     const m = r.querySelector(".m").value.trim().toUpperCase();
@@ -1602,10 +2012,11 @@ function unitPayload(u){
     appt: pick(S.appt), gear: pick(S.gear),
     guests: guestsOf(u),
     sOver: (S.sOver||{})[u] || {},
-    equip: S.equip[u] || {}, live: S.live[u] !== false
+    equip: S.equip[u] || {}, live: S.live[u] !== false,
+    notes: (S.notes||{})[u] || ""
   };
 }
-function globalPayload(){ return {cats:S.cats, rules:S.rules, meta:{act:el("act").value, caa:el("caa").value}}; }
+function globalPayload(){ return {cats:S.cats, catsRemoved:S.catsRemoved||[], rules:S.rules, meta:{act:el("act").value, caa:el("caa").value}}; }
 
 async function put(key, obj, attempt=1){
   if(!shareOn || offSave || ready !== true) return;
@@ -1636,9 +2047,11 @@ async function loadAll(){
   try { const r = await sGet(GKEY); g = r && JSON.parse(r.value); } catch(e){}
   if(g){
     if(Array.isArray(g.cats) && g.cats.length) S.cats = g.cats;
+    S.catsRemoved = Array.isArray(g.catsRemoved) ? g.catsRemoved : [];
     if(g.rules) S.rules = {...JSON.parse(JSON.stringify(DEFAULT_RULES)), ...g.rules};
     if(g.meta){ el("act").value = g.meta.act || ""; el("caa").value = g.meta.caa || ""; }
   }
+  ensureDefaultCats();   // saved data from an older build still gets new built-in statuses
   for(const u of UNITS){
     let d = null;
     try { const r = await sGet(ukey(u)); d = r && JSON.parse(r.value); } catch(e){}
@@ -1652,6 +2065,7 @@ async function loadAll(){
     S.guests = (S.guests||[]).filter(g => g.unit !== u).concat(Array.isArray(d.guests) ? d.guests : []);
     if(d.sOver && Object.keys(d.sOver).length) S.sOver[u] = d.sOver; else delete S.sOver[u];
     S.equip[u] = d.equip || {}; S.live[u] = d.live !== false;
+    S.notes = S.notes || {}; if(d.notes) S.notes[u] = d.notes; else delete S.notes[u];
   }
   // integrity: drop any attachment whose person or destination no longer exists
   Object.keys(S.attach).forEach(pid => {
@@ -1703,17 +2117,53 @@ el("wipe").onclick = async () => {
 // A compact, self-contained snapshot of everything — no storage needed.
 function sessionSnapshot(){
   return {v:3, persons:S.persons, status:S.status, reason:S.reason, attach:S.attach,
-          appt:S.appt, gear:S.gear, guests:S.guests, sOver:S.sOver, cats:S.cats, rules:S.rules, equip:S.equip, live:S.live,
-          meta:{act:el("act").value, caa:el("caa").value}};
+          appt:S.appt, gear:S.gear, guests:S.guests, sOver:S.sOver, cats:S.cats, catsRemoved:S.catsRemoved||[],
+          rules:S.rules, equip:S.equip, live:S.live,
+          notes:S.notes, meta:{act:el("act").value, caa:el("caa").value}};
 }
 el("exp").onclick = () => {
   const code = "RAWDY-SESSION " + JSON.stringify(sessionSnapshot());
   copyText(code, "Session code copied — paste it to the other phone");
 };
+// Merge ONE platoon's slice without touching the others — how each PS passes his
+// platoon to the CSM (or another PS) when there is no shared storage between phones.
+function mergeUnit(u, d, cats){
+  // adopt any status category this phone has not seen, so custom tags survive the trip
+  if(Array.isArray(cats)) cats.forEach(c => {
+    if(c && c.id && !S.cats.some(x => x.id === c.id)) S.cats.push(c);
+  });
+  const oldIds = personsOf(u).map(p => p.id);
+  if(Array.isArray(d.persons) && d.persons.length)
+    S.persons = S.persons.filter(p => p.unit !== u).concat(d.persons);
+  [S.status, S.reason, S.attach, S.appt, S.gear].forEach(o => oldIds.forEach(id => { delete o[id]; }));
+  Object.assign(S.status, d.status||{}); Object.assign(S.reason, d.reason||{});
+  Object.assign(S.attach, d.attach||{}); Object.assign(S.appt, d.appt||{});
+  Object.assign(S.gear, d.gear||{});
+  S.guests = (S.guests||[]).filter(g => g.unit !== u).concat(Array.isArray(d.guests) ? d.guests : []);
+  if(d.sOver && Object.keys(d.sOver).length) S.sOver[u] = d.sOver; else delete S.sOver[u];
+  S.equip[u] = d.equip || {}; S.live[u] = d.live !== false;
+  S.notes = S.notes || {}; if(d.notes) S.notes[u] = d.notes; else delete S.notes[u];
+  const oi = {}; UNITS.forEach((x,i) => oi[x] = i);
+  S.persons.sort((a,b) => oi[a.unit] - oi[b.unit]);
+  ensureDefaultCats();
+}
 el("imp").onclick = () => {
   const raw = prompt("Paste the session code here:", "");
   if(!raw) return;
-  const txt = raw.trim().replace(/^RAWDY-SESSION\s*/, "");
+  const t0 = raw.trim();
+  // a platoon code merges one platoon; a session code replaces everything
+  if(/^RAWDY-PL\b/.test(t0)){
+    let d;
+    try { d = JSON.parse(t0.replace(/^RAWDY-PL\s*/, "")); }
+    catch(e){ setStat("That does not look like a platoon code."); return; }
+    if(!d || !UNITS.includes(d.unit) || !d.data){ setStat("Platoon code incomplete — nothing loaded."); return; }
+    mergeUnit(d.unit, d.data, d.cats);
+    buildTabs(); buildPanels(); renderRules(); renderAll();
+    save(d.unit); saveGlobal();
+    setStat(d.unit + " merged — other platoons untouched (" + coyCount().original + ")");
+    return;
+  }
+  const txt = t0.replace(/^RAWDY-SESSION\s*/, "");
   let d;
   try { d = JSON.parse(txt); } catch(e){ setStat("That does not look like a session code."); return; }
   if(!d || !Array.isArray(d.persons)){ setStat("Session code is incomplete — nothing loaded."); return; }
@@ -1721,8 +2171,10 @@ el("imp").onclick = () => {
   S.status = d.status || {}; S.reason = d.reason || {}; S.attach = d.attach || {};
   S.appt = d.appt || {}; S.gear = d.gear || {}; S.guests = d.guests || [];
   if(Array.isArray(d.cats) && d.cats.length) S.cats = d.cats;
+  S.catsRemoved = Array.isArray(d.catsRemoved) ? d.catsRemoved : [];
+  ensureDefaultCats();
   if(d.rules) S.rules = {...JSON.parse(JSON.stringify(DEFAULT_RULES)), ...d.rules};
-  S.equip = d.equip || {}; S.live = d.live || {}; S.sOver = d.sOver || {};
+  S.equip = d.equip || {}; S.live = d.live || {}; S.sOver = d.sOver || {}; S.notes = d.notes || {};
   if(d.meta){ el("act").value = d.meta.act || ""; el("caa").value = d.meta.caa || ""; }
   buildTabs(); buildPanels(); renderRules(); renderAll();
   setStat("Session loaded — " + coyCount().original);
@@ -1754,10 +2206,48 @@ el("diag").onclick = async () => {
 };
 
 // ============================================================================
+// UPDATE CHECK — asks the host whether a newer build has been published.
+// Silent and harmless when there is no host (a local file just skips it).
+// ============================================================================
+let updateSeen = 0;
+async function checkForUpdate(){
+  if(location.protocol === "file:") return;          // no host to ask
+  try {
+    const r = await fetch("version.json?t=" + Date.now(), {cache:"no-store"});
+    if(!r.ok) return;
+    const v = await r.json();
+    const n = Number(v && v.build);
+    if(!n || n <= BUILD_NO || n === updateSeen) return;
+    updateSeen = n;
+    showUpdateBar(n, v.note || "");
+  } catch(e){ /* offline or no version file — never bother the user about it */ }
+}
+function showUpdateBar(n, note){
+  if(document.getElementById("updbar")) return;
+  const d = document.createElement("div");
+  d.id = "updbar";
+  d.innerHTML = `<span><b>New version available</b> — build ${n}${note ? " · " + note : ""}.
+    Your roll and tagging are saved and will still be here.</span>
+    <span><button type="button" id="upd-go">Update now</button>
+    <button type="button" id="upd-later">Later</button></span>`;
+  document.querySelector(".rw").appendChild(d);
+  document.getElementById("upd-go").onclick = async () => {
+    try { await flush(); } catch(e){}                 // save first, always
+    location.replace(location.pathname + "?v=" + n);  // bypass the cached copy
+  };
+  document.getElementById("upd-later").onclick = () => d.remove();
+}
+
+// ============================================================================
 // BOOT
 // ============================================================================
 buildTabs(); buildPanels(); renderRules(); renderAll();
 el("now").click();
+
+// check shortly after opening, when the phone is brought back to the app, and hourly
+setTimeout(checkForUpdate, 4000);
+document.addEventListener("visibilitychange", () => { if(!document.hidden) checkForUpdate(); });
+setInterval(checkForUpdate, 60 * 60 * 1000);
 
 // Try to connect sharing by itself — if the shared storage is there, the PS should
 // not have to find a button for it. Silent when unavailable; the banner explains.
