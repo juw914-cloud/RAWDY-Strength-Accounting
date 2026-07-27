@@ -174,9 +174,21 @@ body{margin:0; background:#0E100C; }
 /* ---- equipment ---- */
 .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(148px,1fr)); gap:7px;}
 .it{display:flex; align-items:center; justify-content:space-between; gap:7px; background:var(--surface2);
-  border:1px solid var(--border); border-radius:3px; padding:6px 9px;}
+  border:1px solid var(--border); border-radius:3px; padding:6px 9px; flex-wrap:wrap;}
 .it label{font-size:10.5px; color:var(--dim); letter-spacing:0.02em;}
 .it input{width:62px; text-align:right; font-family:var(--fm); padding:4px 6px; background:var(--bg);}
+/* ---- equipment list editor ---- */
+.ilist{border:1px solid var(--border); border-radius:3px; background:var(--bg);}
+.irow{display:flex; align-items:center; gap:5px; padding:6px 8px; border-bottom:1px solid var(--border); flex-wrap:wrap;}
+.irow:last-child{border-bottom:none;}
+.irow .nm{flex:1; min-width:110px; font-size:12.5px; font-weight:600;}
+.irow input[type=number]{width:54px; text-align:right; font-family:var(--fm); padding:4px 6px; background:var(--surface2);}
+.irow .mini{font-size:11px; padding:4px 8px; min-height:0; line-height:1;}
+.irow .mini.del{border-color:var(--bad); color:var(--bad2);}
+.irow .sub{flex:1 1 100%; display:flex; gap:5px;}
+.irow .sub input{flex:1; min-width:0; font-size:11px; padding:3px 6px; color:var(--dim);}
+.irow .sub input.ito{color:var(--acc2);}
+@media (pointer:coarse){ .irow .mini{min-height:36px; padding:4px 11px;} }
 .eqg{margin-bottom:11px;}
 details.card>summary{cursor:pointer; font-family:var(--fh); font-size:12px; font-weight:700;
   letter-spacing:0.06em; text-transform:uppercase; color:var(--acc2); list-style:none;}
@@ -195,6 +207,9 @@ details.card[open]>summary::before{content:'▾ ';}
 .rrow .qty{width:54px; text-align:right;}
 .rrow .fo{display:flex; align-items:center; gap:4px; font-size:11px; color:var(--dim); white-space:nowrap;}
 .rrow .fo input{width:auto;}
+/* derived "what he really carries" hint on a weapon rule */
+.rrow .pairhint{font-family:var(--fm); font-size:10.5px; color:var(--acc2);
+  background:rgba(201,162,39,0.10); border-radius:3px; padding:2px 7px; white-space:nowrap;}
 
 /* ---- output ---- */
 #out{width:100%; min-height:230px; font-family:var(--fm); font-size:12px; background:var(--bg);}
@@ -249,9 +264,24 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
     padding:12px 14px calc(14px + env(safe-area-inset-bottom));}
 }
 @media (max-width:480px){
+  .rw{padding:8px 8px 78px;}
+  .rw .card{padding:10px 11px; margin-bottom:9px;}
+  .rw h1{font-size:15px;}
   .big3{grid-template-columns:1fr;}
+  .big .v{font-size:21px;}
   .grid{grid-template-columns:1fr;}
-  .chip .ld{display:none;}
+  /* mobile shows the SAME info as laptop — the loadout gets its own full-width
+     line under the name instead of being hidden */
+  .chip .ld{flex-basis:100%; max-width:100%; text-align:left; order:5; margin-top:2px;}
+  .tab{padding:8px 12px;}
+  /* the sticky end-state must not eat half the screen: three compact tiles */
+  .end{padding:7px 9px 9px;}
+  .end .t{font-size:11px; margin-bottom:4px;}
+  .end .big3{grid-template-columns:repeat(3,1fr); gap:5px;}
+  .end .big{padding:5px 6px;}
+  .end .big label{font-size:8px; letter-spacing:0.04em;}
+  .end .big .v, .end .vedit{font-size:12.5px;}
+  .end .big .d{font-size:10px;}
 }
 </style>
 </head>
@@ -261,7 +291,7 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
 <div class="card hdr">
   <h1>RAWDY — Strength &amp; Equipment Accounting</h1>
   <div class="note">Company-level manpower and equipment accounting for HQ, PL1, PL2, PL3.
-    <span id="build" style="float:right; font-family:var(--fm); color:var(--muted);">BUILD 20 · 26JUL26</span></div>
+    <span id="build" style="float:right; font-family:var(--fm); color:var(--muted);">BUILD 30 · 27JUL26</span></div>
 </div>
 
 <div class="card">
@@ -275,22 +305,23 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
       <div style="display:flex; gap:5px;"><input type="text" id="caa" style="flex:1;"><button type="button" id="now">Now</button></div>
     </div>
   </div>
-  <div class="bar" style="align-items:center;">
-    <button type="button" id="enable">Turn on sharing &amp; auto-save</button>
-    <button type="button" id="sync" style="display:none;">Sync now</button>
-    <button type="button" id="wipe" style="border-color:var(--bad); color:var(--bad2);">Erase everything &amp; start fresh</button>
-    <button type="button" id="exp">Copy session code</button>
-    <button type="button" id="imp">Load session code</button>
-    <button type="button" id="diag" style="color:var(--muted);">Show saved data</button>
-    <span class="status" id="stat"></span>
-  </div>
   <div id="sharebanner" class="note" style="display:none; padding:8px 10px; border-radius:3px; margin-bottom:6px;"></div>
-  <div style="display:none;">
-  </div>
-  <div class="note" style="margin-bottom:5px;"><b>Copy session code</b> shares everything — statuses, attachments, roles — as text you can WhatsApp to another phone; they press <b>Load session code</b>. This always works, even when auto-sharing is unavailable.</div>
-  <div class="note" style="margin-bottom:5px;"><b>Working as separate PSes:</b> each platoon panel has <b>Copy PL code</b> — it carries that platoon only. Loading it <b>merges just that platoon</b> and leaves the rest untouched, so each PS updates his own platoon on his own phone, WhatsApps the code, and the CSM loads all three into one picture.</div>
-  <div class="note" style="margin-bottom:5px;"><b>Erase everything &amp; start fresh</b> wipes all saved data for every platoon and rebuilds from the built-in roll — use it if the shared session is ever in a bad state. <b>Show saved data</b> prints what is stored into the output box.</div>
-  <div class="note">Sharing is <b>off by default</b> — the tool works fully without it. Turn it on so each PS edits their own platoon on one shared link; every platoon saves separately.</div>
+  <details>
+    <summary class="note" style="cursor:pointer; font-weight:700; color:var(--acc2);">Sharing, backup &amp; PS codes ▾</summary>
+    <div class="bar" style="align-items:center; margin-top:9px;">
+      <button type="button" id="enable">Turn on sharing &amp; auto-save</button>
+      <button type="button" id="sync" style="display:none;">Sync now</button>
+      <button type="button" id="exp">Copy session code</button>
+      <button type="button" id="imp">Load session code</button>
+      <button type="button" id="diag" style="color:var(--muted);">Show saved data</button>
+      <button type="button" id="wipe" style="border-color:var(--bad); color:var(--bad2);">Erase everything &amp; start fresh</button>
+    </div>
+    <div class="note" style="margin-bottom:5px;"><b>Copy session code</b> shares everything — statuses, attachments, roles — as text you can WhatsApp to another phone; they press <b>Load session code</b>. This always works, even when auto-sharing is unavailable.</div>
+    <div class="note" style="margin-bottom:5px;"><b>Working as separate PSes:</b> each platoon panel has <b>Copy PL code</b> — it carries that platoon only. Loading it <b>merges just that platoon</b> and leaves the rest untouched, so each PS updates his own platoon on his own phone, WhatsApps the code, and the CSM loads all three into one picture.</div>
+    <div class="note" style="margin-bottom:5px;"><b>Erase everything &amp; start fresh</b> wipes all saved data for every platoon and rebuilds from the built-in roll — use it if the shared session is ever in a bad state. <b>Show saved data</b> prints what is stored into the output box.</div>
+    <div class="note">Sharing is <b>off by default</b> — the tool works fully without it. Turn it on so each PS edits their own platoon on one shared link; every platoon saves separately.</div>
+  </details>
+  <div class="status" id="stat" style="margin-top:6px; display:block;"></div>
 </div>
 
 <div class="card" id="coy">
@@ -328,6 +359,14 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
 </details>
 
 <details class="card">
+  <summary>Who draws what — plain English</summary>
+  <div class="note" style="margin:9px 0;">Worked out live from the rules, so it can never go out of date.
+    Show this to any PS taking over the system.</div>
+  <div class="bar"><button type="button" id="guide-copy">Copy as text</button></div>
+  <div id="guide"></div>
+</details>
+
+<details class="card">
   <summary>Full nominal roll — every pax, all units</summary>
   <div style="margin:9px 0;"><input type="text" id="rollq" placeholder="Search name, rank, appointment, unit..." style="width:100%;"></div>
   <div class="bar"><button type="button" id="rollcopy">Copy for Excel</button></div>
@@ -353,10 +392,13 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
 <details class="card">
   <summary>Equipment rules — what auto-generate issues</summary>
   <div class="note" style="margin:9px 0;">Applies to all platoons. Matching is by appointment text: a rule for <b>LMG</b> catches "1ST LMG" and "2ND LMG". First match wins; anyone unmatched gets SAR21.</div>
-  <div class="eqg"><h3>Weapon by appointment</h3><div id="r-wpn"></div><button type="button" id="r-wpn-add" style="font-size:11px;">+ Add rule</button></div>
+  <div class="eqg"><h3>Weapon by appointment</h3>
+    <div class="note" style="margin-bottom:6px;">The grey text shows what the man <b>actually ends up carrying</b>. A launcher rides on a rifle, so an M203 man shows <b>= M203 / SAR21</b>. That pairing is set in <b>Weapon accessories</b> below — change it there and this line follows.</div>
+    <div id="r-wpn"></div><button type="button" id="r-wpn-add" style="font-size:11px;">+ Add rule</button></div>
   <div class="eqg"><h3>SFT by appointment</h3><div id="r-sft"></div><button type="button" id="r-sft-add" style="font-size:11px;">+ Add rule</button></div>
   <div class="eqg"><h3>Weapon accessories</h3>
-    <div class="note" style="margin-bottom:6px;">Qty is per weapon. "1st only" = kit only the first holder carries.</div>
+    <div class="note" style="margin-bottom:6px;">Qty is per weapon. "1st only" = kit only the first holder carries.
+      <br><b>Pairing two weapons:</b> pick a <i>weapon</i> as the item — e.g. <b>M203 → SAR21</b> means every M203 man also carries a SAR21 (and its BFA, pouch and SFT). Same for MATADOR and MPAT.</div>
     <div id="r-acc"></div><button type="button" id="r-acc-add" style="font-size:11px;">+ Add accessory</button></div>
   <div class="eqg"><h3>Signal / optics by appointment</h3>
     <div class="note" style="margin-bottom:6px;">Appointment matches exactly. Rank blank = any rank. Commanders also get MAP + COMPASS automatically.</div>
@@ -370,9 +412,15 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
   <div class="eqg"><h3>Always attached out</h3>
     <div class="note" style="margin-bottom:6px;">Appointments automatically attached out of the company (comma separated) — e.g. MPAT. Override any individual from his name.</div>
     <input type="text" id="r-autoatt" style="width:100%;"></div>
-  <div class="eqg"><h3>Section stores establishment</h3><div class="grid" id="r-store"></div></div>
-  <div class="eqg"><h3>TAG stores establishment</h3><div class="grid" id="r-tag"></div></div>
   <button type="button" id="r-reset" style="font-size:11px;">Restore default rules</button>
+</details>
+
+<details class="card">
+  <summary>Equipment list — add, remove, reorder any item</summary>
+  <div class="note" style="margin:9px 0;">Everything the tool can count lives here. Add an item, delete one you never draw, or move it so the report reads the way you want — the order here <b>is</b> the order in the WhatsApp message. Applies to every platoon and saves with the session.
+    <br>For <b>Section</b> and <b>TAG stores</b> each item also carries its per-platoon quantity, an optional note printed beside it, and a per-platoon exception (e.g. <code>PL2:2</code>).</div>
+  <div id="itemed"></div>
+  <button type="button" id="it-reset" style="font-size:11px;">Restore default equipment list</button>
 </details>
 
 <details class="card">
@@ -399,6 +447,22 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
 <div id="panels"></div>
 
 <div class="card">
+  <details style="margin-bottom:10px;">
+    <summary class="note" style="cursor:pointer; font-weight:700; color:var(--acc2);">Message wording — coy &amp; unit names ▾</summary>
+    <div class="note" style="margin:7px 0 6px;">Changes the generated WhatsApp message only — the tabs and screens keep HQ / PL1 / PL2 / PL3. Short names read best.</div>
+    <div class="bar">
+      <div><label class="note">Coy name</label><br><input type="text" id="lb-coy" style="width:140px;"></div>
+      <div><label class="note">Report title</label><br><input type="text" id="lb-title" style="width:150px;"></div>
+      <div><label class="note">Armskote label</label><br><input type="text" id="lb-arm" style="width:160px;"></div>
+    </div>
+    <div class="bar">
+      <div><label class="note">HQ shows as</label><br><input type="text" id="lb-HQ" style="width:120px;"></div>
+      <div><label class="note">PL1 shows as</label><br><input type="text" id="lb-PL1" style="width:120px;"></div>
+      <div><label class="note">PL2 shows as</label><br><input type="text" id="lb-PL2" style="width:120px;"></div>
+      <div><label class="note">PL3 shows as</label><br><input type="text" id="lb-PL3" style="width:120px;"></div>
+      <button type="button" id="lb-reset" style="font-size:11px; align-self:flex-end;">Reset wording</button>
+    </div>
+  </details>
   <div class="bar">
     <button type="button" class="go" id="gen">Generate report</button>
     <button type="button" id="gencoy">Company report (HQ + PL1–3)</button>
@@ -446,25 +510,106 @@ const DEFAULT_CATS = [
   {"id": "others", "label": "OTHERS (STATE REASON)",    "kind": "moveout_np"}
 ];
 
-const WEAPON_ITEMS = ["SAR21", "SS", "M203", "LMG", "GPMG", "MATADOR", "MPAT", "M110", "KN252", "M110 SILENCER", "M110 TRIPOD", "SPARE BARREL", "MG TRIPOD", "GPMG CARTRIDGE POUCH", "GPMG AMMO FEEDER", "PYTHON BELT", "SAR21 MAG", "LMG MAG", "M110 MAG", "SAR21 BFA", "LMG BFA", "GPMG BFA", "SAR 21 AMMO POUCH", "LMG AMMO POUCH", "GPMG AMMO POUCH"], WEAPON_GROUPS = [["Weapons", ["SAR21", "SS", "M203", "LMG", "GPMG", "MATADOR", "MPAT", "M110"]], ["Blank firing attachments", ["SAR21 BFA", "LMG BFA", "GPMG BFA"]], ["Magazines & pouches", ["SAR21 MAG", "LMG MAG", "M110 MAG", "SAR 21 AMMO POUCH", "LMG AMMO POUCH", "GPMG AMMO POUCH"]], ["GPMG detail", ["GPMG CARTRIDGE POUCH", "GPMG AMMO FEEDER", "PYTHON BELT", "SPARE BARREL", "MG TRIPOD"]], ["Accessories", ["KN252", "M110 SILENCER", "M110 TRIPOD"]]];
-const SIGNALS_ITEMS = ["NVG", "PRC650", "PRC940", "COMPASS", "BINO", "UTWS", "MAP", "MG WALLET", "FSS", "CDS(FSS)", "UOCE", "TTS", "KHS", "HAMMER (HEARTLANDER)", "SNIP-IT (HEARTLANDER)", "CROWBAR (HEARTLANDER)"], SIGNALS_GROUPS = [["Comms", ["PRC650", "PRC940"]], ["Optics & navigation", ["NVG", "BINO", "UTWS", "COMPASS", "MAP"]], ["MG detail", ["MG WALLET"]], ["Surveillance / target", ["FSS", "CDS(FSS)", "UOCE", "TTS", "KHS"]], ["Heartlander (breaching)", ["HAMMER (HEARTLANDER)", "SNIP-IT (HEARTLANDER)", "CROWBAR (HEARTLANDER)"]]];
-const PANTES_ITEMS = ["CHOCO BAR", "BFI/PU", "LH MOUNT", "RH MOUNT", "FT MOUNT", "BT MOUNT", "GAMEBOY", "GAMEBOY POUCH", "SAR 21 SFT", "LMG SFT", "M203 SFT", "M203 LAUNCHER", "M203 ROUND", "GPMG SFT", "MATADOR SFT", "CLAYMORE SFT", "M110 SFT"], PANTES_GROUPS = [["Per-man kit", ["CHOCO BAR", "BFI/PU", "GAMEBOY", "GAMEBOY POUCH"]], ["Mounts", ["LH MOUNT", "RH MOUNT", "FT MOUNT", "BT MOUNT"]], ["SFT (one per weapon)", ["SAR 21 SFT", "LMG SFT", "GPMG SFT", "M203 SFT", "MATADOR SFT", "M110 SFT", "CLAYMORE SFT"]], ["M203 attachments", ["M203 LAUNCHER", "M203 ROUND"]]];
-const STORE_ITEMS = ["SECTION GROUND SHEET", "WIRED GLOVE", "ENGINEER GLOVE", "BREACHING FLAGS", "COLOURED FLAGS", "LIGHT STICK", "VINE CUTTER", "COVER LITTER", "BANGALORE", "CLAYMORE", "TRIPFLARE", "PARANG"], TAG_ITEMS = ["PANEL MARKERS", "TENT PINS", "MARSHALLING WANDS", "MARSHALLING GLOVES", "MALLET", "LENSATIC COMPASS", "WIND METER", "GROUNDSHEET", "ET BLADE", "ET POUCH", "ET STICK", "IR MARKER", "PRC940", "GREEN LIGHT STICKS"];
+// ============================================================================
+// EQUIPMENT CATALOGUE
+// These are only the STARTING lists. The live lists come from S.items and are
+// fully editable in the app (add / remove / reorder), so no code change is ever
+// needed to add an item. A new built-in item added here later appears on every
+// phone automatically, unless the user deliberately deleted it.
+// ============================================================================
+// Report order = list order. Grouped BY WEAPON SYSTEM so everything belonging to
+// one weapon (esp. the GPMG detail) prints together, never scattered.
+const DEF_WEAPON_ITEMS = ["SAR21", "SAR21 BFA", "SAR 21 AMMO POUCH", "SAR21 MAG",
+  "SS",
+  "M203",
+  "LMG", "LMG BFA", "LMG AMMO POUCH", "LMG MAG",
+  "GPMG", "GPMG BFA", "GPMG AMMO POUCH", "GPMG CARTRIDGE POUCH", "GPMG AMMO FEEDER", "PYTHON BELT", "MG WALLET", "SPARE BARREL", "MG TRIPOD",
+  "MATADOR", "MPAT",
+  "M110", "M110 SILENCER", "M110 TRIPOD", "M110 MAG"],
+DEF_WEAPON_GROUPS = [
+  ["Rifle", ["SAR21", "SS", "SAR21 BFA", "SAR 21 AMMO POUCH", "SAR21 MAG"]],
+  ["M203", ["M203"]],
+  ["LMG", ["LMG", "LMG BFA", "LMG AMMO POUCH", "LMG MAG"]],
+  ["GPMG", ["GPMG", "GPMG BFA", "GPMG AMMO POUCH", "GPMG CARTRIDGE POUCH", "GPMG AMMO FEEDER", "PYTHON BELT", "MG WALLET", "SPARE BARREL", "MG TRIPOD"]],
+  ["Anti-tank", ["MATADOR", "MPAT"]],
+  ["M110", ["M110", "M110 SILENCER", "M110 TRIPOD", "M110 MAG"]]];
+// KN252 is an OPTIC, not a weapon accessory — it lives here.
+const DEF_SIGNALS_ITEMS = ["PRC650", "PRC940", "NVG", "BINO", "KN252", "UTWS", "COMPASS", "MAP", "FSS", "CDS(FSS)", "UOCE", "TTS", "KHS", "HAMMER (HEARTLANDER)", "SNIP-IT (HEARTLANDER)", "CROWBAR (HEARTLANDER)"], DEF_SIGNALS_GROUPS = [["Comms", ["PRC650", "PRC940"]], ["Optics & navigation", ["NVG", "BINO", "KN252", "UTWS", "COMPASS", "MAP"]], ["Surveillance / target", ["FSS", "CDS(FSS)", "UOCE", "TTS", "KHS"]], ["Heartlander (breaching)", ["HAMMER (HEARTLANDER)", "SNIP-IT (HEARTLANDER)", "CROWBAR (HEARTLANDER)"]]];
+// No "M203 LAUNCHER" here: the launcher IS the M203, already counted under WEAPON.
+// PANTES carries only its SFT and rounds.
+const DEF_PANTES_ITEMS = ["CHOCO BAR", "BFI/PU", "LH MOUNT", "RH MOUNT", "FT MOUNT", "BT MOUNT", "GAMEBOY", "GAMEBOY POUCH", "SAR 21 SFT", "LMG SFT", "M203 SFT", "M203 ROUND", "GPMG SFT", "MATADOR SFT", "CLAYMORE SFT", "M110 SFT"], DEF_PANTES_GROUPS = [["Per-man kit", ["CHOCO BAR", "BFI/PU", "GAMEBOY", "GAMEBOY POUCH"]], ["Mounts", ["LH MOUNT", "RH MOUNT", "FT MOUNT", "BT MOUNT"]], ["SFT (one per weapon)", ["SAR 21 SFT", "LMG SFT", "GPMG SFT", "M203 SFT", "MATADOR SFT", "M110 SFT", "CLAYMORE SFT"]], ["M203 rounds", ["M203 ROUND"]]];
+const DEF_STORE_ITEMS = ["SECTION GROUND SHEET", "WIRED GLOVE", "ENGINEER GLOVE", "BREACHING FLAGS", "COLOURED FLAGS", "LIGHT STICK", "WIRE CUTTER", "VINE CUTTER", "COVER LITTER", "BANGALORE", "CLAYMORE", "TRIPFLARE", "PARANG"], DEF_TAG_ITEMS = ["PANEL MARKERS", "TENT PINS", "MARSHALLING WANDS", "MARSHALLING GLOVES", "MALLET", "LENSATIC COMPASS", "WIND METER", "GROUNDSHEET", "ET BLADE", "ET POUCH", "ET STICK", "IR MARKER", "PRC940", "GREEN LIGHT STICKS"];
+
+// ---- live lists, driven by S.items ----
+const DEF_ITEMS = {wpn:DEF_WEAPON_ITEMS, sig:DEF_SIGNALS_ITEMS, pan:DEF_PANTES_ITEMS,
+                   store:DEF_STORE_ITEMS, tag:DEF_TAG_ITEMS};
+const DEF_GROUPS = {wpn:DEF_WEAPON_GROUPS, sig:DEF_SIGNALS_GROUPS, pan:DEF_PANTES_GROUPS};
+const SECTION_LABELS = [["wpn","Weapon / Armskote"],["sig","Signals / Optics"],["pan","PANTES"],
+                        ["store","Section stores"],["tag","TAG stores"]];
+let WEAPON_ITEMS = DEF_WEAPON_ITEMS.slice(), SIGNALS_ITEMS = DEF_SIGNALS_ITEMS.slice(),
+    PANTES_ITEMS = DEF_PANTES_ITEMS.slice(), STORE_ITEMS = DEF_STORE_ITEMS.slice(),
+    TAG_ITEMS = DEF_TAG_ITEMS.slice();
+// Seed missing sections, and fold in any built-in item the user has not deleted.
+function ensureItems(){
+  S.items = S.items || {};
+  S.itemsRemoved = S.itemsRemoved || [];
+  Object.keys(DEF_ITEMS).forEach(k => {
+    if(!Array.isArray(S.items[k]) || !S.items[k].length){ S.items[k] = DEF_ITEMS[k].slice(); return; }
+    DEF_ITEMS[k].forEach((it, idx) => {
+      if(!S.items[k].includes(it) && !S.itemsRemoved.includes(it))
+        S.items[k].splice(Math.min(idx, S.items[k].length), 0, it);
+    });
+  });
+}
+function applyItems(){
+  ensureItems();
+  WEAPON_ITEMS = S.items.wpn; SIGNALS_ITEMS = S.items.sig; PANTES_ITEMS = S.items.pan;
+  STORE_ITEMS = S.items.store; TAG_ITEMS = S.items.tag;
+}
+// Screen grouping: keep the built-in groups for items still present, and gather
+// anything the user has added under "Other" so nothing is ever hidden.
+function groupsFor(k){
+  const list = S.items[k] || [];
+  const defs = DEF_GROUPS[k];
+  if(!defs) return [["", list]];
+  const used = new Set();
+  const out = defs.map(([t, items]) => {
+    const keep = items.filter(i => list.includes(i));
+    keep.forEach(i => used.add(i));
+    return [t, keep];
+  }).filter(x => x[1].length);
+  const rest = list.filter(i => !used.has(i));
+  if(rest.length) out.push(["Other", rest]);
+  return out;
+}
 const MAP_COMPASS_EXCLUDE = ["MEDIC", "CQ", "ASA"];
 const DEFAULT_RULES = {
   // A commander carries his own SAR21, NOT the section/platoon MG — his gunner does.
   weapon: [["MPAT", "MPAT"], ["MAT", "MATADOR"], ["M203", "M203"], ["GPMG COMD", "SAR21"], ["MG COMD", "SAR21"], ["LMG", "LMG"], ["MG OPR", "GPMG"], ["GPMG", "GPMG"], ["MM", "M110"], ["ASA", null], ["SAGE", null], ["CQ", null]],
   sft: [["MAT", "MATADOR SFT"], ["M203", "M203 SFT"], ["LMG", "LMG SFT"], ["MG OPR", "GPMG SFT"], ["MM", "M110 SFT"]],
-  signal: [["OC", null, ["NVG", "PRC650"]], ["PC", null, ["NVG", "PRC650"]], ["PL COMD", null, ["NVG", "PRC650"]], ["PS", null, ["NVG", "PRC650"]], ["APC", null, []], ["MG COMD", null, ["NVG", "PRC650"]], ["GPMG COMD", null, ["NVG", "PRC650"]], ["GPMG OPR", null, ["UTWS"]], ["MG OPR", null, ["UTWS"]], ["ASST OPR", null, ["MG WALLET"]], ["SC", null, ["NVG", "PRC650"]], ["1ST LMG", null, ["NVG"]], ["MM", "3SG", ["PRC650"]], ["RUNNER", null, ["PRC650"]], ["SENSOR", null, []], ["MEDIC", null, []]],
+  // The MG commander carries the BINO (one per MG detail).
+  signal: [["OC", null, ["NVG", "PRC650"]], ["PC", null, ["NVG", "PRC650"]], ["PL COMD", null, ["NVG", "PRC650"]], ["PS", null, ["NVG", "PRC650"]], ["APC", null, []], ["MG COMD", null, ["NVG", "PRC650", "BINO"]], ["GPMG COMD", null, ["NVG", "PRC650", "BINO"]], ["GPMG OPR", null, ["UTWS"]], ["MG OPR", null, ["UTWS"]], ["ASST OPR", null, ["MG WALLET"]], ["SC", null, ["NVG", "PRC650"]], ["1ST LMG", null, ["NVG"]], ["MM", "3SG", ["PRC650"]], ["RUNNER", null, ["PRC650"]], ["SENSOR", null, []], ["MEDIC", null, []]],
   // GPMG gunner draws the belt-fed detail: cartridge pouch, ammo feeder, python belt, spare barrel (2 barrels), BFA. Tripod is mission-dependent (off by default). Wallet sits on the assistant (issued via the signal rule above).
   accessories: [["SAR21", "SAR21 BFA", 1, false], ["LMG", "LMG BFA", 1, false], ["GPMG", "GPMG BFA", 2, false], ["SAR21", "SAR 21 AMMO POUCH", 1, false], ["LMG", "LMG AMMO POUCH", 1, false], ["GPMG", "GPMG AMMO POUCH", 1, false], ["GPMG", "GPMG CARTRIDGE POUCH", 1, false], ["GPMG", "GPMG AMMO FEEDER", 1, false], ["GPMG", "PYTHON BELT", 1, false], ["GPMG", "SPARE BARREL", 1, false], ["M110", "M110 TRIPOD", 1, false], ["M110", "M110 SILENCER", 1, false], ["M110", "KN252", 1, true], ["M203", "SAR21", 1, false], ["M203", "SAR21 BFA", 1, false], ["M203", "SAR 21 AMMO POUCH", 1, false], ["MATADOR", "SAR21", 1, false], ["MATADOR", "SAR21 BFA", 1, false], ["MATADOR", "SAR 21 AMMO POUCH", 1, false], ["MPAT", "SAR21", 1, false], ["MPAT", "SAR21 BFA", 1, false], ["MPAT", "SAR 21 AMMO POUCH", 1, false]],
   perman: {"CHOCO BAR": 4, "BFI/PU": 1, "LH MOUNT": 1, "RH MOUNT": 1, "FT MOUNT": 1, "BT MOUNT": 1, "GAMEBOY": 1, "GAMEBOY POUCH": 1},
   pantesExclude: ["ASA", "CQ", "SAGE"],
-  storeEstab: {"SECTION GROUND SHEET": 3, "WIRED GLOVE": 6, "ENGINEER GLOVE": 6, "BREACHING FLAGS": 6, "COLOURED FLAGS": 6, "LIGHT STICK": 48, "VINE CUTTER": 6, "COVER LITTER": 3, "BANGALORE": 6, "CLAYMORE": 6, "TRIPFLARE": 6, "PARANG": 6},
+  // COLOURED FLAGS: each section draws 4 colours x 2 of each = 08, over 3 sections = 24.
+  // BANGALORE 02, PARANG 03, TRIPFLARE 03 per platoon. VINE CUTTER: PL2 only (see estabUnit).
+  storeEstab: {"SECTION GROUND SHEET": 3, "WIRED GLOVE": 6, "ENGINEER GLOVE": 6, "BREACHING FLAGS": 6, "COLOURED FLAGS": 24, "LIGHT STICK": 48, "WIRE CUTTER": 6, "VINE CUTTER": 0, "COVER LITTER": 3, "BANGALORE": 2, "CLAYMORE": 6, "TRIPFLARE": 3, "PARANG": 3},
+  // Per-platoon exceptions to the establishment: item -> {unit: qty}.
+  estabUnit: {"VINE CUTTER": {"PL2": 2}},
+  // A short remark printed beside a stores item in the message, e.g. where it comes from.
+  itemNotes: {"LENSATIC COMPASS": "from commanders", "GROUNDSHEET": "from section", "PRC940": "from signaller",
+              "ET BLADE": "from section", "ET POUCH": "from section", "ET STICK": "from section"},
   tagEstab: {"PANEL MARKERS": 4, "TENT PINS": 36, "MARSHALLING WANDS": 2, "MARSHALLING GLOVES": 1, "MALLET": 1, "LENSATIC COMPASS": 1, "WIND METER": 1, "GROUNDSHEET": 1, "ET BLADE": 1, "ET POUCH": 1, "ET STICK": 1, "IR MARKER": 4, "PRC940": 1, "GREEN LIGHT STICKS": 8},
   autoStatus: [["ASA", "sbf"], ["SAGE", "moving"]],
   autoAttachOut: ["MPAT"]
 };
+// Wording used in the GENERATED MESSAGE only (screens keep HQ/PL1/2/3 codes).
+// All editable in the "Message wording" panel; kept out of ``` blocks so any
+// length is safe from wrapping.
+const DEFAULT_LABELS = {coy:"ALPHA COY", title:"PARADE STATE", armskote:"ARMSKOTE",
+  units:{HQ:"COY HQ", PL1:"PLATOON 1", PL2:"PLATOON 2", PL3:"PLATOON 3"}};
 const WEAPON_CHOICES = ["SAR21","SS","M203","LMG","GPMG","MATADOR","MPAT","M110"];
 const SFT_CHOICES = ["SAR 21 SFT","LMG SFT","GPMG SFT","M203 SFT","MATADOR SFT","M110 SFT","CLAYMORE SFT"];
 // Primary weapons belong here too: a weapon can be issued WITH another weapon
@@ -478,8 +623,8 @@ const RANK_CHOICES = ["","CPT","LTA","2LT","3WO","MSG","2SG","3SG","ME1-1","CPL"
 const WEAPON_TO_SFT = {"SAR21":"SAR 21 SFT","LMG":"LMG SFT","GPMG":"GPMG SFT","M203":"M203 SFT",
   "MATADOR":"MATADOR SFT","M110":"M110 SFT"};
 const EXTERNAL = "__EXT__";
-const BUILD_ID = "20 · 26JUL26";
-const BUILD_NO = 20;   // attached out of the company entirely
+const BUILD_ID = "30 · 27JUL26";
+const BUILD_NO = 30;   // attached out of the company entirely
 
 // ---- state ----
 function freshState(){
@@ -494,14 +639,26 @@ function freshState(){
     guests: [],        // men attached in from another coy/unit: {id,unit,rank,name,appt,from,mo,pa}
     cats: DEFAULT_CATS.map(c => ({...c})),
     catsRemoved: [],   // built-in statuses the user deliberately deleted — never resurrect these
+    items: JSON.parse(JSON.stringify(DEF_ITEMS)),   // the editable equipment catalogue
+    itemsRemoved: [],  // built-in items deliberately deleted
     rulesRev: 2,       // fresh state already carries the latest built-in rules
     rules: JSON.parse(JSON.stringify(DEFAULT_RULES)),
     notes: {},         // unit -> free-text additional items/notes appended to the report
     equip: {},         // unit -> {group -> {item -> value}}  (manual overrides / stores)
     sOver: {},         // unit -> {tot,mo,pa} typed by hand, overriding the calculation
     live: {},          // unit -> bool  (keep equipment in step)
+    labels: JSON.parse(JSON.stringify(DEFAULT_LABELS)),
     meta: {act:"", caa:""}
   };
+}
+function ensureLabels(){
+  const d = DEFAULT_LABELS;
+  S.labels = S.labels || {};
+  S.labels.coy = S.labels.coy || d.coy;
+  S.labels.title = S.labels.title || d.title;
+  S.labels.armskote = S.labels.armskote || d.armskote;
+  if(S.labels.armskote === "ALPHA ARMSKOTE") S.labels.armskote = d.armskote;   // b28 wording
+  S.labels.units = {...d.units, ...(S.labels.units || {})};
 }
 let S = freshState();
 
@@ -518,14 +675,52 @@ function ensureDefaultCats(){
 // One-time additive rule migrations for phones with older saved rules, keyed by
 // revision so a deliberately deleted rule is not resurrected on every load.
 // rev 2: MATADOR and MPAT gunners carry a SAR21 alongside the launcher.
-const RULES_REV = 2;
+// rev 3: coloured flags 24 & bangalore 02 per platoon; item notes introduced.
+// rev 4: parang/tripflare 03; vine cutter PL2 only; BINO to the MG comd; ET notes.
+// rev 5: stores figures set to the CONFIRMED establishment (not "only if untouched"),
+//        WIRE CUTTER 06 added. These were stated directly, so they are authoritative.
+const RULES_REV = 5;
 function migrateRules(){
-  if((S.rulesRev || 1) >= RULES_REV) return;
-  const has = (arr, rule) => arr.some(x => x[0] === rule[0] && x[1] === rule[1]);
-  [["MATADOR","SAR21",1,false], ["MATADOR","SAR21 BFA",1,false], ["MATADOR","SAR 21 AMMO POUCH",1,false],
-   ["MPAT","SAR21",1,false], ["MPAT","SAR21 BFA",1,false], ["MPAT","SAR 21 AMMO POUCH",1,false]]
-    .forEach(rule => { if(!has(S.rules.accessories, rule)) S.rules.accessories.push(rule); });
-  if(!S.rules.weapon.some(x => x[0] === "MPAT")) S.rules.weapon.unshift(["MPAT","MPAT"]);
+  const rev = S.rulesRev || 1;
+  if(rev >= RULES_REV) return;
+  if(rev < 2){
+    const has = (arr, rule) => arr.some(x => x[0] === rule[0] && x[1] === rule[1]);
+    [["MATADOR","SAR21",1,false], ["MATADOR","SAR21 BFA",1,false], ["MATADOR","SAR 21 AMMO POUCH",1,false],
+     ["MPAT","SAR21",1,false], ["MPAT","SAR21 BFA",1,false], ["MPAT","SAR 21 AMMO POUCH",1,false]]
+      .forEach(rule => { if(!has(S.rules.accessories, rule)) S.rules.accessories.push(rule); });
+    if(!S.rules.weapon.some(x => x[0] === "MPAT")) S.rules.weapon.unshift(["MPAT","MPAT"]);
+  }
+  if(rev < 3){
+    // only correct figures still sitting at the OLD default — never stomp a hand-set value
+    const se = S.rules.storeEstab || (S.rules.storeEstab = {});
+    if(Number(se["COLOURED FLAGS"]) === 6) se["COLOURED FLAGS"] = 24;
+    if(Number(se["BANGALORE"]) === 6) se["BANGALORE"] = 2;
+    S.rules.itemNotes = {...DEFAULT_RULES.itemNotes, ...(S.rules.itemNotes || {})};
+  }
+  if(rev < 4){
+    const se = S.rules.storeEstab || (S.rules.storeEstab = {});
+    if(Number(se["PARANG"]) === 6) se["PARANG"] = 3;
+    if(Number(se["TRIPFLARE"]) === 6) se["TRIPFLARE"] = 3;
+    if(Number(se["VINE CUTTER"]) === 6){
+      se["VINE CUTTER"] = 0;
+      S.rules.estabUnit = {...(S.rules.estabUnit || {}), "VINE CUTTER": {PL2: 2}};
+    }
+    S.rules.itemNotes = {...DEFAULT_RULES.itemNotes, ...(S.rules.itemNotes || {})};
+    // BINO onto the MG commander, without disturbing a hand-edited rule
+    (S.rules.signal || []).forEach(r => {
+      if((r[0] === "MG COMD" || r[0] === "GPMG COMD") && Array.isArray(r[2]) && !r[2].includes("BINO")) r[2].push("BINO");
+    });
+  }
+  if(rev < 5){
+    const se = S.rules.storeEstab || (S.rules.storeEstab = {});
+    se["COLOURED FLAGS"] = 24;
+    se["BANGALORE"] = 2;
+    se["PARANG"] = 3;
+    se["TRIPFLARE"] = 3;
+    se["WIRE CUTTER"] = 6;
+    se["VINE CUTTER"] = 0;                       // PL2 only, via the exception below
+    S.rules.estabUnit = {...(S.rules.estabUnit || {}), "VINE CUTTER": {PL2: 2}};
+  }
   S.rulesRev = RULES_REV;
 }
 
@@ -787,6 +982,9 @@ function computeEquip(unit){
   const w = {}, sg = {}, pn = {};
   WEAPON_ITEMS.forEach(i => w[i]=0); SIGNALS_ITEMS.forEach(i => sg[i]=0); PANTES_ITEMS.forEach(i => pn[i]=0);
   const firstOnly = {};
+  // An accessory lands in the tally its ITEM belongs to — e.g. the KN252 is an
+  // optic, so it counts under signals even though a weapon rule issues it.
+  const bucket = item => SIGNALS_ITEMS.includes(item) ? sg : (PANTES_ITEMS.includes(item) ? pn : w);
   // Only gear drawn from OUR armskote counts here. A man set to draw from
   // another unit/coy (attached out, or manually flagged) is excluded.
   drawers(unit).filter(p => gearSrcOf(p) === "ours").forEach(p => {
@@ -796,16 +994,20 @@ function computeEquip(unit){
       S.rules.accessories.forEach(([ww,item,qty,fo]) => {
         if(ww !== wpn || !item) return;
         if(fo){ const k = ww+"::"+item; if(firstOnly[k]) return; firstOnly[k] = true; }
-        w[item] = (w[item]||0) + (Number(qty)||0);
+        const t = bucket(item);
+        t[item] = (t[item]||0) + (Number(qty)||0);
       });
     }
-    signalsFor(p).forEach(i => { sg[i] = (sg[i]||0) + 1; });
+    // an issued item counts in the tally it belongs to — the MG wallet is a GPMG
+    // item even though the signal rule puts it on the assistant
+    signalsFor(p).forEach(i => { const t = bucket(i); t[i] = (t[i]||0) + 1; });
     const a = apptOf(p).toUpperCase();
     if(S.rules.pantesExclude.some(x => x && a.includes(x))) return;
     Object.entries(S.rules.perman).forEach(([item,qty]) => { pn[item] = (pn[item]||0) + (Number(qty)||0); });
     sftsFor(p).forEach(sft => {
       pn[sft] = (pn[sft]||0) + 1;
-      if(sft === "M203 SFT"){ pn["M203 LAUNCHER"] = (pn["M203 LAUNCHER"]||0)+1; pn["M203 ROUND"] = (pn["M203 ROUND"]||0)+1; }
+      // the launcher itself is the M203 and is already counted under WEAPON
+      if(sft === "M203 SFT") pn["M203 ROUND"] = (pn["M203 ROUND"]||0)+1;
     });
   });
   return {wpn:w, sig:sg, pan:pn};
@@ -816,6 +1018,7 @@ function computeGuestEquip(unit){
   const w={}, sg={}, pn={};
   WEAPON_ITEMS.forEach(i=>w[i]=0); SIGNALS_ITEMS.forEach(i=>sg[i]=0); PANTES_ITEMS.forEach(i=>pn[i]=0);
   const firstOnly={};
+  const bucket = item => SIGNALS_ITEMS.includes(item) ? sg : (PANTES_ITEMS.includes(item) ? pn : w);
   guestsOf(unit).forEach(gp => {
     const p = {id:gp.id, rank:gp.rank, name:gp.name, appt:gp.appt||"", unit:gp.from||"EXT"};
     const wpn = weaponFor(p);
@@ -824,16 +1027,19 @@ function computeGuestEquip(unit){
       S.rules.accessories.forEach(([ww,item,qty,fo]) => {
         if(ww !== wpn || !item) return;
         if(fo){ const k = ww+"::"+item; if(firstOnly[k]) return; firstOnly[k] = true; }
-        w[item] = (w[item]||0) + (Number(qty)||0);
+        const t = bucket(item);
+        t[item] = (t[item]||0) + (Number(qty)||0);
       });
     }
-    signalsFor(p).forEach(i => { sg[i] = (sg[i]||0) + 1; });
+    // an issued item counts in the tally it belongs to — the MG wallet is a GPMG
+    // item even though the signal rule puts it on the assistant
+    signalsFor(p).forEach(i => { const t = bucket(i); t[i] = (t[i]||0) + 1; });
     const a = (p.appt||"").toUpperCase();
     if(S.rules.pantesExclude.some(x => x && a.includes(x))) return;
     Object.entries(S.rules.perman).forEach(([item,qty]) => { pn[item] = (pn[item]||0) + (Number(qty)||0); });
     sftsFor(p).forEach(sft => {
       pn[sft] = (pn[sft]||0) + 1;
-      if(sft === "M203 SFT"){ pn["M203 LAUNCHER"] = (pn["M203 LAUNCHER"]||0)+1; pn["M203 ROUND"] = (pn["M203 ROUND"]||0)+1; }
+      if(sft === "M203 SFT") pn["M203 ROUND"] = (pn["M203 ROUND"]||0)+1;
     });
   });
   return {wpn:w, sig:sg, pan:pn};
@@ -921,9 +1127,10 @@ function buildPanels(){
           <h3>Weapon</h3><div id="eq-${u}-wpn"></div>
           <h3 style="margin-top:12px;">Signal / optics</h3><div id="eq-${u}-sig"></div>
           <h3 style="margin-top:12px;">PANTES</h3><div id="eq-${u}-pan"></div>
-          <h3 style="margin-top:12px;">Section stores <button type="button" id="fs-${u}" style="font-size:10px; padding:3px 8px;">Auto-fill</button></h3>
+          <h3 style="margin-top:12px;">Section stores</h3>
+          <div class="note" style="margin-bottom:6px;">Filled from the establishment automatically. To change a figure for good, edit <b>Equipment rules → Section stores establishment</b>.</div>
           <div id="eq-${u}-store"></div>
-          <h3 style="margin-top:12px;">TAG stores <button type="button" id="ft-${u}" style="font-size:10px; padding:3px 8px;">Auto-fill</button></h3>
+          <h3 style="margin-top:12px;">TAG stores</h3>
           <div id="eq-${u}-tag"></div>
           <h3 style="margin-top:12px;">Additional items / notes</h3>
           <div class="note" style="margin-bottom:6px;">Anything extra for the bottom of this platoon's report — one per line. Use it for whatever pops up.</div>
@@ -935,8 +1142,7 @@ function buildPanels(){
   document.querySelectorAll("#panels details").forEach((d,i) => { if(wasOpen.has(i)) d.open = true; });
   UNITS.forEach(u => {
     ["wpn","sig","pan"].forEach(k => {
-      const groups = k==="wpn"?WEAPON_GROUPS : k==="sig"?SIGNALS_GROUPS : PANTES_GROUPS;
-      el(`eq-${u}-${k}`).innerHTML = groups.map(([h,items]) =>
+      el(`eq-${u}-${k}`).innerHTML = groupsFor(k).map(([h,items]) =>
         `<div class="eqg"><h3>${h}</h3><div class="grid">${items.map(i =>
           `<div class="it"><label>${i}</label><input type="number" min="0" id="q-${u}-${k}-${slug(i)}"></div>`).join("")}</div></div>`).join("");
     });
@@ -946,7 +1152,7 @@ function buildPanels(){
     });
     // one platoon's slice as text — WhatsApp it, the other phone merges just this platoon
     el(`cs-${u}`).onclick = () => copyText(
-      "RAWDY-PL " + JSON.stringify({v:3, unit:u, cats:S.cats, data:unitPayload(u)}),
+      "RAWDY-PL " + JSON.stringify({v:3, unit:u, cats:S.cats, items:S.items, data:unitPayload(u)}),
       u + " code copied — WhatsApp it; the other phone presses Load session code to merge " + u + " only");
     el(`adj-${u}`).onclick = () => {
       const on = el(`adj-${u}`).classList.toggle("on");
@@ -982,8 +1188,6 @@ function buildPanels(){
     el(`lv-${u}`).checked = S.live[u] !== false;
     el(`lv-${u}`).onchange = e => { S.live[u] = e.target.checked; renderEquip(u); renderAll(); save(u); };
     el(`eqr-${u}`).onclick = () => { S.live[u] = true; el(`lv-${u}`).checked = true; renderEquip(u); renderAll(); save(u); };
-    el(`fs-${u}`).onclick = () => { STORE_ITEMS.forEach(i => setQ(u,"store",i,S.rules.storeEstab[i])); save(u); };
-    el(`ft-${u}`).onclick = () => { TAG_ITEMS.forEach(i => setQ(u,"tag",i,S.rules.tagEstab[i])); save(u); };
     ["wpn","sig","pan","store","tag"].forEach(k => {
       el(`eq-${u}-${k}`).addEventListener("input", e => {
         if(e.target.tagName !== "INPUT") return;
@@ -996,6 +1200,17 @@ function buildPanels(){
   });
 }
 const slug = s => s.replace(/[^a-zA-Z0-9]/g,"_");
+// Section & TAG stores are a PLATOON holding — coy HQ draws none unless an
+// explicit exception says otherwise.
+const STORE_UNITS = ["PL1", "PL2", "PL3"];
+// Establishment for one unit: a per-platoon exception wins over the coy figure,
+// e.g. the vine cutter that only PL2 carries.
+function estabFor(u, item, map){
+  const ov = (S.rules.estabUnit || {})[item];
+  if(ov && ov[u] !== undefined) return Number(ov[u]) || 0;
+  if(!STORE_UNITS.includes(u)) return 0;
+  return Number(map[item]) || 0;
+}
 function setQ(u,k,item,v){
   const e = el(`q-${u}-${k}-${slug(item)}`);
   if(e) e.value = (v === 0 || v === undefined || v === null) ? "" : v;
@@ -1206,12 +1421,75 @@ function renderEquip(u){
   [["wpn",WEAPON_ITEMS,c.wpn],["sig",SIGNALS_ITEMS,c.sig],["pan",PANTES_ITEMS,c.pan]].forEach(([k,items,vals]) => {
     items.forEach(i => { const e = el(`q-${u}-${k}-${slug(i)}`); if(e) e.value = vals[i] ? vals[i] : ""; });
   });
-  const m = (S.equip[u]||{});
-  [["store",STORE_ITEMS],["tag",TAG_ITEMS]].forEach(([k,items]) => items.forEach(i => {
-    const e = el(`q-${u}-${k}-${slug(i)}`);
-    if(e && m[k] && m[k][slug(i)] !== undefined) e.value = m[k][slug(i)];
-  }));
+  // Stores come STRAIGHT from the establishment every time — no stale saved
+  // figures. Change the establishment once and every platoon updates itself.
+  [["store",STORE_ITEMS,S.rules.storeEstab],["tag",TAG_ITEMS,S.rules.tagEstab]].forEach(([k,items,map]) =>
+    items.forEach(i => {
+      const e = el(`q-${u}-${k}-${slug(i)}`);
+      if(!e) return;
+      const v = estabFor(u, i, map);
+      e.value = v ? v : "";
+    }));
 }
+
+// ============================================================================
+// PLAIN-ENGLISH GUIDE — derived from the live rules, so it cannot go stale.
+// ============================================================================
+function guideRows(){
+  const seen = new Map();
+  S.persons.forEach(p => {
+    const a = apptOf(p).toUpperCase();
+    if(!a || seen.has(a)) return;
+    seen.set(a, p);
+  });
+  return [...seen.entries()].map(([a,p]) => {
+    const ws = weaponsOf(p);
+    return {appt:a,
+      weapon: ws.length ? ws.join(" + ") : "—",
+      sft: sftsFor(p).join(", ") || "—",
+      sig: signalsFor(p).join(", ") || "—"};
+  }).sort((x,y) => x.appt.localeCompare(y.appt));
+}
+function guideNotes(){
+  const N = [];
+  const pm = Object.entries(S.rules.perman || {}).filter(([,q]) => Number(q) > 0)
+    .map(([i,q]) => `${q} x ${i}`).join(", ");
+  if(pm) N.push(`Every participating man draws PANTES: ${pm}. One SFT follows each weapon he carries.`);
+  const ex = (S.rules.pantesExclude || []).filter(Boolean);
+  if(ex.length) N.push(`These appointments draw no PANTES: ${ex.join(", ")}.`);
+  const pairs = (S.rules.accessories || []).filter(([,item]) => WEAPON_CHOICES.includes(item));
+  if(pairs.length) N.push("Paired weapons — one man carries both: " +
+    pairs.map(([h,i]) => `${h} + ${i}`).join("; ") + ".");
+  N.push(`Section and TAG stores are a platoon holding (${STORE_UNITS.join(", ")}); coy HQ draws none. ` +
+    `Per-platoon exceptions are set against the item itself.`);
+  const stay = S.cats.filter(c => c.kind === "stayback").map(c => c.label);
+  const ng = S.cats.filter(c => c.kind === "moveout_np_ng").map(c => c.label);
+  const np = S.cats.filter(c => c.kind === "moveout_np").map(c => c.label);
+  if(stay.length) N.push(`Off move-out and drawing no gear: ${stay.join(", ")}.`);
+  if(ng.length) N.push(`Moves out, does not participate, draws no gear: ${ng.join(", ")}.`);
+  if(np.length) N.push(`Moves out, does not participate, still draws gear: ${np.join(", ")}.`);
+  N.push("Attached within the coy: the man AND his gear count at the platoon he goes to. " +
+    "Attached to another coy: his gear stays counted here, because he drew it here.");
+  return N;
+}
+function renderGuide(){
+  const box = el("guide"); if(!box) return;
+  const rows = guideRows();
+  box.innerHTML =
+    `<div class="scroll" style="max-height:340px; overflow-y:auto; border:1px solid var(--border); border-radius:3px;">
+      <table><thead><tr><th>Appointment</th><th>Weapon carried</th><th>SFT</th><th>Signals / optics</th></tr></thead>
+      <tbody>${rows.map(r => `<tr><td><b>${r.appt}</b></td><td>${r.weapon}</td>
+        <td style="color:var(--muted);">${r.sft}</td><td style="color:var(--muted);">${r.sig}</td></tr>`).join("")}
+      </tbody></table></div>
+    <div class="note" style="margin-top:9px; line-height:1.7;">${guideNotes().map(n => `• ${n}`).join("<br>")}</div>`;
+}
+el("guide-copy").onclick = () => {
+  const rows = guideRows();
+  const txt = ["*WHO DRAWS WHAT*", "",
+    ...rows.map(r => `*${r.appt}*\nWeapon: ${r.weapon}\nSFT: ${r.sft}\nSignals: ${r.sig}`),
+    "", "*HOW IT WORKS*", ...guideNotes().map(n => `- ${n}`)].join("\n");
+  copyText(txt, "Guide copied — paste it to the PSes");
+};
 
 function renderAll(){
   UNITS.forEach(u => {
@@ -1264,7 +1542,7 @@ function renderAll(){
   el("coy-note").textContent = c.ext
     ? `${c.ext} pax attached out to another coy/unit — they are not on the company's strength for this activity.`
     : "";
-  renderRoll();
+  renderRoll(); renderGuide();
 }
 
 // ============================================================================
@@ -1486,8 +1764,25 @@ el("rollcopy").onclick = () => {
 // ============================================================================
 // REPORT
 // ============================================================================
-// A WhatsApp monospace block (```...```). Columns are padded so labels and
-// numbers line up when the message is read on a phone. `right` right-aligns the value.
+// ============================================================================
+// WHATSAPP REPORT — three selectable formats (el("fmt")):
+//   block   — emoji + monospace blocks; sections distinct. Wrap-proof rules:
+//             every ``` line ≤ ~24 chars, and equipment is QTY-FIRST
+//             ("21 x SAR21") so the numbers form one fixed left column that can
+//             never jump between blocks or wrap away from its item.
+//   plain   — formal, no emoji, no blocks; "Item: qty" lines. For the boss.
+//   compact — strengths + names + attachments only, no equipment detail.
+// ============================================================================
+const HR = "━━━━━━━━━━━━━━━━━━━";
+const THIN = "───────────────";
+const DIV = "──────────────";
+const sCnt = (c,t) => `${fmt2(c+t)} (${fmt2(c)}+${fmt2(t)})`;
+const unitName = u => (S.labels && S.labels.units && S.labels.units[u]) ||
+  (u === "HQ" ? "COY HQ" : u.replace("PL", "PLATOON "));
+const firstNum = s => String(s).split(" ")[0];
+const tight = s => String(s).replace(/\s*\+\s*/g, "+");   // "33 (09 + 24)" -> "33 (09+24)"
+// ONE standard format for the whole coy — every PS's message comes out identical.
+function repStyle(){ return "block"; }
 function monoBlock(rows, right){
   const clean = rows.filter(Boolean);
   if(!clean.length) return null;
@@ -1497,85 +1792,98 @@ function monoBlock(rows, right){
     `${String(k).padEnd(lw)}  ${right ? String(v).padStart(vw) : String(v)}`).join("\n");
   return "```\n" + body + "\n```";
 }
-// Visual hierarchy, kept strict so the eye learns it instantly:
-//   ━ thick banner  = a NEW UNIT starts here (company report)
-//   ─ thin line     = a new section INSIDE the same unit
-const HR = "━━━━━━━━━━━━━━━━━━━";
-const THIN = "───────────────";
-const sCnt = (c,t) => `${fmt2(c+t)} (${fmt2(c)} + ${fmt2(t)})`;
-const unitName = u => u === "HQ" ? "COY HQ" : u.replace("PL", "PLATOON ");
+// Quantity-first equipment block: the qty column is anchored at the LEFT edge,
+// identical in every section, so numbers line up everywhere and a long item
+// name that wraps only carries text to the next line — never a number.
+// A row may carry a note: it rides on the same line when it fits the phone
+// width, otherwise it drops to an indented line of its own under the item.
+const WRAP = 25;
+function qtyBlock(rows){
+  const clean = rows.filter(Boolean);
+  if(!clean.length) return null;
+  const w = Math.max(...clean.map(([,v]) => String(v).length));
+  const out = [];
+  clean.forEach(([n,v,note]) => {
+    const head = `${String(v).padStart(w)} x ${n}`;
+    if(!note){ out.push(head); return; }
+    const inline = `${head} (${note})`;
+    if(inline.length <= WRAP){ out.push(inline); return; }
+    let pad = w + 3;
+    if(pad + note.length + 2 > WRAP) pad = 2;
+    out.push(head, " ".repeat(pad) + `(${note})`);
+  });
+  return "```\n" + out.join("\n") + "\n```";
+}
 
-function unitReport(u, opts){
-  opts = opts || {};
+// Everything below a unit's title line — shared by the standalone and company reports.
+function unitBody(u, st){
+  st = st || repStyle();
+  const blocky = st === "block";
   const r = count(u), L = [];
-  const act = (el("act").value.trim() || "[ACTIVITY]").toUpperCase();
-  const caa = el("caa").value.trim();
-
-  // ---- header ----
-  if(opts.sub){
-    L.push(HR, `*▣  ${unitName(u)}*`, HR, "");   // unmistakable unit break
+  if(blocky){
+    // strength block: short labels + tight strengths keep every line ≤ ~21 chars
+    L.push("*🧮 STRENGTH PARADE STATE*");
+    L.push(monoBlock([
+      ["TOTAL", tight(r.original)],
+      ["MOVE OUT", tight(r.moveout)],
+      ["PARTIC", tight(r.partic)]
+    ], false));
   } else {
-    L.push(`*${unitName(u)}  —  ${act}*`);
-    if(caa) L.push(`_CAA ${caa}_`);
-    L.push(HR, "");
+    L.push(`*TOTAL: ${r.original}*`, `*MOVE OUT: ${r.moveout}*`, `*PARTICIPATING: ${r.partic}*`);
   }
-
-  // ---- parade state (aligned) ----
-  L.push("*🧮 STRENGTH PARADE STATE*");
-  L.push(monoBlock([
-    ["TOTAL", r.original],
-    ["MOVE OUT", r.moveout],
-    ["PARTICIPATING", r.partic]
-  ], false));
   const flow = [];
-  if(r.out) flow.push(`ATTACHED OUT ${sCnt(r.outC, r.outT)}`);
-  if(r.inCnt + r.guestCnt) flow.push(`ATTACHED IN ${sCnt(r.inC + r.gC, r.inT + r.gT)}`);
-  if(flow.length) L.push(`_${flow.join("  ·  ")} — strength held ${r.held}_`);
+  if(r.out) flow.push(`Attached out: ${sCnt(r.outC, r.outT)}`);
+  if(r.inCnt + r.guestCnt) flow.push(`Attached in: ${sCnt(r.inC + r.gC, r.inT + r.gT)}`);
+  if(flow.length) L.push(`_${flow.join(" · ")} — held ${tight(r.held)}_`);
   L.push("");
 
-  // ---- status breakdown (numbered name lists) ----
+  // status breakdown — numbered name lists under a bold count header
   S.cats.forEach(c => {
     const list = personsOf(u).filter(p => { const st = statusOf(p); return !attachOf(p) && st && st.id === c.id; });
     if(!list.length) return;
-    L.push(`*${c.label}  ·  ${fmt2(list.length)}*`);
-    list.forEach((p,i) => L.push(`${i+1}. ${p.rank} ${p.name} _(${apptOf(p)})_${S.reason[p.id]?` — ${S.reason[p.id]}`:""}`));
+    L.push(`*${c.label} · ${fmt2(list.length)}*`);
+    list.forEach((p,i) => L.push(`${i+1}. ${p.rank} ${p.name} (${apptOf(p)})${S.reason[p.id]?` — ${S.reason[p.id]}`:""}`));
     L.push("");
   });
 
-  // ---- attachments ----
+  // attachments — emoji arrows only in block style
+  const AO = blocky ? "➡️ " : "", AI = blocky ? "⬅️ " : "";
   const out = personsOf(u).filter(p => attachOf(p));
   if(out.length){
-    L.push(`*➡️ ATTACHED OUT  ·  ${fmt2(out.length)}*`);
+    L.push(`*${AO}ATTACHED OUT · ${fmt2(out.length)}*`);
     out.forEach((p,i) => { const a = attachOf(p);
-      L.push(`${i+1}. ${p.rank} ${p.name} _(${apptOf(p)})_ → ${a.to===EXTERNAL?(a.note&&a.note!=="AUTO"?a.note:"ANOTHER COY"):a.to}${a.to!==EXTERNAL?" _· gear follows him_":""}`); });
+      L.push(`${i+1}. ${p.rank} ${p.name} (${apptOf(p)}) → ${a.to===EXTERNAL?(a.note&&a.note!=="AUTO"?a.note:"ANOTHER COY"):a.to}`); });
     L.push("");
   }
   const ins = Object.keys(S.attach).filter(pid => S.attach[pid] && S.attach[pid] !== OFF && S.attach[pid].to === u).map(byId).filter(p => p && p.unit !== u);
   if(ins.length){
-    L.push(`*⬅️ ATTACHED IN  ·  ${fmt2(ins.length)}*`);
+    L.push(`*${AI}ATTACHED IN · ${fmt2(ins.length)}*`);
     ins.forEach((p,i) => { const a = S.attach[p.id];
       const f = [a.mo===false?"no move out":null, a.pa===false?"no participate":null].filter(Boolean);
-      L.push(`${i+1}. ${p.rank} ${p.name} _(${apptOf(p)})_ ← ${p.unit}${f.length?` _[${f.join(", ")}]_`:""}`); });
-    L.push("_Gear came with them — counted in the equipment below._", "");
+      L.push(`${i+1}. ${p.rank} ${p.name} (${apptOf(p)}) fr ${p.unit}${f.length?` — ${f.join(", ")}`:""}`); });
+    L.push("_Gear came with them — counted below._", "");
   }
   const gs = guestsOf(u);
   if(gs.length){
-    L.push(`*⬅️ ATTACHED IN · OTHER COY/UNIT  ·  ${fmt2(gs.length)}*`);
+    L.push(`*${AI}ATTACHED IN (OTHER UNIT) · ${fmt2(gs.length)}*`);
     gs.forEach((g,i) => {
       const f = [g.mo===false?"no move out":null, g.pa===false?"no participate":null].filter(Boolean);
-      L.push(`${i+1}. ${g.rank} ${g.name}${g.appt?` _(${g.appt})_`:""} ← ${g.from}${f.length?` _[${f.join(", ")}]_`:""}`);
+      L.push(`${i+1}. ${g.rank} ${g.name}${g.appt?` (${g.appt})`:""} fr ${g.from}${f.length?` — ${f.join(", ")}`:""}`);
     });
-    L.push("_Gear from their own unit — tallied separately below._", "");
+    L.push("");
   }
+  if(st === "compact") return L;   // compact stops here — no equipment detail
 
-  // ---- equipment drawn from our armskote (aligned monospace tables) ----
+  // equipment from our armskote — right-aligned quantity blocks
   const eq = computeEquip(u);
-  const mountNote = {};
+  // weapons that come as a pair — spelled out so nobody thinks a launcher is a
+  // rifle short, or double-counts the rifles
+  const pairs = [];
   S.rules.accessories.forEach(([host, item]) => {
     if(!WEAPON_CHOICES.includes(item)) return;
     const n = eq.wpn[host] || 0;
     if(!n) return;
-    mountNote[item] = (mountNote[item] || []).concat(`${fmt2(n)} carried by ${host} men`);
+    if(!pairs.some(x => x[0] === host && x[1] === item)) pairs.push([host, item, n]);
   });
   let eqShown = false;
   const eqSect = (title, items, vals) => {
@@ -1583,73 +1891,119 @@ function unitReport(u, opts){
       const e = el(`q-${u}-${vals}-${slug(i)}`);
       const v = e ? e.value : "";
       if(!v || Number(v) === 0) return null;
-      return [i, v];
+      return [i, v, (S.rules.itemNotes || {})[i] || ""];
     }).filter(Boolean);
     if(!rows.length) return;
-    if(!eqShown){ L.push(THIN, "*📦 EQUIPMENT — DRAWN FROM ALPHA ARMSKOTE*", ""); eqShown = true; }
-    L.push(`*${title}*`, monoBlock(rows, true));
-    if(vals === "wpn"){
-      rows.forEach(([i]) => { if(mountNote[i]) L.push(`_${i}: ${mountNote[i].join(", ")}_`); });
+    if(!eqShown){
+      if(blocky) L.push(THIN, "*📦 EQUIPMENT*", "");
+      else L.push("*EQUIPMENT*", "");
+      eqShown = true;
+    }
+    L.push(`*${title}*`);
+    if(blocky) L.push(qtyBlock(rows));
+    else rows.forEach(([i,v,n]) => L.push(`${i}: ${v}${n?` (${n})`:""}`));
+    if(vals === "wpn" && pairs.length){
+      L.push("_Comes as a pair — one man carries both:_");
+      pairs.forEach(([host,item,n]) => L.push(`- ${host} + ${item} — ${fmt2(n)} men`));
+      const mounted = [...new Set(pairs.map(x => x[1]))];
+      L.push(`_${mounted.join(" / ")} above already includes these._`);
     }
     L.push("");
   };
-  eqSect("WEAPON", WEAPON_ITEMS, "wpn");
-  eqSect("SIGNAL / OPTICS / UOCE", SIGNALS_ITEMS, "sig");
+  eqSect(`WEAPON / ${(S.labels && S.labels.armskote) || "ARMSKOTE"}`, WEAPON_ITEMS, "wpn");
+  eqSect("SIGNALS / OPTICS", SIGNALS_ITEMS, "sig");
   eqSect("PANTES", PANTES_ITEMS, "pan");
   eqSect("SECTION STORES", STORE_ITEMS, "store");
   eqSect("TAG STORES", TAG_ITEMS, "tag");
 
-  // ---- attached-in equipment (from their own unit) — kept separate ----
+  // attached-in equipment (from their own unit) — kept separate
   if(gs.length){
     const ge = computeGuestEquip(u);
-    const rowsOf = (items,vals) => items.map(i => vals[i] ? [i, vals[i]] : null).filter(Boolean);
     const any = [ge.wpn, ge.sig, ge.pan].some(o => Object.values(o).some(v => v));
     if(any){
-      L.push(THIN, `*⬅️ ATTACHED-IN EQUIPMENT  ·  ${fmt2(gs.length)} PAX*`, "_From their own unit — do not add to our figures._", "");
-      [["WEAPON",WEAPON_ITEMS,ge.wpn],["SIGNAL / OPTICS",SIGNALS_ITEMS,ge.sig],["PANTES",PANTES_ITEMS,ge.pan]].forEach(([t,items,vals]) => {
-        const rows = rowsOf(items, vals);
-        if(rows.length) L.push(`*${t}*`, monoBlock(rows, true), "");
+      if(blocky) L.push(THIN, `*⬅️ ATTACHED-IN EQUIPMENT · ${fmt2(gs.length)} PAX*`);
+      else L.push(`*ATTACHED-IN EQUIPMENT · ${fmt2(gs.length)} PAX*`);
+      L.push("_From their own unit — not in our figures._", "");
+      [["WEAPON",WEAPON_ITEMS,ge.wpn],["SIGNALS / OPTICS",SIGNALS_ITEMS,ge.sig],["PANTES",PANTES_ITEMS,ge.pan]].forEach(([t,items,vals]) => {
+        const rows = items.map(i => vals[i] ? [i, vals[i]] : null).filter(Boolean);
+        if(!rows.length) return;
+        L.push(`*${t}*`);
+        if(blocky) L.push(qtyBlock(rows));
+        else rows.forEach(([i,v]) => L.push(`${i}: ${v}`));
+        L.push("");
       });
     }
   }
 
-  // ---- additional (free text) ----
+  // additional free text
   const nt = (S.notes && S.notes[u]) ? String(S.notes[u]).trim() : "";
   if(nt){
-    L.push(THIN, "*📝 ADDITIONAL*",
-      ...nt.split(/\r?\n/).map(x => x.trim()).filter(Boolean).map(x => `- ${x}`), "");
+    if(blocky) L.push(THIN, "*📝 ADDITIONAL*");
+    else L.push("*ADDITIONAL*");
+    L.push(...nt.split(/\r?\n/).map(x => x.trim()).filter(Boolean).map(x => `- ${x}`), "");
   }
-  if(!opts.sub) L.push(HR, `_RAWDY · build ${BUILD_ID}_`);
+  return L;
+}
+
+function unitReport(u){
+  const st = repStyle(), blocky = st === "block";
+  const act = (el("act").value.trim() || "[ACTIVITY]").toUpperCase();
+  const caa = el("caa").value.trim();
+  const L = [`*${unitName(u)} — ${act}*`];
+  if(caa) L.push(`_CAA ${caa}_`);
+  if(blocky) L.push(HR);
+  L.push("");
+  L.push(...unitBody(u, st));
+  if(blocky) L.push(HR, `_RAWDY · build ${BUILD_ID}_`);
   return L.join("\n").replace(/\n{3,}/g,"\n\n").trim();
 }
 
-// The whole company in one message: company end state first, then HQ and every
-// platoon in full — what the CSM sends up after merging all the platoon codes.
+// The whole company in one message: coy figures, a short by-unit spread,
+// then every unit in full under a clear unit break.
 function companyReport(){
+  const st = repStyle(), blocky = st === "block";
   const c = coyCount(), L = [];
   const act = (el("act").value.trim() || "[ACTIVITY]").toUpperCase();
   const caa = el("caa").value.trim();
-  L.push(`*${act}*`);
+  L.push(`*${(S.labels && S.labels.coy) || "ALPHA COY"} ${(S.labels && S.labels.title) || "PARADE STATE"}*`, `*${act}*`);
   if(caa) L.push(`_CAA ${caa}_`);
-  L.push(HR, "", "*🧮 COMPANY PARADE STATE*");
-  L.push(monoBlock([
-    ["TOTAL", c.original],
-    ["MOVE OUT", c.moveout],
-    ["PARTICIPATING", c.partic]
-  ], false));
-  const flow = [];
-  if(c.ext) flow.push(`ATTACHED OUT ${sCnt(c.extC, c.extT)}`);
-  if(c.extIn) flow.push(`ATTACHED IN ${sCnt(c.extInC, c.extInT)}`);
-  if(flow.length) L.push(`_${flow.join("  ·  ")} — strength held ${c.held}_`);
-  // one line per unit so the reader sees the spread before the detail
-  L.push("", "*BY UNIT*");
-  L.push(monoBlock(UNITS.map(u => {
-    const r = count(u);
-    return [u, `${r.original}  ▸ MO ${r.moveout}  ▸ PT ${r.partic}`];
-  }), false));
+  if(blocky) L.push(HR);
   L.push("");
-  UNITS.forEach(u => { L.push(unitReport(u, {sub:true}), ""); });
-  L.push(HR, `_RAWDY · build ${BUILD_ID}_`);
+  if(blocky){
+    L.push("*🧮 COMPANY PARADE STATE*");
+    L.push(monoBlock([
+      ["TOTAL", tight(c.original)],
+      ["MOVE OUT", tight(c.moveout)],
+      ["PARTIC", tight(c.partic)]
+    ], false));
+  } else {
+    L.push(`*TOTAL: ${c.original}*`, `*MOVE OUT: ${c.moveout}*`, `*PARTICIPATING: ${c.partic}*`);
+  }
+  const flow = [];
+  // name the units the men went out from — the CSM should not have to hunt for it
+  const outFrom = UNITS.filter(u => count(u).outCoy > 0).map(unitName);
+  if(c.ext) flow.push(`Attached out: ${sCnt(c.extC, c.extT)}${outFrom.length ? ` fr ${outFrom.join(", ")}` : ""}`);
+  if(c.extIn) flow.push(`Attached in: ${sCnt(c.extInC, c.extInT)}`);
+  if(flow.length) L.push(`_${flow.join(" · ")} — held ${tight(c.held)}_`);
+  // breakdown table: headed columns so STR / MO / PT can never be misread
+  L.push("", "*COMPANY BREAKDOWN STRENGTH*");
+  const brk = UNITS.map(u => { const r = count(u);
+    return [u, firstNum(r.original), firstNum(r.moveout), firstNum(r.partic)]; });
+  if(blocky){
+    const uw = Math.max(...brk.map(x => x[0].length));
+    const cw = Math.max(3, ...brk.map(x => Math.max(x[1].length, x[2].length, x[3].length)));
+    const line = (a,b,c2,d) => `${String(a).padEnd(uw)}  ${String(b).padStart(cw)}  ${String(c2).padStart(cw)}  ${String(d).padStart(cw)}`;
+    L.push("```\n" + [line("", "STR", "MO", "PT"), ...brk.map(x => line(x[0],x[1],x[2],x[3]))].join("\n") + "\n```");
+  } else {
+    brk.forEach(x => L.push(`${x[0]}: ${x[1]} · MO ${x[2]} · PT ${x[3]}`));
+  }
+  L.push("");
+  UNITS.forEach(u => {
+    if(blocky) L.push(HR, `*▣ ${unitName(u)}*`, HR, "");
+    else L.push(DIV, `*${unitName(u)}*`, "");
+    L.push(...unitBody(u, st));
+  });
+  if(blocky) L.push(HR, `_RAWDY · build ${BUILD_ID}_`);
   return L.join("\n").replace(/\n{3,}/g,"\n\n").trim();
 }
 function doGenerate(){
@@ -1696,10 +2050,30 @@ el("now").onclick = () => {
 };
 el("act").oninput = () => { S.meta.act = el("act").value; saveGlobal(); };
 el("caa").oninput = () => { S.meta.caa = el("caa").value; saveGlobal(); };
+// ---- message wording editor ----
+function syncLabels(){
+  ensureLabels();
+  const set = (id,v) => { const e = el(id); if(e && document.activeElement !== e) e.value = v; };
+  set("lb-coy", S.labels.coy); set("lb-title", S.labels.title); set("lb-arm", S.labels.armskote);
+  UNITS.forEach(u => set("lb-"+u, S.labels.units[u]));
+}
+(function(){
+  ensureLabels();
+  const bind = (id, fn, dflt) => { const e = el(id); if(!e) return;
+    e.oninput = () => { fn(e.value.trim().toUpperCase() || dflt); saveGlobal(); }; };
+  bind("lb-coy", v => S.labels.coy = v, DEFAULT_LABELS.coy);
+  bind("lb-title", v => S.labels.title = v, DEFAULT_LABELS.title);
+  bind("lb-arm", v => S.labels.armskote = v, DEFAULT_LABELS.armskote);
+  UNITS.forEach(u => bind("lb-"+u, v => S.labels.units[u] = v, DEFAULT_LABELS.units[u]));
+  el("lb-reset").onclick = () => {
+    S.labels = JSON.parse(JSON.stringify(DEFAULT_LABELS));
+    syncLabels(); saveGlobal(); setStat("Message wording reset to defaults");
+  };
+})();
 
 el("reset").onclick = () => {
   if(!confirm("Reset everything back to the built-in roll?")) return;
-  S = freshState();
+  S = freshState(); applyItems();
   el("act").value = ""; el("caa").value = ""; el("out").value = "";
   buildTabs(); buildPanels(); renderRules(); renderAll(); saveAll();
   setStat("Reset");
@@ -1708,11 +2082,21 @@ el("reset").onclick = () => {
 // ============================================================================
 // RULES EDITOR
 // ============================================================================
+// Everything a weapon brings with it, e.g. "M203 / SAR21" — read straight off the
+// accessory rules so the two can never disagree.
+function weaponSetLabel(w){
+  if(!w) return "no weapon";
+  const mounted = (S.rules.accessories || [])
+    .filter(([ww,item]) => ww === w && WEAPON_CHOICES.includes(item))
+    .map(([,item]) => item);
+  return [w, ...mounted].join(" / ");
+}
 function rw(kind, m, v){
   const ch = kind==="wpn"?WEAPON_CHOICES:SFT_CHOICES;
+  const hint = kind==="wpn" ? `<span class="pairhint">= ${weaponSetLabel(v)}</span>` : "";
   return `<div class="rrow" data-k="${kind}"><input type="text" class="m" value="${m}" placeholder="Appt contains...">
     <span class="arrow">→</span><select class="v">${kind==="wpn"?`<option value="__NONE__"${v===null?" selected":""}>No weapon</option>`:""}
-    ${ch.map(c=>`<option${c===v?" selected":""}>${c}</option>`).join("")}</select>
+    ${ch.map(c=>`<option${c===v?" selected":""}>${c}</option>`).join("")}</select>${hint}
     <button type="button" class="del">✕</button></div>`;
 }
 function sigw(ap, rk, items){
@@ -1742,12 +2126,95 @@ function renderRules(){
   el("r-pmex").value = S.rules.pantesExclude.join(", ");
   el("r-auto").innerHTML = (S.rules.autoStatus||[]).map(([k,c]) => autow(k,c)).join("");
   el("r-autoatt").value = (S.rules.autoAttachOut||[]).join(", ");
-  el("r-store").innerHTML = Object.entries(S.rules.storeEstab).map(([i,q]) =>
-    `<div class="it"><label>${i}</label><input type="number" min="0" class="se" data-i="${i}" value="${q}"></div>`).join("");
-  el("r-tag").innerHTML = Object.entries(S.rules.tagEstab).map(([i,q]) =>
-    `<div class="it"><label>${i}</label><input type="number" min="0" class="te" data-i="${i}" value="${q}"></div>`).join("");
   renderCats();
+  renderItems();
+  if(typeof syncLabels === "function") syncLabels();   // renderRules runs on every load path
 }
+// ============================================================================
+// EQUIPMENT LIST EDITOR — the catalogue is the user's, not the code's.
+// ============================================================================
+function renderItems(){
+  const box = el("itemed"); if(!box) return;
+  applyItems();
+  const esc = s => String(s).replace(/"/g,"&quot;");
+  box.innerHTML = SECTION_LABELS.map(([k,label]) => {
+    const list = S.items[k] || [];
+    const isStore = (k === "store" || k === "tag");
+    const map = k === "store" ? S.rules.storeEstab : S.rules.tagEstab;
+    const rows = list.map((i,idx) => {
+      const n = ((S.rules.itemNotes||{})[i] || "");
+      const ov = (S.rules.estabUnit||{})[i] || {};
+      const ovTxt = Object.keys(ov).map(x => `${x}:${ov[x]}`).join(", ");
+      return `<div class="irow" data-k="${k}" data-idx="${idx}">
+        <span class="nm">${i}</span>
+        ${isStore ? `<input type="number" min="0" class="${k==="store"?"se":"te"}" data-i="${esc(i)}" value="${Number(map[i])||0}" title="qty per platoon">` : ""}
+        <button type="button" class="mini mv" data-dir="-1" title="Move up">▲</button>
+        <button type="button" class="mini mv" data-dir="1" title="Move down">▼</button>
+        <button type="button" class="mini del" title="Remove">✕</button>
+        ${isStore ? `<span class="sub">
+          <input type="text" class="itn" data-i="${esc(i)}" value="${esc(n)}" placeholder="note printed beside it">
+          <input type="text" class="ito" data-i="${esc(i)}" value="${esc(ovTxt)}" placeholder="only this platoon — PL2:2">
+        </span>` : ""}
+      </div>`;
+    }).join("");
+    return `<div class="eqg"><h3>${label} <span style="color:var(--muted); font-weight:400;">· ${list.length}</span></h3>
+      <div class="ilist">${rows || '<div class="note" style="padding:6px;">No items yet.</div>'}</div>
+      <div class="bar" style="margin-top:6px;">
+        <input type="text" class="iadd" data-k="${k}" placeholder="New item for ${label}" style="flex:1; min-width:150px;">
+        <button type="button" class="iaddb" data-k="${k}">+ Add</button>
+      </div></div>`;
+  }).join("");
+}
+(function(){
+  const box = el("itemed"); if(!box) return;
+  const refresh = () => { applyItems(); buildPanels(); renderItems(); renderAll(); saveGlobal(); saveAll(); };
+  box.addEventListener("click", e => {
+    const row = e.target.closest(".irow");
+    if(e.target.classList.contains("mv") && row){
+      const k = row.dataset.k, i = +row.dataset.idx, dir = +e.target.dataset.dir;
+      const list = S.items[k], j = i + dir;
+      if(j < 0 || j >= list.length) return;
+      [list[i], list[j]] = [list[j], list[i]];
+      refresh(); return;
+    }
+    if(e.target.classList.contains("del") && row){
+      const k = row.dataset.k, i = +row.dataset.idx, name = S.items[k][i];
+      if(!confirm(`Remove "${name}" from ${k === "wpn" ? "Weapon" : k.toUpperCase()}?\n\nIt stops being counted and disappears from the report.`)) return;
+      S.items[k].splice(i,1);
+      S.itemsRemoved = S.itemsRemoved || [];
+      if(DEF_ITEMS[k].includes(name) && !S.itemsRemoved.includes(name)) S.itemsRemoved.push(name);
+      [S.rules.storeEstab, S.rules.tagEstab, S.rules.itemNotes, S.rules.estabUnit].forEach(m => { if(m) delete m[name]; });
+      refresh(); return;
+    }
+    if(e.target.classList.contains("iaddb")){
+      const k = e.target.dataset.k;
+      const inp = box.querySelector(`.iadd[data-k="${k}"]`);
+      const name = (inp.value || "").trim().toUpperCase();
+      if(!name){ alert("Type the item name first."); return; }
+      if((S.items[k]||[]).includes(name)){ alert(`"${name}" is already in that list.`); return; }
+      S.items[k].push(name);
+      S.itemsRemoved = (S.itemsRemoved || []).filter(x => x !== name);
+      if(k === "store") S.rules.storeEstab[name] = 0;
+      if(k === "tag") S.rules.tagEstab[name] = 0;
+      inp.value = "";
+      refresh(); return;
+    }
+  });
+  // qty / note / exception edits inside the editor feed the same rule reader
+  box.addEventListener("input", e => {
+    if(["se","te","itn","ito"].some(c => e.target.classList.contains(c))){
+      readRules(); renderAll(); saveGlobal(); saveAll();
+    }
+  });
+  el("it-reset").onclick = () => {
+    if(!confirm("Restore the built-in equipment list? Items you added are removed and deleted built-ins come back.\n\nQuantities and notes are kept.")) return;
+    S.items = JSON.parse(JSON.stringify(DEF_ITEMS));
+    S.itemsRemoved = [];
+    refresh();
+    setStat("Equipment list restored to defaults");
+  };
+})();
+
 // ---- status category editor ----
 function catKindVal(c){ return c.kind === "stayback" ? "stayback:" + (c.camp === "out" ? "out" : "in") : c.kind; }
 function applyKindVal(c, val){
@@ -1837,14 +2304,37 @@ function readRules(){
     return k ? [k, r.querySelector(".ac").value] : null;
   }).filter(Boolean);
   S.rules.autoAttachOut = el("r-autoatt").value.split(",").map(x=>x.trim().toUpperCase()).filter(Boolean);
-  const se = {}; document.querySelectorAll(".se").forEach(i => se[i.dataset.i] = Number(i.value)||0); S.rules.storeEstab = se;
-  const te = {}; document.querySelectorAll(".te").forEach(i => te[i.dataset.i] = Number(i.value)||0); S.rules.tagEstab = te;
+  // guarded: never wipe the establishment if the editor is not on screen yet
+  if(document.querySelector(".se")){
+    const se = {}; document.querySelectorAll(".se").forEach(i => se[i.dataset.i] = Number(i.value)||0); S.rules.storeEstab = se;
+  }
+  if(document.querySelector(".te")){
+    const te = {}; document.querySelectorAll(".te").forEach(i => te[i.dataset.i] = Number(i.value)||0); S.rules.tagEstab = te;
+  }
+  if(document.querySelector(".itn")){
+    const nt = {}; document.querySelectorAll(".itn").forEach(i => { const v = i.value.trim(); if(v) nt[i.dataset.i] = v; });
+    S.rules.itemNotes = nt;
+  }
+  // "PL2:2, PL3:1" -> {PL2:2, PL3:1}; anything unreadable is simply ignored
+  if(!document.querySelector(".ito")) return;
+  const ou = {}; document.querySelectorAll(".ito").forEach(i => {
+    const map = {};
+    i.value.split(",").forEach(part => {
+      const m = part.trim().match(/^([A-Za-z0-9]+)\s*[:=]\s*(\d+)$/);
+      if(!m) return;
+      const u = m[1].toUpperCase();
+      if(UNITS.includes(u)) map[u] = Number(m[2]);
+    });
+    if(Object.keys(map).length) ou[i.dataset.i] = map;
+  });
+  S.rules.estabUnit = ou;
 }
 (function(){
   const box = el("r-wpn").closest("details");
   const apply = () => { readRules(); renderAll(); saveGlobal(); };
   box.addEventListener("input", e => { if(e.target.closest(".rrow") || e.target.classList.contains("pm") ||
     e.target.classList.contains("se") || e.target.classList.contains("te") ||
+    e.target.classList.contains("itn") || e.target.classList.contains("ito") ||
     e.target.id === "r-pmex" || e.target.id === "r-autoatt") apply(); });
   box.addEventListener("change", e => { if(e.target.closest(".rrow")) apply(); });
   box.addEventListener("click", e => { if(e.target.classList.contains("del")){ e.target.closest(".rrow").remove(); apply(); } });
@@ -2031,7 +2521,7 @@ function unitPayload(u){
     notes: (S.notes||{})[u] || ""
   };
 }
-function globalPayload(){ return {cats:S.cats, catsRemoved:S.catsRemoved||[], rules:S.rules, rulesRev:S.rulesRev||RULES_REV, meta:{act:el("act").value, caa:el("caa").value}}; }
+function globalPayload(){ return {cats:S.cats, catsRemoved:S.catsRemoved||[], items:S.items, itemsRemoved:S.itemsRemoved||[], rules:S.rules, rulesRev:S.rulesRev||RULES_REV, labels:S.labels, meta:{act:el("act").value, caa:el("caa").value}}; }
 
 async function put(key, obj, attempt=1){
   if(!shareOn || offSave || ready !== true) return;
@@ -2064,10 +2554,14 @@ async function loadAll(){
     if(Array.isArray(g.cats) && g.cats.length) S.cats = g.cats;
     S.catsRemoved = Array.isArray(g.catsRemoved) ? g.catsRemoved : [];
     if(g.rules){ S.rules = {...JSON.parse(JSON.stringify(DEFAULT_RULES)), ...g.rules}; S.rulesRev = g.rulesRev || 1; }
+    if(g.labels) S.labels = g.labels;
+    if(g.items) S.items = g.items;
+    if(Array.isArray(g.itemsRemoved)) S.itemsRemoved = g.itemsRemoved;
     if(g.meta){ el("act").value = g.meta.act || ""; el("caa").value = g.meta.caa || ""; }
   }
   ensureDefaultCats();   // saved data from an older build still gets new built-in statuses
   migrateRules();        // ...and new built-in equipment rules
+  applyItems();          // ...and new built-in equipment items
   for(const u of UNITS){
     let d = null;
     try { const r = await sGet(ukey(u)); d = r && JSON.parse(r.value); } catch(e){}
@@ -2123,7 +2617,7 @@ el("wipe").onclick = async () => {
     if(ready === null) await probe();
     await Promise.all([GKEY, PREFIX+"probe", ...UNITS.map(ukey)].map(k => sDel(k).catch(()=>{})));
   } catch(e){}
-  S = freshState();
+  S = freshState(); applyItems();
   el("act").value = ""; el("caa").value = ""; el("out").value = "";
   buildTabs(); buildPanels(); renderRules(); renderAll();
   el("enable").style.display = ""; el("sync").style.display = "none";
@@ -2134,7 +2628,8 @@ el("wipe").onclick = async () => {
 function sessionSnapshot(){
   return {v:3, persons:S.persons, status:S.status, reason:S.reason, attach:S.attach,
           appt:S.appt, gear:S.gear, guests:S.guests, sOver:S.sOver, cats:S.cats, catsRemoved:S.catsRemoved||[],
-          rules:S.rules, rulesRev:S.rulesRev||RULES_REV, equip:S.equip, live:S.live,
+          items:S.items, itemsRemoved:S.itemsRemoved||[],
+          rules:S.rules, rulesRev:S.rulesRev||RULES_REV, labels:S.labels, equip:S.equip, live:S.live,
           notes:S.notes, meta:{act:el("act").value, caa:el("caa").value}};
 }
 el("exp").onclick = () => {
@@ -2143,11 +2638,17 @@ el("exp").onclick = () => {
 };
 // Merge ONE platoon's slice without touching the others — how each PS passes his
 // platoon to the CSM (or another PS) when there is no shared storage between phones.
-function mergeUnit(u, d, cats){
+function mergeUnit(u, d, cats, items){
   // adopt any status category this phone has not seen, so custom tags survive the trip
   if(Array.isArray(cats)) cats.forEach(c => {
     if(c && c.id && !S.cats.some(x => x.id === c.id)) S.cats.push(c);
   });
+  // ...and any equipment item it has not seen
+  if(items) Object.keys(items).forEach(k => {
+    if(!Array.isArray(items[k]) || !Array.isArray(S.items[k])) return;
+    items[k].forEach(i => { if(!S.items[k].includes(i)) S.items[k].push(i); });
+  });
+  applyItems();
   const oldIds = personsOf(u).map(p => p.id);
   if(Array.isArray(d.persons) && d.persons.length)
     S.persons = S.persons.filter(p => p.unit !== u).concat(d.persons);
@@ -2173,7 +2674,7 @@ el("imp").onclick = () => {
     try { d = JSON.parse(t0.replace(/^RAWDY-PL\s*/, "")); }
     catch(e){ setStat("That does not look like a platoon code."); return; }
     if(!d || !UNITS.includes(d.unit) || !d.data){ setStat("Platoon code incomplete — nothing loaded."); return; }
-    mergeUnit(d.unit, d.data, d.cats);
+    mergeUnit(d.unit, d.data, d.cats, d.items);
     buildTabs(); buildPanels(); renderRules(); renderAll();
     save(d.unit); saveGlobal();
     setStat(d.unit + " merged — other platoons untouched (" + coyCount().original + ")");
@@ -2191,6 +2692,11 @@ el("imp").onclick = () => {
   ensureDefaultCats();
   if(d.rules){ S.rules = {...JSON.parse(JSON.stringify(DEFAULT_RULES)), ...d.rules}; S.rulesRev = d.rulesRev || 1; }
   migrateRules();
+  if(d.labels) S.labels = d.labels;
+  if(d.items) S.items = d.items;
+  if(Array.isArray(d.itemsRemoved)) S.itemsRemoved = d.itemsRemoved;
+  applyItems();
+  ensureLabels();
   S.equip = d.equip || {}; S.live = d.live || {}; S.sOver = d.sOver || {}; S.notes = d.notes || {};
   if(d.meta){ el("act").value = d.meta.act || ""; el("caa").value = d.meta.caa || ""; }
   buildTabs(); buildPanels(); renderRules(); renderAll();
@@ -2258,6 +2764,7 @@ function showUpdateBar(n, note){
 // ============================================================================
 // BOOT
 // ============================================================================
+applyItems();
 buildTabs(); buildPanels(); renderRules(); renderAll();
 el("now").click();
 
