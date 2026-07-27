@@ -185,10 +185,16 @@ body{margin:0; background:#0E100C; }
 .irow input[type=number]{width:54px; text-align:right; font-family:var(--fm); padding:4px 6px; background:var(--surface2);}
 .irow .mini{font-size:11px; padding:4px 8px; min-height:0; line-height:1;}
 .irow .mini.del{border-color:var(--bad); color:var(--bad2);}
-.irow .sub{flex:1 1 100%; display:flex; gap:5px;}
-.irow .sub input{flex:1; min-width:0; font-size:11px; padding:3px 6px; color:var(--dim);}
+/* min-width:0 is essential — without it the wrapper cannot shrink below the
+   intrinsic width of its inputs and pushes the whole page sideways on a phone */
+.irow .sub{flex:1 1 100%; min-width:0; display:flex; gap:5px;}
+.irow .sub input{flex:1 1 0; min-width:0; font-size:11px; padding:3px 6px; color:var(--dim);}
 .irow .sub input.ito{color:var(--acc2);}
 @media (pointer:coarse){ .irow .mini{min-height:36px; padding:4px 11px;} }
+@media (max-width:480px){
+  .irow .sub{flex-direction:column;}        /* one field per line — easier to type on a phone */
+  .irow .nm{flex:1 1 100%; min-width:0;}    /* name on its own line, buttons below */
+}
 .eqg{margin-bottom:11px;}
 details.card>summary{cursor:pointer; font-family:var(--fh); font-size:12px; font-weight:700;
   letter-spacing:0.06em; text-transform:uppercase; color:var(--acc2); list-style:none;}
@@ -251,6 +257,8 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
 @media (pointer:coarse){
   .rw input,.rw select,.rw textarea{font-size:16px !important;}
   .rw button{min-height:44px;}
+  /* the small pill buttons keep their compact look but stay tappable */
+  .end .adj,.ovnote button,#updbar button,.rrow .del,.att .del{min-height:36px;}
   .rw input[type=checkbox]{width:22px; height:22px; accent-color:var(--acc);}
   .chip{min-height:50px;}
   .sheet .opt{padding:13px 11px; font-size:15px;}
@@ -259,9 +267,18 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
 }
 @media (max-width:640px){
   .dash{grid-template-columns:1fr 1fr;}
-  .sheet{position:fixed; left:0 !important; right:0; bottom:0; top:auto !important; width:100%;
-    max-width:none; border-radius:12px 12px 0 0; max-height:80vh; overflow-y:auto;
+  .sheet{position:fixed; left:0 !important; right:0; bottom:0; top:auto !important; width:100vw;
+    max-width:100vw; border-radius:12px 12px 0 0; max-height:80vh; overflow-y:auto; overflow-x:hidden;
     padding:12px 14px calc(14px + env(safe-area-inset-bottom));}
+  .sheet .row>span{flex:0 0 62px;}
+  .sheet .row input[type=text],.sheet .row select,.sheet .opt,.optgrid .opt{min-width:0;}
+  .optgrid{grid-template-columns:1fr;}   /* one status per line on a narrow phone */
+}
+/* a <select>'s natural width is set by its longest option, and a file input has a
+   wide intrinsic size — both must be allowed to shrink or they push the page out */
+.rw select,.rw input[type=file]{max-width:100%;}
+@media (max-width:360px){
+  .rrow > input[type=text],.rrow > select{flex:1 1 100%; min-width:0;}
 }
 @media (max-width:480px){
   .rw{padding:8px 8px 78px;}
@@ -291,7 +308,7 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
 <div class="card hdr">
   <h1>RAWDY — Strength &amp; Equipment Accounting</h1>
   <div class="note">Company-level manpower and equipment accounting for HQ, PL1, PL2, PL3.
-    <span id="build" style="float:right; font-family:var(--fm); color:var(--muted);">BUILD 30 · 27JUL26</span></div>
+    <span id="build" style="float:right; font-family:var(--fm); color:var(--muted);">BUILD 31 · 27JUL26</span></div>
 </div>
 
 <div class="card">
@@ -623,8 +640,8 @@ const RANK_CHOICES = ["","CPT","LTA","2LT","3WO","MSG","2SG","3SG","ME1-1","CPL"
 const WEAPON_TO_SFT = {"SAR21":"SAR 21 SFT","LMG":"LMG SFT","GPMG":"GPMG SFT","M203":"M203 SFT",
   "MATADOR":"MATADOR SFT","M110":"M110 SFT"};
 const EXTERNAL = "__EXT__";
-const BUILD_ID = "30 · 27JUL26";
-const BUILD_NO = 30;   // attached out of the company entirely
+const BUILD_ID = "31 · 27JUL26";
+const BUILD_NO = 31;   // attached out of the company entirely
 
 // ---- state ----
 function freshState(){
