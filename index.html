@@ -33,6 +33,17 @@ body{margin:0; background:#0E100C; }
 .rw .card{background:var(--surface); border:1px solid var(--border); border-radius:5px;
   padding:12px 14px; margin-bottom:12px;}
 .rw .hdr{border-left:3px solid var(--acc); }
+/* ---- page zones: daily work up top, everything you rarely touch folded away ---- */
+.zlabel{font-family:var(--fh); font-size:10px; font-weight:700; letter-spacing:0.14em;
+  text-transform:uppercase; color:var(--muted); margin:0 0 5px 2px;}
+.zlabel.zbig{margin:18px 0 7px 2px; color:var(--acc); display:flex; align-items:center; gap:8px;}
+.zlabel.zbig::after{content:""; flex:1; height:1px; background:var(--border);}
+.zone-work{padding-top:10px;}
+details.zone-set{border-color:var(--border2); background:var(--bg);}
+details.zone-set > summary{font-size:12px; color:var(--dim);}
+details.zone-set[open] > summary{color:var(--acc2); margin-bottom:4px;}
+details.zone-set > details.card{background:var(--surface); margin-bottom:8px;}
+details.zone-set > details{margin-bottom:8px;}
 .rw .step{display:inline-flex; align-items:center; justify-content:center; width:19px; height:19px;
   border-radius:50%; background:var(--accdim); color:#161810; font-family:var(--fm); font-size:11px; font-weight:700;}
 
@@ -313,19 +324,31 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
   .end .big label{font-size:8px; letter-spacing:0.04em;}
   .end .big .v, .end .vedit{font-size:12.5px;}
   .end .big .d{font-size:10px;}
+  /* title on its own line, buttons beneath — no ragged wrapping */
+  .end .t{flex-wrap:wrap; gap:5px;}
+  .end .t > span:last-child{flex:1 1 100%; display:flex; gap:5px;}
+  .end .adj{flex:1;}
+  /* keep each dashboard figure on one line */
+  .dcard .r span,.dcard .r b{white-space:nowrap;}
+  .dcard .r b{font-size:11px;}
+  .dcard .r{font-size:9px;}
 }
 </style>
 </head>
 <body>
 <div class="rw">
 
+
 <div class="card hdr">
   <h1>RAWDY — Strength &amp; Equipment Accounting</h1>
   <div class="note">Company-level manpower and equipment accounting for HQ, PL1, PL2, PL3.
-    <span id="build" style="float:right; font-family:var(--fm); color:var(--muted);">BUILD 38 · 01AUG26</span></div>
+    <span id="build" style="float:right; font-family:var(--fm); color:var(--muted);">BUILD 41 · 01AUG26</span>
+    <span id="sy-pill" style="display:none; float:right; margin-right:9px; font-family:var(--fm); font-size:10px;
+      border:1px solid var(--border2); border-radius:9px; padding:1px 8px;">SYNC OFF</span></div>
 </div>
 
-<div class="card">
+<div class="card zone-work">
+  <div class="zlabel">Activity</div>
   <div class="bar">
     <div style="flex:1; min-width:180px;">
       <label class="note">Activity</label>
@@ -337,21 +360,6 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
     </div>
   </div>
   <div id="sharebanner" class="note" style="display:none; padding:8px 10px; border-radius:3px; margin-bottom:6px;"></div>
-  <details>
-    <summary class="note" style="cursor:pointer; font-weight:700; color:var(--acc2);">Sharing, backup &amp; PS codes ▾</summary>
-    <div class="bar" style="align-items:center; margin-top:9px;">
-      <button type="button" id="enable">Turn on sharing &amp; auto-save</button>
-      <button type="button" id="sync" style="display:none;">Sync now</button>
-      <button type="button" id="exp">Copy session code</button>
-      <button type="button" id="imp">Load session code</button>
-      <button type="button" id="diag" style="color:var(--muted);">Show saved data</button>
-      <button type="button" id="wipe" style="border-color:var(--bad); color:var(--bad2);">Erase everything &amp; start fresh</button>
-    </div>
-    <div class="note" style="margin-bottom:5px;"><b>Copy session code</b> shares everything — statuses, attachments, roles — as text you can WhatsApp to another phone; they press <b>Load session code</b>. This always works, even when auto-sharing is unavailable.</div>
-    <div class="note" style="margin-bottom:5px;"><b>Working as separate PSes:</b> each platoon panel has <b>Copy PL code</b> — it carries that platoon only. Loading it <b>merges just that platoon</b> and leaves the rest untouched, so each PS updates his own platoon on his own phone, WhatsApps the code, and the CSM loads all three into one picture.</div>
-    <div class="note" style="margin-bottom:5px;"><b>Erase everything &amp; start fresh</b> wipes all saved data for every platoon and rebuilds from the built-in roll — use it if the shared session is ever in a bad state. <b>Show saved data</b> prints what is stored into the output box.</div>
-    <div class="note">Sharing is <b>off by default</b> — the tool works fully without it. Turn it on so each PS edits their own platoon on one shared link; every platoon saves separately.</div>
-  </details>
   <div class="status" id="stat" style="margin-top:6px; display:block;"></div>
 </div>
 
@@ -366,6 +374,55 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
   <div class="note" style="margin-top:8px;" id="coy-note"></div>
 </div>
 
+
+<details class="card" id="synccard">
+  <summary>Live sync — every PS sees each other's edits</summary>
+  <div class="note" style="margin:9px 0;">Put every phone in the same <b>room</b> and edits appear on all of them within a second. Set up once here, then send the PSes the invite link — they type nothing. One-off setup instructions are in the guide.</div>
+  <div class="bar">
+    <input type="text" id="sy-url" placeholder="Database URL — paste from Firebase Data tab" style="flex:1; min-width:200px;">
+    <input type="text" id="sy-room" placeholder="Room code" style="width:140px;">
+  </div>
+  <div class="bar">
+    <button type="button" id="sy-test">1 · Test connection</button>
+    <button type="button" id="sy-go" class="go">2 · Go live</button>
+    <button type="button" id="sy-off" style="display:none; border-color:var(--bad); color:var(--bad2);">Stop live sync</button>
+    <button type="button" id="sy-link">3 · Copy invite link for PSes</button>
+  </div>
+  <div class="note" id="sy-state">Off.</div>
+  <div class="note" style="margin-top:5px;">Anyone with the link can read and edit this room — treat it like the nominal roll. Use a room code nobody would guess.</div>
+</details>
+
+<div class="zlabel zbig">Platoons — tag, attach, equip</div>
+<div class="tabs" id="tabs"></div>
+<div id="panels"></div>
+
+<div class="zlabel zbig">Send up</div>
+<div class="card">
+  <details style="margin-bottom:10px;">
+    <summary class="note" style="cursor:pointer; font-weight:700; color:var(--acc2);">Message wording — coy &amp; unit names ▾</summary>
+    <div class="note" style="margin:7px 0 6px;">Changes the generated WhatsApp message only — the tabs and screens keep HQ / PL1 / PL2 / PL3. Short names read best.</div>
+    <div class="bar">
+      <div><label class="note">Coy name</label><br><input type="text" id="lb-coy" style="width:140px;"></div>
+      <div><label class="note">Report title</label><br><input type="text" id="lb-title" style="width:150px;"></div>
+      <div><label class="note">Armskote label</label><br><input type="text" id="lb-arm" style="width:160px;"></div>
+    </div>
+    <div class="bar">
+      <div><label class="note">HQ shows as</label><br><input type="text" id="lb-HQ" style="width:120px;"></div>
+      <div><label class="note">PL1 shows as</label><br><input type="text" id="lb-PL1" style="width:120px;"></div>
+      <div><label class="note">PL2 shows as</label><br><input type="text" id="lb-PL2" style="width:120px;"></div>
+      <div><label class="note">PL3 shows as</label><br><input type="text" id="lb-PL3" style="width:120px;"></div>
+      <button type="button" id="lb-reset" style="font-size:11px; align-self:flex-end;">Reset wording</button>
+    </div>
+  </details>
+  <div class="bar">
+    <button type="button" class="go" id="gen">Generate report</button>
+    <button type="button" id="gencoy">Company report (HQ + PL1–3)</button>
+    <button type="button" id="copy">Copy to clipboard</button>
+    <button type="button" id="reset">Reset all</button>
+  </div>
+  <textarea id="out" placeholder="Report appears here — editable before you copy."></textarea>
+</div>
+
 <details class="card">
   <summary>Parade state table — coy sheet format</summary>
   <div class="note" style="margin:9px 0;">The same columns as the company sheet, filled in from the roster.
@@ -378,6 +435,27 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
   </div>
   <div class="scroll"><table id="pstab"></table></div>
 </details>
+
+<details class="card zone-set">
+  <summary>Set up &amp; reference</summary>
+  <div class="note" style="margin:9px 0;">Everything you only touch now and then: how the counting works, the roll, the rules, the equipment list, the statuses, and sharing between phones.</div>
+
+  <details class="card">
+    <summary>Sharing, live sync &amp; PS codes</summary>
+    <div class="bar" style="align-items:center; margin-top:9px;">
+      <button type="button" id="enable">Turn on sharing &amp; auto-save</button>
+      <button type="button" id="sync" style="display:none;">Sync now</button>
+      <button type="button" id="exp">Copy session code</button>
+      <button type="button" id="imp">Load session code</button>
+      <button type="button" id="diag" style="color:var(--muted);">Show saved data</button>
+      <button type="button" id="wipe" style="border-color:var(--bad); color:var(--bad2);">Erase everything &amp; start fresh</button>
+    </div>
+    <div class="note" style="margin-bottom:5px;"><b>Copy session code</b> shares everything — statuses, attachments, roles — as text you can WhatsApp to another phone; they press <b>Load session code</b>. This always works, even when auto-sharing is unavailable.</div>
+    <div class="note" style="margin-bottom:5px;"><b>Working as separate PSes:</b> each platoon panel has <b>Copy PL code</b> — it carries that platoon only. Loading it <b>merges just that platoon</b> and leaves the rest untouched, so each PS updates his own platoon on his own phone, WhatsApps the code, and the CSM loads all three into one picture.</div>
+    <div class="note" style="margin-bottom:5px;"><b>Erase everything &amp; start fresh</b> wipes all saved data for every platoon and rebuilds from the built-in roll — use it if the shared session is ever in a bad state. <b>Show saved data</b> prints what is stored into the output box.</div>
+    <div class="note">Sharing is <b>off by default</b> — the tool works fully without it. Turn it on so each PS edits their own platoon on one shared link; every platoon saves separately.</div>
+
+  </details>
 
 <details class="card">
   <summary>How the counting works</summary>
@@ -491,37 +569,8 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
   </div>
   <button type="button" id="cat-reset" style="font-size:11px; margin-top:9px;">Restore default statuses</button>
 </details>
+</details>
 
-<div class="tabs" id="tabs"></div>
-<div id="panels"></div>
-
-<div class="card">
-  <details style="margin-bottom:10px;">
-    <summary class="note" style="cursor:pointer; font-weight:700; color:var(--acc2);">Message wording — coy &amp; unit names ▾</summary>
-    <div class="note" style="margin:7px 0 6px;">Changes the generated WhatsApp message only — the tabs and screens keep HQ / PL1 / PL2 / PL3. Short names read best.</div>
-    <div class="bar">
-      <div><label class="note">Coy name</label><br><input type="text" id="lb-coy" style="width:140px;"></div>
-      <div><label class="note">Report title</label><br><input type="text" id="lb-title" style="width:150px;"></div>
-      <div><label class="note">Armskote label</label><br><input type="text" id="lb-arm" style="width:160px;"></div>
-    </div>
-    <div class="bar">
-      <div><label class="note">HQ shows as</label><br><input type="text" id="lb-HQ" style="width:120px;"></div>
-      <div><label class="note">PL1 shows as</label><br><input type="text" id="lb-PL1" style="width:120px;"></div>
-      <div><label class="note">PL2 shows as</label><br><input type="text" id="lb-PL2" style="width:120px;"></div>
-      <div><label class="note">PL3 shows as</label><br><input type="text" id="lb-PL3" style="width:120px;"></div>
-      <button type="button" id="lb-reset" style="font-size:11px; align-self:flex-end;">Reset wording</button>
-    </div>
-  </details>
-  <div class="bar">
-    <button type="button" class="go" id="gen">Generate report</button>
-    <button type="button" id="gencoy">Company report (HQ + PL1–3)</button>
-    <button type="button" id="copy">Copy to clipboard</button>
-    <button type="button" id="reset">Reset all</button>
-  </div>
-  <textarea id="out" placeholder="Report appears here — editable before you copy."></textarea>
-</div>
-
-</div>
 
 <div id="dock">
   <span class="who" id="dock-u">HQ</span>
@@ -700,8 +749,8 @@ const RANK_CHOICES = ["","CPT","LTA","2LT","3WO","MSG","2SG","3SG","ME1-1","CPL"
 const WEAPON_TO_SFT = {"SAR21":"SAR 21 SFT","LMG":"LMG SFT","GPMG":"GPMG SFT","M203":"M203 SFT",
   "MATADOR":"MATADOR SFT","M110":"M110 SFT"};
 const EXTERNAL = "__EXT__";
-const BUILD_ID = "38 · 01AUG26";
-const BUILD_NO = 38;   // attached out of the company entirely
+const BUILD_ID = "41 · 01AUG26";
+const BUILD_NO = 41;   // attached out of the company entirely
 
 // ---- state ----
 function freshState(){
@@ -2834,8 +2883,16 @@ async function put(key, obj, attempt=1){
     if(++failed >= 3 && !offSave){ offSave = true; setStat("Sharing paused — storage not responding. Use Generate + Copy, or press Sync now."); }
   }
 }
-function save(u){ dirty[u] = true; if(!shareOn) return; clearTimeout(timers[u]); timers[u] = setTimeout(() => put(ukey(u), unitPayload(u)), 700); }
-function saveGlobal(){ dirty.g = true; if(!shareOn) return; clearTimeout(timers.g); timers.g = setTimeout(() => put(GKEY, globalPayload()), 700); }
+function save(u){
+  dirty[u] = true;
+  if(typeof syncPush === "function"){ clearTimeout(timers["sy"+u]); timers["sy"+u] = setTimeout(() => syncPush("unit", u), 400); }
+  if(!shareOn) return; clearTimeout(timers[u]); timers[u] = setTimeout(() => put(ukey(u), unitPayload(u)), 700);
+}
+function saveGlobal(){
+  dirty.g = true;
+  if(typeof syncPush === "function"){ clearTimeout(timers.syg); timers.syg = setTimeout(() => syncPush("global"), 400); }
+  if(!shareOn) return; clearTimeout(timers.g); timers.g = setTimeout(() => put(GKEY, globalPayload()), 700);
+}
 function saveAll(){ UNITS.forEach(save); saveGlobal(); }
 // after adopting shared state there is nothing of ours left unwritten
 function clearDirty(){ dirty = {}; }
@@ -3035,6 +3092,183 @@ el("diag").onclick = async () => {
 };
 
 // ============================================================================
+// LIVE SYNC — every PS sees the others' edits as they happen.
+// Firebase Realtime Database over plain REST + Server-Sent Events: no SDK, no
+// build step, works from a static page. Each unit owns its own slice, so two
+// PSes editing different platoons never fight; the CSM sees all of it live.
+// ============================================================================
+const DEV_ID = (() => {
+  try {
+    let d = localStorage.getItem("rawdy_dev");
+    if(!d){ d = "d" + Math.random().toString(36).slice(2,9); localStorage.setItem("rawdy_dev", d); }
+    return d;
+  } catch(e){ return "d" + Math.random().toString(36).slice(2,9); }
+})();
+let syncCfg = {url:"", room:"", on:false};
+let es = null, applyingRemote = false, syncSeen = {};
+
+function loadSyncCfg(){
+  try { const raw = localStorage.getItem("rawdy_sync"); if(raw) syncCfg = {...syncCfg, ...JSON.parse(raw)}; } catch(e){}
+}
+function saveSyncCfg(){ try { localStorage.setItem("rawdy_sync", JSON.stringify(syncCfg)); } catch(e){} }
+// Be forgiving about what gets pasted: missing https://, a trailing slash, a
+// ".json" endpoint, or stray spaces are all fixed silently. A console address is
+// the one thing we cannot repair, so it is named plainly instead.
+function normDbUrl(v){
+  let s = String(v || "").trim().replace(/\s+/g, "");
+  if(!s) return "";
+  s = s.replace(/\.json.*$/i, "").replace(/\/+$/, "");
+  if(!/^https?:\/\//i.test(s)) s = "https://" + s;
+  return s;
+}
+function dbUrlProblem(s){
+  if(!s) return "Paste the Database URL from the Firebase Data tab.";
+  if(/console\.firebase\.google\.com/i.test(s))
+    return "That is the Firebase console address, not the database. In Firebase open the Data tab — the address is in the bar just above the data tree, ending in .firebasedatabase.app";
+  let host;
+  try { host = new URL(s).hostname; } catch(e){ return "That is not a valid web address."; }
+  const firebase = /(firebaseio\.com|firebasedatabase\.app)$/i.test(host);
+  const local = /^(localhost|\d{1,3}(\.\d{1,3}){3})$/i.test(host);
+  if(!firebase && !local)
+    return "That does not look like a Realtime Database address. It should end in .firebasedatabase.app (or .firebaseio.com).";
+  return "";
+}
+function syncBase(){
+  const u = normDbUrl(syncCfg.url);
+  const r = (syncCfg.room || "").trim().replace(/[^A-Za-z0-9_-]/g, "");
+  return (u && r) ? `${u}/rawdy/${r}` : "";
+}
+// Plain-English verdict, so nobody has to read an HTTP code.
+async function syncTest(){
+  const s = el("sy-state");
+  const say = (t, ok) => { if(s) s.innerHTML = `<b style="color:${ok?"#9BBC7A":"#F0A98A"};">${ok?"✓":"✗"}</b> ${t}`; };
+  const url = normDbUrl(syncCfg.url);
+  const bad = dbUrlProblem(url);
+  if(bad) return say(bad, false);
+  if(!(syncCfg.room || "").trim()) return say("Type a room code as well — any word nobody would guess.", false);
+  say("Checking…", true);
+  try {
+    const r = await fetch(syncBase() + ".json");
+    if(r.status === 401 || r.status === 403)
+      return say("Reached the database, but it refused access. In Firebase open the <b>Rules</b> tab, paste the rules block from the guide and press <b>Publish</b>.", false);
+    if(r.status === 404)
+      return say("Nothing at that address. Copy the URL again from the <b>Data</b> tab in Firebase.", false);
+    if(!r.ok) return say("The database replied with HTTP " + r.status + ".", false);
+    await r.json();
+    say("Connection is good — now press <b>2 · Go live</b>.", true);
+  } catch(e){
+    say("Could not reach it — " + e.message + ". Check the address starts with https:// and this device has internet.", false);
+  }
+}
+function setSyncState(state, detail){
+  const map = {live:["LIVE","#9BBC7A"], off:["OFF","#777567"], connecting:["…","#E8C547"],
+               retry:["RECONNECTING","#E8C547"], error:["ERROR","#F0A98A"]};
+  const [txt,col] = map[state] || map.off;
+  const pill = el("sy-pill");
+  if(pill){ pill.textContent = "SYNC " + txt; pill.style.color = col;
+            pill.style.borderColor = col; pill.style.display = ""; }
+  const s = el("sy-state");
+  if(s) s.innerHTML = state === "live"
+    ? `<b style="color:#9BBC7A;">Live</b> — room <b>${syncCfg.room}</b>. Edits appear on every phone in this room within a second.`
+    : (detail ? `<b style="color:#F0A98A;">${txt}</b> — ${detail}` : txt);
+  const go = el("sy-go"), off = el("sy-off");
+  if(go && off){ const on = state === "live" || state === "retry" || state === "connecting";
+                 go.style.display = on ? "none" : ""; off.style.display = on ? "" : "none"; }
+}
+// ---- incoming ----
+function applyRemoteUnit(u, payload){
+  if(!payload || !payload.data) return;
+  if(payload.by === DEV_ID) return;                    // our own write coming back
+  if(syncSeen[u] === payload.at) return;
+  syncSeen[u] = payload.at;
+  applyingRemote = true;
+  try {
+    mergeUnit(u, payload.data, payload.cats, payload.items);
+    buildPanels(); renderRules(); renderAll();
+    setStat(`${u} updated from another phone — ${new Date().toLocaleTimeString()}`);
+  } finally { applyingRemote = false; }
+}
+function applyRemoteGlobal(g){
+  if(!g || !g.g || g.by === DEV_ID) return;
+  applyingRemote = true;
+  try {
+    const d = g.g;
+    if(Array.isArray(d.cats) && d.cats.length) S.cats = d.cats;
+    if(Array.isArray(d.catsRemoved)) S.catsRemoved = d.catsRemoved;
+    if(d.items) S.items = d.items;
+    if(d.rules){ S.rules = {...JSON.parse(JSON.stringify(DEFAULT_RULES)), ...d.rules}; S.rulesRev = d.rulesRev || RULES_REV; }
+    if(d.labels) S.labels = d.labels;
+    ensureDefaultCats(); migrateRules(); applyItems(); ensureLabels();
+    if(d.meta){ if(d.meta.act !== undefined) el("act").value = d.meta.act || "";
+                if(d.meta.caa !== undefined) el("caa").value = d.meta.caa || ""; }
+    buildPanels(); renderRules(); renderAll();
+  } finally { applyingRemote = false; }
+}
+function onRemote(ev){
+  let m; try { m = JSON.parse(ev.data); } catch(e){ return; }
+  if(!m) return;
+  const parts = String(m.path || "/").split("/").filter(Boolean);
+  if(!parts.length){                                   // whole room
+    const d = m.data; if(!d) return;
+    if(d.global) applyRemoteGlobal(d.global);
+    if(d.units) Object.keys(d.units).forEach(u => { if(UNITS.includes(u)) applyRemoteUnit(u, d.units[u]); });
+    return;
+  }
+  if(parts[0] === "units" && parts[1] && UNITS.includes(parts[1])) applyRemoteUnit(parts[1], m.data);
+  else if(parts[0] === "global") applyRemoteGlobal(m.data);
+}
+// ---- outgoing ----
+async function syncPush(kind, u){
+  if(!syncCfg.on || applyingRemote) return;
+  const base = syncBase(); if(!base) return;
+  const at = Date.now();
+  const path = kind === "global" ? "/global" : "/units/" + u;
+  const body = kind === "global"
+    ? {by:DEV_ID, at, g: globalPayload()}
+    : {by:DEV_ID, at, data: unitPayload(u), cats:S.cats, items:S.items};
+  syncSeen[u] = at;
+  try {
+    const r = await fetch(base + path + ".json", {method:"PUT",
+      headers:{"Content-Type":"application/json"}, body: JSON.stringify(body)});
+    if(!r.ok) throw new Error("HTTP " + r.status);
+  } catch(e){ setSyncState("error", "could not send — " + e.message); }
+}
+function syncStop(quiet){
+  if(es){ try { es.close(); } catch(e){} es = null; }
+  if(!quiet){ syncCfg.on = false; saveSyncCfg(); setSyncState("off"); }
+}
+async function syncConnect(){
+  const base = syncBase();
+  if(!base){ setSyncState("error", "enter the database URL and a room code first"); return; }
+  syncStop(true);
+  setSyncState("connecting");
+  try {
+    const r = await fetch(base + ".json");
+    if(!r.ok) throw new Error("HTTP " + r.status + " — check the URL and that the database rules allow access");
+    const d = await r.json();
+    if(d){ if(d.global) applyRemoteGlobal(d.global);
+           if(d.units) Object.keys(d.units).forEach(u => { if(UNITS.includes(u)) applyRemoteUnit(u, d.units[u]); }); }
+  } catch(e){ setSyncState("error", e.message); return; }
+  try {
+    es = new EventSource(base + ".json");
+    es.addEventListener("put", onRemote);
+    es.addEventListener("patch", onRemote);
+    es.onopen = () => setSyncState("live");
+    es.onerror = () => { if(syncCfg.on) setSyncState("retry", "connection dropped — retrying"); };
+  } catch(e){ setSyncState("error", e.message); return; }
+  syncCfg.on = true; saveSyncCfg(); setSyncState("live");
+  // publish what this phone already holds so the room starts in step
+  UNITS.forEach(u => syncPush("unit", u));
+  syncPush("global");
+}
+function syncLink(){
+  try {
+    const p = btoa(JSON.stringify({u:syncCfg.url, r:syncCfg.room}));
+    return location.origin + location.pathname + "?s=" + encodeURIComponent(p);
+  } catch(e){ return ""; }
+}
+
+// ============================================================================
 // UPDATE CHECK — asks the host whether a newer build has been published.
 // Silent and harmless when there is no host (a local file just skips it).
 // ============================================================================
@@ -3073,6 +3307,37 @@ function showUpdateBar(n, note){
 applyItems();
 buildTabs(); buildPanels(); renderRules(); renderAll();
 el("now").click();
+
+// ---- live sync boot: an invite link configures the phone by itself ----
+loadSyncCfg();
+(function(){
+  try {
+    const q = new URLSearchParams(location.search).get("s");
+    if(q){ const d = JSON.parse(atob(decodeURIComponent(q)));
+           if(d && d.u && d.r){ syncCfg.url = d.u; syncCfg.room = d.r; syncCfg.on = true; saveSyncCfg(); } }
+  } catch(e){}
+  const iu = el("sy-url"), ir = el("sy-room");
+  if(iu) iu.value = syncCfg.url || "";
+  if(ir) ir.value = syncCfg.room || "";
+  if(iu) iu.oninput = () => { syncCfg.url = iu.value.trim(); saveSyncCfg(); };
+  if(ir) ir.oninput = () => { syncCfg.room = ir.value.trim(); saveSyncCfg(); };
+  // tidy the pasted address when the field loses focus, so it is obvious it took
+  if(iu) iu.onblur = () => { const n = normDbUrl(iu.value); if(n && n !== iu.value){ iu.value = n; syncCfg.url = n; saveSyncCfg(); } };
+  el("sy-test").onclick = syncTest;
+  el("sy-go").onclick = syncConnect;
+  el("sy-off").onclick = () => syncStop();
+  el("sy-link").onclick = () => {
+    const L = syncLink();
+    if(!L){ setStat("Set the database URL and room code first."); return; }
+    copyText(L, "Invite link copied — WhatsApp it to the PSes");
+  };
+  setSyncState(syncCfg.on ? "connecting" : "off");
+  if(syncCfg.on && syncBase()) syncConnect();
+  // a phone that sleeps drops the stream; pick it up again on return
+  document.addEventListener("visibilitychange", () => {
+    if(!document.hidden && syncCfg.on && (!es || es.readyState === 2)) syncConnect();
+  });
+})();
 
 // check shortly after opening, when the phone is brought back to the app, and hourly
 setTimeout(checkForUpdate, 4000);
