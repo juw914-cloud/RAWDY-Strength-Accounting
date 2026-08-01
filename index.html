@@ -194,6 +194,14 @@ details.zone-set > details{margin-bottom:8px;}
   border:1px solid var(--border); border-radius:3px; padding:6px 9px; flex-wrap:wrap;}
 .it label{font-size:10.5px; color:var(--dim); letter-spacing:0.02em;}
 .it input{width:62px; text-align:right; font-family:var(--fm); padding:4px 6px; background:var(--bg);}
+/* cross an item out for this platoon; tap again to bring it back */
+.it .zx{padding:3px 7px; min-height:0; font-size:11px; line-height:1; background:transparent;
+  border-color:var(--border); color:var(--muted);}
+.it .zx:hover{border-color:var(--bad); color:var(--bad2);}
+.it.zeroed{opacity:0.55; border-style:dashed;}
+.it.zeroed label{text-decoration:line-through; text-decoration-color:var(--bad2);}
+.it.zeroed .zx{border-color:var(--bad); color:var(--bad2);}
+@media (pointer:coarse){ .it .zx{min-height:34px; padding:3px 10px;} }
 /* ---- equipment list editor ---- */
 .ilist{border:1px solid var(--border); border-radius:3px; background:var(--bg);}
 .irow{display:flex; align-items:center; gap:5px; padding:6px 8px; border-bottom:1px solid var(--border); flex-wrap:wrap;}
@@ -342,7 +350,7 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
 <div class="card hdr">
   <h1>RAWDY — Strength &amp; Equipment Accounting</h1>
   <div class="note">Company-level manpower and equipment accounting for HQ, PL1, PL2, PL3.
-    <span id="build" style="float:right; font-family:var(--fm); color:var(--muted);">BUILD 44 · 01AUG26</span>
+    <span id="build" style="float:right; font-family:var(--fm); color:var(--muted);">BUILD 45 · 01AUG26</span>
     <span id="sy-pill" style="display:none; float:right; margin-right:9px; font-family:var(--fm); font-size:10px;
       border:1px solid var(--border2); border-radius:9px; padding:1px 8px;">SYNC OFF</span></div>
 </div>
@@ -782,8 +790,8 @@ const RANK_CHOICES = ["","CPT","LTA","2LT","3WO","MSG","2SG","3SG","ME1-1","CPL"
 const WEAPON_TO_SFT = {"SAR21":"SAR 21 SFT","LMG":"LMG SFT","GPMG":"GPMG SFT","M203":"M203 SFT",
   "MATADOR":"MATADOR SFT","M110":"M110 SFT"};
 const EXTERNAL = "__EXT__";
-const BUILD_ID = "44 · 01AUG26";
-const BUILD_NO = 44;   // attached out of the company entirely
+const BUILD_ID = "45 · 01AUG26";
+const BUILD_NO = 45;   // attached out of the company entirely
 
 // ---- state ----
 function freshState(){
@@ -795,6 +803,7 @@ function freshState(){
     attach: {},        // personId -> {to: unit|EXTERNAL, mo: bool, pa: bool, note: str}
     appt: {},          // personId -> appointment override
     sect: {},          // personId -> section override (shifted between sections)
+    zero: {},          // unit -> {"group::item": true}  items forced to zero for that unit
     gear: {},          // personId -> {weapon?: str|null, signals?: [..]}
     guests: [],        // men attached in from another coy/unit: {id,unit,rank,name,appt,from,mo,pa}
     cats: DEFAULT_CATS.map(c => ({...c})),
@@ -1377,6 +1386,12 @@ function buildPanels(){
           <span>Gear numbers are set by hand — the roster is not counting them.</span>
           <button type="button" id="eqr-${u}">Back to auto-count</button>
         </div>
+        <div class="bar" style="margin-top:8px;">
+          <button type="button" id="z0-${u}" style="border-color:var(--bad); color:var(--bad2);">Set every item to zero</button>
+          <button type="button" id="zr-${u}">Undo zeros</button>
+          <span class="status" id="zn-${u}"></span>
+        </div>
+        <div class="note">Tap the <b>✕</b> beside any item to drop just that one to zero. Zeroed items stay at zero and are left out of the report until you undo them.</div>
         <div style="margin-top:11px;">
           <h3>Weapon</h3><div id="eq-${u}-wpn"></div>
           <h3 style="margin-top:12px;">Signal / optics</h3><div id="eq-${u}-sig"></div>
@@ -1398,11 +1413,11 @@ function buildPanels(){
     ["wpn","sig","pan"].forEach(k => {
       el(`eq-${u}-${k}`).innerHTML = groupsFor(k).map(([h,items]) =>
         `<div class="eqg"><h3>${h}</h3><div class="grid">${items.map(i =>
-          `<div class="it"><label>${i}</label><input type="number" min="0" id="q-${u}-${k}-${slug(i)}"></div>`).join("")}</div></div>`).join("");
+          `<div class="it" id="it-${u}-${k}-${slug(i)}"><label>${i}</label><input type="number" min="0" id="q-${u}-${k}-${slug(i)}"><button type="button" class="zx" data-u="${u}" data-k="${k}" data-i="${slug(i)}" title="Set to zero">✕</button></div>`).join("")}</div></div>`).join("");
     });
     [["store",STORE_ITEMS],["tag",TAG_ITEMS]].forEach(([k,items]) => {
       el(`eq-${u}-${k}`).innerHTML = `<div class="grid">${items.map(i =>
-        `<div class="it"><label>${i}</label><input type="number" min="0" id="q-${u}-${k}-${slug(i)}"></div>`).join("")}</div>`;
+        `<div class="it" id="it-${u}-${k}-${slug(i)}"><label>${i}</label><input type="number" min="0" id="q-${u}-${k}-${slug(i)}"><button type="button" class="zx" data-u="${u}" data-k="${k}" data-i="${slug(i)}" title="Set to zero">✕</button></div>`).join("")}</div>`;
     });
     // one platoon's slice as text — WhatsApp it, the other phone merges just this platoon
     el(`cs-${u}`).onclick = () => copyText(
@@ -1423,7 +1438,7 @@ function buildPanels(){
         if(ids.includes(pid) || (a && a !== OFF && a.to === u)) delete S.attach[pid];
       });
       S.guests = (S.guests || []).filter(g => g.unit !== u);
-      delete S.sOver[u]; if(S.notes) delete S.notes[u];
+      delete S.sOver[u]; if(S.notes) delete S.notes[u]; if(S.zero) delete S.zero[u];
       renderAll(); saveAll();
       setStat(`${unitName(u)} cleared`);
     };
@@ -1476,6 +1491,28 @@ function buildPanels(){
     el(`lv-${u}`).checked = S.live[u] !== false;
     el(`lv-${u}`).onchange = e => { S.live[u] = e.target.checked; renderEquip(u); renderAll(); save(u); };
     el(`eqr-${u}`).onclick = () => { S.live[u] = true; el(`lv-${u}`).checked = true; renderEquip(u); renderAll(); save(u); };
+    el(`z0-${u}`).onclick = () => {
+      if(!confirm(`Set every equipment item in ${unitName(u)} to zero?\n\nThe roster is untouched — only the gear figures. "Undo zeros" puts them all back.`)) return;
+      S.zero = S.zero || {}; const z = S.zero[u] = {};
+      [["wpn",WEAPON_ITEMS],["sig",SIGNALS_ITEMS],["pan",PANTES_ITEMS],["store",STORE_ITEMS],["tag",TAG_ITEMS]]
+        .forEach(([k,items]) => items.forEach(i => { z[zeroKey(k, slug(i))] = true; }));
+      renderEquip(u); renderAll(); save(u);
+    };
+    el(`zr-${u}`).onclick = () => {
+      if(S.zero) delete S.zero[u];
+      renderEquip(u); renderAll(); save(u);
+      setStat(`${unitName(u)} gear back to the counted figures`);
+    };
+    ["wpn","sig","pan","store","tag"].forEach(k => {
+      el(`eq-${u}-${k}`).addEventListener("click", e => {
+        const b = e.target.closest(".zx"); if(!b) return;
+        S.zero = S.zero || {}; S.zero[u] = S.zero[u] || {};
+        const key = zeroKey(b.dataset.k, b.dataset.i);
+        if(S.zero[u][key]) delete S.zero[u][key]; else S.zero[u][key] = true;   // tap again to restore
+        if(!Object.keys(S.zero[u]).length) delete S.zero[u];
+        renderEquip(u); renderAll(); save(u);
+      });
+    });
     ["wpn","sig","pan","store","tag"].forEach(k => {
       el(`eq-${u}-${k}`).addEventListener("input", e => {
         if(e.target.tagName !== "INPUT") return;
@@ -1724,6 +1761,28 @@ function renderAttach(u){
   });
 }
 
+// Items a PS has crossed out for this platoon. They win over the auto-count and
+// over the establishment, so a zero stays zero however often the tool recalculates.
+const zeroKey = (k,item) => k + "::" + item;
+function isZeroed(u,k,item){ return !!((S.zero || {})[u] || {})[zeroKey(k,item)]; }
+function applyZeros(u){
+  const z = (S.zero || {})[u] || {};
+  let n = 0;
+  Object.keys(z).forEach(key => {
+    if(!z[key]) return;
+    n++;
+    const [k, item] = key.split("::");
+    const e = el(`q-${u}-${k}-${item}`); if(e) e.value = "";
+    const cell = el(`it-${u}-${k}-${item}`); if(cell) cell.classList.add("zeroed");
+  });
+  document.querySelectorAll(`#p-${u} .it.zeroed`).forEach(c => {
+    const id = c.id.replace(`it-${u}-`, "");
+    const i = id.indexOf("-");
+    if(!z[zeroKey(id.slice(0,i), id.slice(i+1))]) c.classList.remove("zeroed");
+  });
+  const note = el(`zn-${u}`);
+  if(note) note.textContent = n ? `${n} item${n>1?"s":""} held at zero` : "";
+}
 function renderEquip(u){
   if(S.live[u] === false){
     // manual mode — restore whatever the user typed
@@ -1731,6 +1790,7 @@ function renderEquip(u){
     ["wpn","sig","pan","store","tag"].forEach(k => Object.entries(m[k]||{}).forEach(([item,v]) => {
       const e = el(`q-${u}-${k}-${item}`); if(e) e.value = v;
     }));
+    applyZeros(u);
     return;
   }
   const c = computeEquip(u);
@@ -1746,6 +1806,7 @@ function renderEquip(u){
       const v = estabFor(u, i, map);
       e.value = v ? v : "";
     }));
+  applyZeros(u);
 }
 
 // ============================================================================
@@ -3017,6 +3078,7 @@ function unitPayload(u){
     guests: guestsOf(u),
     sOver: (S.sOver||{})[u] || {},
     equip: S.equip[u] || {}, live: S.live[u] !== false,
+    zero: (S.zero || {})[u] || {},
     notes: (S.notes||{})[u] || "",
     editedAt: (S.editedAt || {})[u] || 0
   };
@@ -3086,6 +3148,7 @@ async function loadAll(){
     S.guests = (S.guests||[]).filter(g => g.unit !== u).concat(Array.isArray(d.guests) ? d.guests : []);
     if(d.sOver && Object.keys(d.sOver).length) S.sOver[u] = d.sOver; else delete S.sOver[u];
     S.equip[u] = d.equip || {}; S.live[u] = d.live !== false;
+    S.zero = S.zero || {}; if(d.zero && Object.keys(d.zero).length) S.zero[u] = d.zero; else delete S.zero[u];
     S.notes = S.notes || {}; if(d.notes) S.notes[u] = d.notes; else delete S.notes[u];
     S.editedAt = S.editedAt || {}; if(d.editedAt) S.editedAt[u] = d.editedAt;
   }
@@ -3142,7 +3205,7 @@ function sessionSnapshot(){
   return {v:3, persons:S.persons, status:S.status, reason:S.reason, attach:S.attach,
           appt:S.appt, sect:S.sect, gear:S.gear, guests:S.guests, sOver:S.sOver, cats:S.cats, catsRemoved:S.catsRemoved||[],
           items:S.items, itemsRemoved:S.itemsRemoved||[], rollRev:S.rollRev||ROLL_REV,
-          rules:S.rules, rulesRev:S.rulesRev||RULES_REV, labels:S.labels, equip:S.equip, live:S.live,
+          rules:S.rules, rulesRev:S.rulesRev||RULES_REV, labels:S.labels, equip:S.equip, live:S.live, zero:S.zero,
           notes:S.notes, meta:{act:el("act").value, caa:el("caa").value}};
 }
 el("exp").onclick = () => {
@@ -3173,6 +3236,7 @@ function mergeUnit(u, d, cats, items){
   S.guests = (S.guests||[]).filter(g => g.unit !== u).concat(Array.isArray(d.guests) ? d.guests : []);
   if(d.sOver && Object.keys(d.sOver).length) S.sOver[u] = d.sOver; else delete S.sOver[u];
   S.equip[u] = d.equip || {}; S.live[u] = d.live !== false;
+  S.zero = S.zero || {}; if(d.zero && Object.keys(d.zero).length) S.zero[u] = d.zero; else delete S.zero[u];
   S.notes = S.notes || {}; if(d.notes) S.notes[u] = d.notes; else delete S.notes[u];
   const oi = {}; UNITS.forEach((x,i) => oi[x] = i);
   S.persons.sort((a,b) => oi[a.unit] - oi[b.unit]);
@@ -3212,7 +3276,7 @@ el("imp").onclick = () => {
   if(Array.isArray(d.itemsRemoved)) S.itemsRemoved = d.itemsRemoved;
   applyItems();
   ensureLabels();
-  S.equip = d.equip || {}; S.live = d.live || {}; S.sOver = d.sOver || {}; S.notes = d.notes || {};
+  S.equip = d.equip || {}; S.live = d.live || {}; S.zero = d.zero || {}; S.sOver = d.sOver || {}; S.notes = d.notes || {};
   if(d.meta){ el("act").value = d.meta.act || ""; el("caa").value = d.meta.caa || ""; }
   buildTabs(); buildPanels(); renderRules(); renderAll();
   setStat("Session loaded — " + coyCount().original);
