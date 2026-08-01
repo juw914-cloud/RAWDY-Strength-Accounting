@@ -1,1 +1,1 @@
-{"build": 41, "note": "live sync is its own card with a Test connection button that says exactly what to fix"}
+{"build": 42, "note": "fixes live sync HTTP 400 — item names like BFI/PU are no longer used as database keys"}

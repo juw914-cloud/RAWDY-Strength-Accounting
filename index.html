@@ -342,7 +342,7 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
 <div class="card hdr">
   <h1>RAWDY — Strength &amp; Equipment Accounting</h1>
   <div class="note">Company-level manpower and equipment accounting for HQ, PL1, PL2, PL3.
-    <span id="build" style="float:right; font-family:var(--fm); color:var(--muted);">BUILD 41 · 01AUG26</span>
+    <span id="build" style="float:right; font-family:var(--fm); color:var(--muted);">BUILD 42 · 01AUG26</span>
     <span id="sy-pill" style="display:none; float:right; margin-right:9px; font-family:var(--fm); font-size:10px;
       border:1px solid var(--border2); border-radius:9px; padding:1px 8px;">SYNC OFF</span></div>
 </div>
@@ -749,8 +749,8 @@ const RANK_CHOICES = ["","CPT","LTA","2LT","3WO","MSG","2SG","3SG","ME1-1","CPL"
 const WEAPON_TO_SFT = {"SAR21":"SAR 21 SFT","LMG":"LMG SFT","GPMG":"GPMG SFT","M203":"M203 SFT",
   "MATADOR":"MATADOR SFT","M110":"M110 SFT"};
 const EXTERNAL = "__EXT__";
-const BUILD_ID = "41 · 01AUG26";
-const BUILD_NO = 41;   // attached out of the company entirely
+const BUILD_ID = "42 · 01AUG26";
+const BUILD_NO = 42;   // attached out of the company entirely
 
 // ---- state ----
 function freshState(){
@@ -3176,11 +3176,22 @@ function setSyncState(state, detail){
                  go.style.display = on ? "none" : ""; off.style.display = on ? "" : "none"; }
 }
 // ---- incoming ----
-function applyRemoteUnit(u, payload){
+// The body travels as ONE json string. Firebase forbids "." "$" "#" "[" "]" "/"
+// in keys, and our own data legitimately contains them (the PANTES item BFI/PU,
+// for one), so nothing of ours is ever used as a key.
+function bodyOf(p){
+  if(!p) return null;
+  if(typeof p.json === "string"){ try { return JSON.parse(p.json); } catch(e){ return null; } }
+  if(p.g) return p.g;          // older shape, kept so a mixed room still works
+  if(p.data) return p;
+  return null;
+}
+function applyRemoteUnit(u, packet){
+  if(!packet || packet.by === DEV_ID) return;          // our own write coming back
+  const payload = bodyOf(packet);
   if(!payload || !payload.data) return;
-  if(payload.by === DEV_ID) return;                    // our own write coming back
-  if(syncSeen[u] === payload.at) return;
-  syncSeen[u] = payload.at;
+  if(syncSeen[u] === packet.at) return;
+  syncSeen[u] = packet.at;
   applyingRemote = true;
   try {
     mergeUnit(u, payload.data, payload.cats, payload.items);
@@ -3188,11 +3199,12 @@ function applyRemoteUnit(u, payload){
     setStat(`${u} updated from another phone — ${new Date().toLocaleTimeString()}`);
   } finally { applyingRemote = false; }
 }
-function applyRemoteGlobal(g){
-  if(!g || !g.g || g.by === DEV_ID) return;
+function applyRemoteGlobal(packet){
+  if(!packet || packet.by === DEV_ID) return;
+  const d = bodyOf(packet);
+  if(!d) return;
   applyingRemote = true;
   try {
-    const d = g.g;
     if(Array.isArray(d.cats) && d.cats.length) S.cats = d.cats;
     if(Array.isArray(d.catsRemoved)) S.catsRemoved = d.catsRemoved;
     if(d.items) S.items = d.items;
@@ -3223,14 +3235,17 @@ async function syncPush(kind, u){
   const base = syncBase(); if(!base) return;
   const at = Date.now();
   const path = kind === "global" ? "/global" : "/units/" + u;
-  const body = kind === "global"
-    ? {by:DEV_ID, at, g: globalPayload()}
-    : {by:DEV_ID, at, data: unitPayload(u), cats:S.cats, items:S.items};
+  // one json string, so item names like BFI/PU can never become a database key
+  const inner = kind === "global"
+    ? globalPayload()
+    : {data: unitPayload(u), cats:S.cats, items:S.items};
+  const body = {by:DEV_ID, at, json: JSON.stringify(inner)};
   syncSeen[u] = at;
   try {
     const r = await fetch(base + path + ".json", {method:"PUT",
       headers:{"Content-Type":"application/json"}, body: JSON.stringify(body)});
-    if(!r.ok) throw new Error("HTTP " + r.status);
+    if(!r.ok) throw new Error("HTTP " + r.status + (r.status === 400 ? " (database rejected the data)" : ""));
+    if(el("sy-state") && /could not send/.test(el("sy-state").textContent)) setSyncState("live");
   } catch(e){ setSyncState("error", "could not send — " + e.message); }
 }
 function syncStop(quiet){
