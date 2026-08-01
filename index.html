@@ -194,14 +194,27 @@ details.zone-set > details{margin-bottom:8px;}
   border:1px solid var(--border); border-radius:3px; padding:6px 9px; flex-wrap:wrap;}
 .it label{font-size:10.5px; color:var(--dim); letter-spacing:0.02em;}
 .it input{width:62px; text-align:right; font-family:var(--fm); padding:4px 6px; background:var(--bg);}
-/* cross an item out for this platoon; tap again to bring it back */
-.it .zx{padding:3px 7px; min-height:0; font-size:11px; line-height:1; background:transparent;
-  border-color:var(--border); color:var(--muted);}
-.it .zx:hover{border-color:var(--bad); color:var(--bad2);}
-.it.zeroed{opacity:0.55; border-style:dashed;}
-.it.zeroed label{text-decoration:line-through; text-decoration-color:var(--bad2);}
-.it.zeroed .zx{border-color:var(--bad); color:var(--bad2);}
-@media (pointer:coarse){ .it .zx{min-height:34px; padding:3px 10px;} }
+/* a drawn quantity should read at a glance; an empty one should recede */
+.it input.has{color:var(--acc2); font-weight:700; font-size:14.5px; background:#191d13;
+  border-color:var(--border2); box-shadow:inset 2px 0 0 var(--acc);}
+.it input.none{color:#5F5D52; font-weight:400;}
+.it.hasval{border-color:var(--border2); background:var(--surface3);}
+.it.hasval label{color:var(--text);}
+/* hold an item at zero for this platoon — the item is NOT removed, it counts as none */
+.it .zx{padding:3px 8px; min-height:0; font-size:11px; font-weight:700; line-height:1;
+  background:transparent; border-color:var(--border); color:var(--muted); font-family:var(--fm);}
+.it .zx:hover{border-color:var(--acc); color:var(--acc2);}
+.it.zeroed{border-color:var(--accdim); background:rgba(201,162,39,0.07);}
+.it.zeroed label{color:var(--dim);}
+.it.zeroed .zx{background:var(--accdim); border-color:var(--acc); color:#161810;}
+@media (pointer:coarse){ .it .zx{min-height:34px; padding:3px 11px;} }
+/* per-category Zero all / Reset */
+.rw h3.cath{display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;}
+h3.cath .cbtn{display:flex; gap:5px;}
+h3.cath .cbtn button{font-size:10px; padding:3px 9px; min-height:0; letter-spacing:0.04em;
+  text-transform:none; font-weight:600;}
+h3.cath .cbtn .zc:hover{border-color:var(--acc); color:var(--acc2);}
+@media (pointer:coarse){ h3.cath .cbtn button{min-height:32px; padding:3px 11px;} }
 /* ---- equipment list editor ---- */
 .ilist{border:1px solid var(--border); border-radius:3px; background:var(--bg);}
 .irow{display:flex; align-items:center; gap:5px; padding:6px 8px; border-bottom:1px solid var(--border); flex-wrap:wrap;}
@@ -350,7 +363,7 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
 <div class="card hdr">
   <h1>RAWDY — Strength &amp; Equipment Accounting</h1>
   <div class="note">Company-level manpower and equipment accounting for HQ, PL1, PL2, PL3.
-    <span id="build" style="float:right; font-family:var(--fm); color:var(--muted);">BUILD 45 · 01AUG26</span>
+    <span id="build" style="float:right; font-family:var(--fm); color:var(--muted);">BUILD 47 · 01AUG26</span>
     <span id="sy-pill" style="display:none; float:right; margin-right:9px; font-family:var(--fm); font-size:10px;
       border:1px solid var(--border2); border-radius:9px; padding:1px 8px;">SYNC OFF</span></div>
 </div>
@@ -790,8 +803,8 @@ const RANK_CHOICES = ["","CPT","LTA","2LT","3WO","MSG","2SG","3SG","ME1-1","CPL"
 const WEAPON_TO_SFT = {"SAR21":"SAR 21 SFT","LMG":"LMG SFT","GPMG":"GPMG SFT","M203":"M203 SFT",
   "MATADOR":"MATADOR SFT","M110":"M110 SFT"};
 const EXTERNAL = "__EXT__";
-const BUILD_ID = "45 · 01AUG26";
-const BUILD_NO = 45;   // attached out of the company entirely
+const BUILD_ID = "47 · 01AUG26";
+const BUILD_NO = 47;   // attached out of the company entirely
 
 // ---- state ----
 function freshState(){
@@ -1391,15 +1404,15 @@ function buildPanels(){
           <button type="button" id="zr-${u}">Undo zeros</button>
           <span class="status" id="zn-${u}"></span>
         </div>
-        <div class="note">Tap the <b>✕</b> beside any item to drop just that one to zero. Zeroed items stay at zero and are left out of the report until you undo them.</div>
+        <div class="note">Tap <b>0</b> beside any item to hold just that one at zero — the item stays in the list, it simply counts as none. Each category has its own <b>Zero all</b> and <b>Reset</b>. Nothing is ever deleted here; removing an item for good is done in <b>Equipment list</b>.</div>
         <div style="margin-top:11px;">
-          <h3>Weapon</h3><div id="eq-${u}-wpn"></div>
-          <h3 style="margin-top:12px;">Signal / optics</h3><div id="eq-${u}-sig"></div>
-          <h3 style="margin-top:12px;">PANTES</h3><div id="eq-${u}-pan"></div>
-          <h3 style="margin-top:12px;">Section stores</h3>
+          <h3 class="cath">Weapon <span class="cbtn"><button type="button" class="zc" data-u="${u}" data-k="wpn">Zero all</button><button type="button" class="rc" data-u="${u}" data-k="wpn">Reset</button></span></h3><div id="eq-${u}-wpn"></div>
+          <h3 class="cath" style="margin-top:12px;">Signal / optics <span class="cbtn"><button type="button" class="zc" data-u="${u}" data-k="sig">Zero all</button><button type="button" class="rc" data-u="${u}" data-k="sig">Reset</button></span></h3><div id="eq-${u}-sig"></div>
+          <h3 class="cath" style="margin-top:12px;">PANTES <span class="cbtn"><button type="button" class="zc" data-u="${u}" data-k="pan">Zero all</button><button type="button" class="rc" data-u="${u}" data-k="pan">Reset</button></span></h3><div id="eq-${u}-pan"></div>
+          <h3 class="cath" style="margin-top:12px;">Section stores <span class="cbtn"><button type="button" class="zc" data-u="${u}" data-k="store">Zero all</button><button type="button" class="rc" data-u="${u}" data-k="store">Reset</button></span></h3>
           <div class="note" style="margin-bottom:6px;">Filled from the establishment automatically. To change a figure for good, edit <b>Equipment rules → Section stores establishment</b>.</div>
           <div id="eq-${u}-store"></div>
-          <h3 style="margin-top:12px;">TAG stores</h3>
+          <h3 class="cath" style="margin-top:12px;">TAG stores <span class="cbtn"><button type="button" class="zc" data-u="${u}" data-k="tag">Zero all</button><button type="button" class="rc" data-u="${u}" data-k="tag">Reset</button></span></h3>
           <div id="eq-${u}-tag"></div>
           <h3 style="margin-top:12px;">Additional items / notes</h3>
           <div class="note" style="margin-bottom:6px;">Anything extra for the bottom of this platoon's report — one per line. Use it for whatever pops up.</div>
@@ -1413,11 +1426,11 @@ function buildPanels(){
     ["wpn","sig","pan"].forEach(k => {
       el(`eq-${u}-${k}`).innerHTML = groupsFor(k).map(([h,items]) =>
         `<div class="eqg"><h3>${h}</h3><div class="grid">${items.map(i =>
-          `<div class="it" id="it-${u}-${k}-${slug(i)}"><label>${i}</label><input type="number" min="0" id="q-${u}-${k}-${slug(i)}"><button type="button" class="zx" data-u="${u}" data-k="${k}" data-i="${slug(i)}" title="Set to zero">✕</button></div>`).join("")}</div></div>`).join("");
+          `<div class="it" id="it-${u}-${k}-${slug(i)}"><label>${i}</label><input type="number" min="0" id="q-${u}-${k}-${slug(i)}"><button type="button" class="zx" data-u="${u}" data-k="${k}" data-i="${slug(i)}" title="Hold this item at zero (the item stays in the list)">0</button></div>`).join("")}</div></div>`).join("");
     });
     [["store",STORE_ITEMS],["tag",TAG_ITEMS]].forEach(([k,items]) => {
       el(`eq-${u}-${k}`).innerHTML = `<div class="grid">${items.map(i =>
-        `<div class="it" id="it-${u}-${k}-${slug(i)}"><label>${i}</label><input type="number" min="0" id="q-${u}-${k}-${slug(i)}"><button type="button" class="zx" data-u="${u}" data-k="${k}" data-i="${slug(i)}" title="Set to zero">✕</button></div>`).join("")}</div>`;
+        `<div class="it" id="it-${u}-${k}-${slug(i)}"><label>${i}</label><input type="number" min="0" id="q-${u}-${k}-${slug(i)}"><button type="button" class="zx" data-u="${u}" data-k="${k}" data-i="${slug(i)}" title="Hold this item at zero (the item stays in the list)">0</button></div>`).join("")}</div>`;
     });
     // one platoon's slice as text — WhatsApp it, the other phone merges just this platoon
     el(`cs-${u}`).onclick = () => copyText(
@@ -1503,6 +1516,23 @@ function buildPanels(){
       renderEquip(u); renderAll(); save(u);
       setStat(`${unitName(u)} gear back to the counted figures`);
     };
+    // Zero all / Reset for one category at a time
+    const catItems = k => ({wpn:WEAPON_ITEMS, sig:SIGNALS_ITEMS, pan:PANTES_ITEMS,
+                            store:STORE_ITEMS, tag:TAG_ITEMS})[k] || [];
+    el(`p-${u}`).addEventListener("click", e => {
+      const z = e.target.closest(".zc"), r = e.target.closest(".rc");
+      const btn = z || r; if(!btn) return;
+      const k = btn.dataset.k;
+      S.zero = S.zero || {}; S.zero[u] = S.zero[u] || {};
+      catItems(k).forEach(i => {
+        const key = zeroKey(k, slug(i));
+        if(z) S.zero[u][key] = true; else delete S.zero[u][key];
+      });
+      if(!Object.keys(S.zero[u]).length) delete S.zero[u];
+      renderEquip(u); renderAll(); save(u);
+      setStat(`${unitName(u)} — ${k === "store" ? "Section stores" : k === "tag" ? "TAG stores" :
+        k === "wpn" ? "Weapon" : k === "sig" ? "Signal / optics" : "PANTES"} ${z ? "set to zero" : "reset"}`);
+    });
     ["wpn","sig","pan","store","tag"].forEach(k => {
       el(`eq-${u}-${k}`).addEventListener("click", e => {
         const b = e.target.closest(".zx"); if(!b) return;
@@ -1519,6 +1549,7 @@ function buildPanels(){
         const item = e.target.id.replace(`q-${u}-${k}-`, "");
         S.equip[u] = S.equip[u] || {}; S.equip[u][k] = S.equip[u][k] || {};
         S.equip[u][k][item] = e.target.value;
+        markValues(u);
         save(u);
       });
     });
@@ -1782,6 +1813,17 @@ function applyZeros(u){
   });
   const note = el(`zn-${u}`);
   if(note) note.textContent = n ? `${n} item${n>1?"s":""} held at zero` : "";
+  markValues(u);
+}
+// Anything actually drawn is lit up; anything at nil fades back, so a PS can see
+// what his platoon is carrying without reading every line.
+function markValues(u){
+  document.querySelectorAll(`#p-${u} .it input[type=number]`).forEach(e => {
+    const on = !!Number(e.value);
+    e.classList.toggle("has", on);
+    e.classList.toggle("none", !on);
+    const cell = e.closest(".it"); if(cell) cell.classList.toggle("hasval", on);
+  });
 }
 function renderEquip(u){
   if(S.live[u] === false){
