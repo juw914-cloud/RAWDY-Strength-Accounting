@@ -173,6 +173,9 @@ body{margin:0; background:#0E100C; }
 .pisug:last-child{border-radius:0 0 3px 3px;}
 .pisug:hover{background:var(--surface3); border-color:var(--acc);}
 .pisug .u{font-family:var(--fm); font-size:10.5px; color:var(--acc2); white-space:nowrap;}
+/* he is already attached out — take him only with eyes open */
+.pisug .attwarn{display:block; margin-top:2px; font-family:var(--fm); font-size:10px;
+  color:#E8C547; background:rgba(201,162,39,0.14); border-radius:3px; padding:1px 6px;}
 
 /* ---- equipment ---- */
 .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(148px,1fr)); gap:7px;}
@@ -319,7 +322,7 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
 <div class="card hdr">
   <h1>RAWDY — Strength &amp; Equipment Accounting</h1>
   <div class="note">Company-level manpower and equipment accounting for HQ, PL1, PL2, PL3.
-    <span id="build" style="float:right; font-family:var(--fm); color:var(--muted);">BUILD 37 · 01AUG26</span></div>
+    <span id="build" style="float:right; font-family:var(--fm); color:var(--muted);">BUILD 38 · 01AUG26</span></div>
 </div>
 
 <div class="card">
@@ -697,8 +700,8 @@ const RANK_CHOICES = ["","CPT","LTA","2LT","3WO","MSG","2SG","3SG","ME1-1","CPL"
 const WEAPON_TO_SFT = {"SAR21":"SAR 21 SFT","LMG":"LMG SFT","GPMG":"GPMG SFT","M203":"M203 SFT",
   "MATADOR":"MATADOR SFT","M110":"M110 SFT"};
 const EXTERNAL = "__EXT__";
-const BUILD_ID = "37 · 01AUG26";
-const BUILD_NO = 37;   // attached out of the company entirely
+const BUILD_ID = "38 · 01AUG26";
+const BUILD_NO = 38;   // attached out of the company entirely
 
 // ---- state ----
 function freshState(){
@@ -1570,13 +1573,23 @@ function renderAttach(u){
   piQ.oninput = () => {
     const q = piQ.value.trim().toUpperCase();
     if(!q){ piR.innerHTML = ""; return; }
-    const hits = S.persons.filter(p => p.unit !== u && !attachOf(p) &&
-      `${p.rank} ${p.name} ${apptOf(p)} ${p.unit}`.toUpperCase().includes(q)).slice(0, 8);
+    // A man already attached out — including one attached out automatically —
+    // can still be taken; he is shown with a warning rather than hidden.
+    const hits = S.persons.filter(p => {
+      if(p.unit === u) return false;
+      const a = attachOf(p);
+      if(a && a.to === u) return false;                    // already here
+      return `${p.rank} ${p.name} ${apptOf(p)} ${p.unit}`.toUpperCase().includes(q);
+    }).slice(0, 8);
     piR.innerHTML = hits.length
-      ? hits.map(p => `<div class="pisug" data-pull="${p.id}">
-          <span>${p.rank} ${p.name} <span style="color:var(--muted);">(${apptOf(p)})</span></span>
-          <span class="u">${p.unit} → ${u}</span></div>`).join("")
-      : `<div class="pisug" style="cursor:default; color:var(--muted);">No match — he may already be attached somewhere.</div>`;
+      ? hits.map(p => {
+          const a = attachOf(p);
+          return `<div class="pisug" data-pull="${p.id}">
+            <span>${p.rank} ${p.name} <span style="color:var(--muted);">(${apptOf(p)})</span>` +
+            (a ? `<span class="attwarn">now attached out → ${attachWhere(a)}${a.auto ? " · AUTO" : ""}</span>` : "") +
+            `</span><span class="u">${p.unit} → ${u}</span></div>`;
+        }).join("")
+      : `<div class="pisug" style="cursor:default; color:var(--muted);">No match in the other units.</div>`;
     piR.querySelectorAll("[data-pull]").forEach(row => row.onclick = () => {
       const pid = row.dataset.pull;
       if(!confirmTransfer(pid, u)) return;
@@ -1898,25 +1911,43 @@ function openSheet(pid, anchor){
 
 // Taking a man off another unit is never silent: show both sides' figures BEFORE
 // and AFTER, so whoever presses it knows whose strength he is drawing on.
+// Where a man is attached right now, in words.
+function attachWhere(a){
+  if(!a) return "";
+  return a.to === EXTERNAL ? ((a.note && a.note !== "AUTO") ? a.note : "ANOTHER COY") : unitName(a.to);
+}
 function confirmTransfer(pid, to){
   const p = byId(pid); if(!p) return false;
   const from = p.unit;
-  const b1 = count(from), b2 = count(to);
+  const cur = attachOf(p);                              // may already be attached out
+  const b1 = count(from), b2 = count(to), bc = coyCount();
   const prev = S.attach[pid];
   S.attach[pid] = {to, mo:true, pa:true, note:""};      // simulate
-  const a1 = count(from), a2 = count(to);
+  const a1 = count(from), a2 = count(to), ac = coyCount();
   if(prev === undefined) delete S.attach[pid]; else S.attach[pid] = prev;
-  return confirm(
-    `Take ${p.rank} ${p.name} (${apptOf(p)}) from ${unitName(from)} into ${unitName(to)}?\n\n` +
-    `${unitName(from)}\n` +
-    `   move out       ${b1.moveout}  →  ${a1.moveout}\n` +
-    `   participating  ${b1.partic}  →  ${a1.partic}\n\n` +
-    `${unitName(to)}\n` +
-    `   move out       ${b2.moveout}  →  ${a2.moveout}\n` +
-    `   participating  ${b2.partic}  →  ${a2.partic}\n\n` +
-    `His weapon and gear move with him.\n` +
-    `${unitName(to)} will then be holding 1 pax whose strength is accounted from ${unitName(from)} — ` +
-    `not from ${unitName(to)}'s own roster.`);
+
+  let msg = `Take ${p.rank} ${p.name} (${apptOf(p)}) from ${unitName(from)} into ${unitName(to)}?\n\n`;
+  if(cur){
+    msg += `⚠ HE IS CURRENTLY ATTACHED OUT — to ${attachWhere(cur)}` +
+           `${cur.auto ? ` (automatic rule for ${apptOf(p)})` : ""}.\n` +
+           `Taking him into ${unitName(to)} cancels that attachment.\n\n`;
+  }
+  msg += `${unitName(from)}\n` +
+         `   move out       ${b1.moveout}  →  ${a1.moveout}\n` +
+         `   participating  ${b1.partic}  →  ${a1.partic}\n\n` +
+         `${unitName(to)}\n` +
+         `   move out       ${b2.moveout}  →  ${a2.moveout}\n` +
+         `   participating  ${b2.partic}  →  ${a2.partic}\n`;
+  // pulling a man back from outside the coy changes the company figure too
+  if(bc.original !== ac.original || bc.moveout !== ac.moveout){
+    msg += `\n${(S.labels && S.labels.coy) || "COY"}\n` +
+           `   total          ${bc.original}  →  ${ac.original}\n` +
+           `   move out       ${bc.moveout}  →  ${ac.moveout}\n`;
+  }
+  msg += `\nHis weapon and gear move with him.\n` +
+         `${unitName(to)} will then be holding 1 pax whose strength is accounted from ${unitName(from)} — ` +
+         `not from ${unitName(to)}'s own roster.`;
+  return confirm(msg);
 }
 
 // Removing an attachment is deleting ONE record — both platoons restore at once.
