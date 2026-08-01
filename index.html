@@ -342,7 +342,7 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
 <div class="card hdr">
   <h1>RAWDY — Strength &amp; Equipment Accounting</h1>
   <div class="note">Company-level manpower and equipment accounting for HQ, PL1, PL2, PL3.
-    <span id="build" style="float:right; font-family:var(--fm); color:var(--muted);">BUILD 42 · 01AUG26</span>
+    <span id="build" style="float:right; font-family:var(--fm); color:var(--muted);">BUILD 44 · 01AUG26</span>
     <span id="sy-pill" style="display:none; float:right; margin-right:9px; font-family:var(--fm); font-size:10px;
       border:1px solid var(--border2); border-radius:9px; padding:1px 8px;">SYNC OFF</span></div>
 </div>
@@ -547,7 +547,39 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
   <div class="note" style="margin:9px 0;">Everything the tool can count lives here. Add an item, delete one you never draw, or move it so the report reads the way you want — the order here <b>is</b> the order in the WhatsApp message. Applies to every platoon and saves with the session.
     <br>For <b>Section</b> and <b>TAG stores</b> each item also carries its per-platoon quantity, an optional note printed beside it, and a per-platoon exception (e.g. <code>PL2:2</code>).</div>
   <div id="itemed"></div>
-  <button type="button" id="it-reset" style="font-size:11px;">Restore default equipment list</button>
+  <div class="bar" style="margin-top:9px;">
+    <button type="button" id="it-unused" style="font-size:11px;">Remove items never counted</button>
+    <button type="button" id="it-reset" style="font-size:11px;">Restore default equipment list</button>
+  </div>
+</details>
+
+<details class="card">
+  <summary>Reset — pick exactly what to clear</summary>
+  <div class="note" style="margin:9px 0;">Each button clears one thing only. Nothing here touches the nominal roll or another platoon's work, except the last one.</div>
+
+  <h3>A platoon's work</h3>
+  <div class="note" style="margin-bottom:6px;">Tags, attachments, section moves and notes for one platoon. Also on each platoon's own panel as <b>Clear PLx</b>.</div>
+  <div class="bar" id="rs-units"></div>
+
+  <h3 style="margin-top:12px;">Tags only</h3>
+  <div class="bar">
+    <button type="button" id="rs-tags">Clear every tag, whole coy</button>
+    <button type="button" id="rs-att">Clear every attachment</button>
+    <button type="button" id="rs-sect">Put everyone back in his own section</button>
+    <button type="button" id="rs-hand">Clear all hand-set figures</button>
+  </div>
+
+  <h3 style="margin-top:12px;">Stores establishment</h3>
+  <div class="bar">
+    <button type="button" id="rs-store">Reset Section stores only</button>
+    <button type="button" id="rs-tag">Reset TAG stores only</button>
+    <button type="button" id="rs-notes">Clear item notes &amp; platoon exceptions</button>
+  </div>
+
+  <h3 style="margin-top:12px;">Start over</h3>
+  <div class="bar">
+    <button type="button" id="rs-all" style="border-color:var(--bad); color:var(--bad2);">Erase everything &amp; rebuild from the roll</button>
+  </div>
 </details>
 
 <details class="card">
@@ -671,6 +703,7 @@ function migrateRoll(){
   };
   S.status = remap(S.status); S.reason = remap(S.reason);
   S.appt   = remap(S.appt);   S.gear   = remap(S.gear);
+  S.sect   = remap(S.sect || {});
   S.attach = remap(S.attach);
   S.persons = fresh.concat((S.persons || []).filter(p => p.added));
   S.rollRev = ROLL_REV;
@@ -749,8 +782,8 @@ const RANK_CHOICES = ["","CPT","LTA","2LT","3WO","MSG","2SG","3SG","ME1-1","CPL"
 const WEAPON_TO_SFT = {"SAR21":"SAR 21 SFT","LMG":"LMG SFT","GPMG":"GPMG SFT","M203":"M203 SFT",
   "MATADOR":"MATADOR SFT","M110":"M110 SFT"};
 const EXTERNAL = "__EXT__";
-const BUILD_ID = "42 · 01AUG26";
-const BUILD_NO = 42;   // attached out of the company entirely
+const BUILD_ID = "44 · 01AUG26";
+const BUILD_NO = 44;   // attached out of the company entirely
 
 // ---- state ----
 function freshState(){
@@ -761,6 +794,7 @@ function freshState(){
     reason: {},        // personId -> free text
     attach: {},        // personId -> {to: unit|EXTERNAL, mo: bool, pa: bool, note: str}
     appt: {},          // personId -> appointment override
+    sect: {},          // personId -> section override (shifted between sections)
     gear: {},          // personId -> {weapon?: str|null, signals?: [..]}
     guests: [],        // men attached in from another coy/unit: {id,unit,rank,name,appt,from,mo,pa}
     cats: DEFAULT_CATS.map(c => ({...c})),
@@ -868,6 +902,14 @@ const guestsOf = u => (S.guests || []).filter(g => g.unit === u);
 const byId = id => S.persons.find(p => p.id === id);
 const isCmd = p => CMD_RANKS.includes((p.rank||"").toUpperCase());
 const apptOf = p => (S.appt[p.id] !== undefined ? S.appt[p.id] : p.appt) || "";
+// A PS can shift a man into another section (combining sections for an activity).
+// The move is an override on top of the roll, so the roll itself stays true.
+const sectionOf = p => (S.sect && S.sect[p.id] !== undefined) ? S.sect[p.id] : p.section;
+function sectionsOf(u){
+  const out = [];
+  personsOf(u).forEach(p => { const s = sectionOf(p); if(s && !out.includes(s)) out.push(s); });
+  return out;
+}
 const catOf = id => S.cats.find(c => c.id === id) || null;
 const PRESENT = "__PRES__";   // explicitly present, overriding an auto rule
 const OFF = "__OFF__";        // explicitly not attached, overriding an auto rule
@@ -992,11 +1034,10 @@ function count(unit){
 // Strength broken down by section, on the same rules as the platoon figure:
 // STR = the section's own roster, MO / PT = what that section actually fields.
 function sectionRows(unit){
-  const secs = [];
-  personsOf(unit).forEach(p => { if(!secs.includes(p.section)) secs.push(p.section); });
+  const secs = sectionsOf(unit);
   const rows = secs.map(sec => {
     let str = 0, mo = 0, pt = 0;
-    personsOf(unit).filter(p => p.section === sec).forEach(p => {
+    personsOf(unit).filter(p => sectionOf(p) === sec).forEach(p => {
       str++;
       if(attachOf(p)) return;                       // gone to another unit
       const c = statusOf(p);
@@ -1278,6 +1319,7 @@ function buildPanels(){
         <div class="t"><span>${u} · End state</span>
           <span><span class="tag" id="tag-${u}"></span>
           <button type="button" class="adj" id="cs-${u}">Copy ${u} code</button>
+          <button type="button" class="adj" id="clr-${u}" style="border-color:var(--bad); color:var(--bad2);">Clear ${u}</button>
           <button type="button" class="adj" id="adj-${u}">Adjust by hand</button></span></div>
         <div class="big3">
           <div class="big sub"><label>Total strength</label>
@@ -1366,6 +1408,25 @@ function buildPanels(){
     el(`cs-${u}`).onclick = () => copyText(
       "RAWDY-PL " + JSON.stringify({v:3, unit:u, cats:S.cats, items:S.items, data:unitPayload(u)}),
       u + " code copied — WhatsApp it; the other phone presses Load session code to merge " + u + " only");
+    // clear THIS platoon only — nobody else's work is touched
+    el(`clr-${u}`).onclick = () => {
+      const r = count(u);
+      if(!confirm(`Clear ${unitName(u)} back to a clean slate?\n\n` +
+        `Removes every tag, attachment, section move, hand-set figure and note for ${unitName(u)} only.\n` +
+        `Other platoons and the roll itself are untouched.\n\n` +
+        `${unitName(u)} would go back to ${r.calcTotal} all present.`)) return;
+      const ids = personsOf(u).map(p => p.id);
+      ids.forEach(id => { delete S.status[id]; delete S.reason[id]; delete S.sect[id]; delete S.gear[id]; });
+      // drop attachments either leaving or arriving at this platoon
+      Object.keys(S.attach).forEach(pid => {
+        const a = S.attach[pid];
+        if(ids.includes(pid) || (a && a !== OFF && a.to === u)) delete S.attach[pid];
+      });
+      S.guests = (S.guests || []).filter(g => g.unit !== u);
+      delete S.sOver[u]; if(S.notes) delete S.notes[u];
+      renderAll(); saveAll();
+      setStat(`${unitName(u)} cleared`);
+    };
     el(`adj-${u}`).onclick = () => {
       const btn = el(`adj-${u}`);
       // Overriding the calculation is allowed, but never by accident: show what the
@@ -1450,7 +1511,8 @@ function renderChips(u){
   const rows = [];
   let section = null, n = 0;
   personsOf(u).forEach(p => {
-    if(p.section !== section){ section = p.section; rows.push({sect:section}); }
+    const sec = sectionOf(p);
+    if(sec !== section){ section = sec; rows.push({sect:section}); }
     rows.push({p, n:++n});
   });
   // attached in appear at the end, clearly marked
@@ -1485,7 +1547,9 @@ function renderChips(u){
       tag = `<span class="st o">OUT — TO ${dest}${auto?" · AUTO":""}</span><span class="x" data-detach="${p.id}">✕</span>`;
     } else if(c){
       const rsn = S.reason[p.id] ? ` (${S.reason[p.id]})` : "";
-      tag = `<span class="st o">${c.label}${rsn}${auto?" · AUTO":""}</span>`;
+      // an explicit tag can be lifted in one tap; an automatic one has nothing to lift
+      tag = `<span class="st o">${c.label}${rsn}${auto?" · AUTO":""}</span>` +
+            (S.status[p.id] !== undefined ? `<span class="x" data-untag="${p.id}" title="Remove tag">✕</span>` : "");
     }
     // provenance: green = our (Alpha) armskote; grey = another unit/coy OR gear moved
     // with him to a sister platoon; yellow = no gear. Within the coy the gear travels
@@ -1526,6 +1590,10 @@ function renderChips(u){
     ch.onclick = e => {
       if(e.target.dataset.dropguest){ e.stopPropagation(); dropGuest(e.target.dataset.dropguest); return; }
       if(e.target.dataset.detach){ e.stopPropagation(); detach(e.target.dataset.detach); return; }
+      if(e.target.dataset.untag){ e.stopPropagation();
+        const pid = e.target.dataset.untag, pp = byId(pid);
+        delete S.status[pid]; delete S.reason[pid];
+        renderAll(); if(pp) save(pp.unit); return; }
       if(ch.dataset.guest) return;                  // guests are managed in the attachments card
       openSheet(ch.dataset.id, ch);
     };
@@ -1843,6 +1911,7 @@ function openSheet(pid, anchor){
            <button type="button" class="danger" id="s-detach">${autoA?"Override — keep him with "+home:"Cancel attachment — bring him back"}</button>` : ""}
     ${autoS ? `<div class="note" style="background:rgba(138,110,36,0.3); color:#E8C547;">Automatic status from his appointment — moves out, does not participate. Pick another status below to override.</div>` : ""}
     <div class="lab">Status — tap one</div>
+    ${S.status[pid] !== undefined ? `<button type="button" class="danger" id="s-untag">✕ Remove tag — leave him untagged</button>` : ""}
     <button type="button" class="opt pres${cur===PRESENT&&!a?" on":""}" data-cat="${PRESENT}">PRESENT<small>moves out · participates · draws gear</small></button>
     ${GROUPS.map(([col,cap,cats]) => cats.length ? `
       <div class="gcap"><i style="background:${col};"></i>${cap}</div>
@@ -1872,6 +1941,14 @@ function openSheet(pid, anchor){
       He comes off ${home}'s move out and participating. Another coy → the company total drops too.
       Another platoon → he counts under them instead, company total unchanged.
     </div>`}
+    <div class="lab">Section — move him to another section</div>
+    <div class="row"><span>Section</span>
+      <select id="s-sect">
+        ${sectionsOf(home).map(x => `<option value="${x.replace(/"/g,"&quot;")}"${sectionOf(p)===x?" selected":""}>${x}</option>`).join("")}
+        <option value="__NEW__">+ New section…</option>
+      </select></div>
+    <div class="row" id="s-sectnew" style="display:none;"><span>Name it</span>
+      <input type="text" id="s-sectname" placeholder="e.g. COMBINED 1+2"></div>
     <div class="lab">Role &amp; loadout</div>
     <div class="row"><span>Appointment</span><input type="text" id="s-appt" value="${apptOf(p).replace(/"/g,"&quot;")}"></div>
     <div class="row"><span>Weapon</span>
@@ -1934,11 +2011,31 @@ function openSheet(pid, anchor){
     delete S.status[pid];
     closeSheet(); renderAll(); saveAll();
   };
+  const ut = d.querySelector("#s-untag");
+  if(ut) ut.onclick = () => {
+    delete S.status[pid]; delete S.reason[pid];   // back to whatever the rules say
+    closeSheet(); renderAll(); save(home);
+  };
+  const sc = d.querySelector("#s-sect");
+  if(sc) sc.onchange = () => {
+    const nw = d.querySelector("#s-sectnew");
+    if(nw) nw.style.display = sc.value === "__NEW__" ? "" : "none";
+  };
   const sa = d.querySelector("#s-sigauto");
   sa.onchange = () => d.querySelector("#s-sigs").style.display = sa.checked ? "none" : "";
   d.querySelector("#s-save").onclick = () => {
     const na = d.querySelector("#s-appt").value.trim().toUpperCase();
     if(na !== (p.appt||"").toUpperCase()) S.appt[pid] = na; else delete S.appt[pid];
+    // section move — a new name is created on the spot
+    const sel = d.querySelector("#s-sect");
+    if(sel){
+      let ns = sel.value;
+      if(ns === "__NEW__") ns = (d.querySelector("#s-sectname").value || "").trim().toUpperCase();
+      if(ns && ns !== "__NEW__"){
+        S.sect = S.sect || {};
+        if(ns === p.section) delete S.sect[pid]; else S.sect[pid] = ns;
+      }
+    }
     const w = d.querySelector("#s-wpn").value;
     const gg = S.gear[pid] || {};
     if(w === "__AUTO__") delete gg.weapon; else gg.weapon = (w === "__NONE__") ? null : w;
@@ -2051,7 +2148,7 @@ function renderRoll(){
   el("rollb").innerHTML = S.persons.map(p => {
     n++;
     const ld = loadoutOf(p);
-    const row = [n, p.unit, p.section, p.rank, p.name, apptOf(p), ld.length ? ld.join(", ") : "—", statusText(p)];
+    const row = [n, p.unit, sectionOf(p), p.rank, p.name, apptOf(p), ld.length ? ld.join(", ") : "—", statusText(p)];
     const hay = row.join(" ").toUpperCase();
     if(q && !hay.includes(q)) return "";
     return `<tr${p.added?' style="background:rgba(201,162,39,0.08);"':""}>` +
@@ -2085,7 +2182,7 @@ el("ps-msg").onclick = () => {
 el("rollq").oninput = renderRoll;
 el("rollcopy").onclick = () => {
   const head = ["S/N","Unit","Section","Rank","Name","Appointment","Loadout","Status"].join("\t");
-  const rows = S.persons.map((p,i) => [i+1,p.unit,p.section,p.rank,p.name,apptOf(p),loadoutOf(p).join(", "),statusText(p)].join("\t"));
+  const rows = S.persons.map((p,i) => [i+1,p.unit,sectionOf(p),p.rank,p.name,apptOf(p),loadoutOf(p).join(", "),statusText(p)].join("\t"));
   copyText([head,...rows].join("\n"), "Roll copied — paste into Excel");
 };
 
@@ -2567,6 +2664,56 @@ function renderItems(){
   };
 })();
 
+// ---- scoped resets: clear one thing, never everything by accident ----
+(function(){
+  const ask = (t, fn) => () => { if(confirm(t)){ fn(); renderAll(); saveAll(); saveGlobal(); } };
+  const ub = el("rs-units");
+  if(ub) ub.innerHTML = UNITS.map(u => `<button type="button" data-clr="${u}">Clear ${u}</button>`).join("");
+  if(ub) ub.querySelectorAll("[data-clr]").forEach(b => b.onclick = () => {
+    const u = b.dataset.clr, btn = el(`clr-${u}`);
+    if(btn) btn.click(); else setStat("Open that platoon's tab first.");
+  });
+  const E = (id, msg, fn) => { const b = el(id); if(b) b.onclick = ask(msg, fn); };
+  E("rs-tags", "Clear every tag on every man, in all four units?\n\nAttachments, section moves and equipment stay as they are.",
+    () => { S.status = {}; S.reason = {}; });
+  E("rs-att", "Remove every attachment — in, out and from other units?\n\nEveryone goes back to his own platoon.",
+    () => { S.attach = {}; S.guests = []; });
+  E("rs-sect", "Put every man back in the section he is on the roll?\n\nAny combined sections are undone.",
+    () => { S.sect = {}; });
+  E("rs-hand", "Clear every hand-set strength figure, so all four units show the calculated numbers again?",
+    () => { S.sOver = {}; });
+  E("rs-store", "Reset the Section stores establishment to the built-in figures?\n\nOnly Section stores — TAG stores, notes and per-platoon exceptions are untouched.",
+    () => { S.rules.storeEstab = JSON.parse(JSON.stringify(DEFAULT_RULES.storeEstab)); renderRules(); });
+  E("rs-tag", "Reset the TAG stores establishment to the built-in figures?\n\nOnly TAG stores.",
+    () => { S.rules.tagEstab = JSON.parse(JSON.stringify(DEFAULT_RULES.tagEstab)); renderRules(); });
+  E("rs-notes", "Clear the notes printed beside stores items, and every per-platoon exception?\n\nQuantities stay as they are.",
+    () => { S.rules.itemNotes = {}; S.rules.estabUnit = {}; renderRules(); });
+  const all = el("rs-all");
+  if(all) all.onclick = () => { const w = el("wipe"); if(w) w.click(); };
+  // tidy-up helper: drop items that never appear anywhere
+  const un = el("it-unused");
+  if(un) un.onclick = () => {
+    const counted = {};
+    UNITS.forEach(u => { const c = computeEquip(u);
+      [c.wpn, c.sig, c.pan].forEach(m => Object.keys(m).forEach(k => { if(m[k]) counted[k] = true; })); });
+    STORE_ITEMS.forEach(i => { if(UNITS.some(u => estabFor(u, i, S.rules.storeEstab))) counted[i] = true; });
+    TAG_ITEMS.forEach(i => { if(UNITS.some(u => estabFor(u, i, S.rules.tagEstab))) counted[i] = true; });
+    const dead = [];
+    Object.keys(S.items).forEach(k => S.items[k].forEach(i => { if(!counted[i]) dead.push([k, i]); }));
+    if(!dead.length){ setStat("Nothing to remove — every item is counted somewhere."); return; }
+    if(!confirm(`Remove ${dead.length} item${dead.length>1?"s":""} that never appear in any unit?\n\n` +
+      dead.map(x => "• " + x[1]).join("\n") + "\n\nYou can add any of them back later.")) return;
+    S.itemsRemoved = S.itemsRemoved || [];
+    dead.forEach(([k,i]) => {
+      S.items[k] = S.items[k].filter(x => x !== i);
+      if(DEF_ITEMS[k].includes(i) && !S.itemsRemoved.includes(i)) S.itemsRemoved.push(i);
+      [S.rules.storeEstab, S.rules.tagEstab, S.rules.itemNotes, S.rules.estabUnit].forEach(m => { if(m) delete m[i]; });
+    });
+    applyItems(); buildPanels(); renderItems(); renderAll(); saveGlobal(); saveAll();
+    setStat(`${dead.length} unused item${dead.length>1?"s":""} removed`);
+  };
+})();
+
 // ---- status category editor ----
 function catKindVal(c){ return c.kind === "stayback" ? "stayback:" + (c.camp === "out" ? "out" : "in") : c.kind; }
 function applyKindVal(c, val){
@@ -2866,11 +3013,12 @@ function unitPayload(u){
   return {
     persons: S.persons.filter(p => p.unit === u),
     status: pick(S.status), reason: pick(S.reason), attach: pick(S.attach),
-    appt: pick(S.appt), gear: pick(S.gear),
+    appt: pick(S.appt), sect: pick(S.sect), gear: pick(S.gear),
     guests: guestsOf(u),
     sOver: (S.sOver||{})[u] || {},
     equip: S.equip[u] || {}, live: S.live[u] !== false,
-    notes: (S.notes||{})[u] || ""
+    notes: (S.notes||{})[u] || "",
+    editedAt: (S.editedAt || {})[u] || 0
   };
 }
 function globalPayload(){ return {cats:S.cats, catsRemoved:S.catsRemoved||[], rollRev:S.rollRev||ROLL_REV, items:S.items, itemsRemoved:S.itemsRemoved||[], rules:S.rules, rulesRev:S.rulesRev||RULES_REV, labels:S.labels, meta:{act:el("act").value, caa:el("caa").value}}; }
@@ -2885,6 +3033,7 @@ async function put(key, obj, attempt=1){
 }
 function save(u){
   dirty[u] = true;
+  S.editedAt = S.editedAt || {}; S.editedAt[u] = Date.now();   // when THIS phone last touched it
   if(typeof syncPush === "function"){ clearTimeout(timers["sy"+u]); timers["sy"+u] = setTimeout(() => syncPush("unit", u), 400); }
   if(!shareOn) return; clearTimeout(timers[u]); timers[u] = setTimeout(() => put(ukey(u), unitPayload(u)), 700);
 }
@@ -2932,11 +3081,13 @@ async function loadAll(){
     }
     Object.assign(S.status, d.status||{}); Object.assign(S.reason, d.reason||{});
     Object.assign(S.attach, d.attach||{}); Object.assign(S.appt, d.appt||{});
+    S.sect = S.sect || {}; Object.assign(S.sect, d.sect||{});
     Object.assign(S.gear, d.gear||{});
     S.guests = (S.guests||[]).filter(g => g.unit !== u).concat(Array.isArray(d.guests) ? d.guests : []);
     if(d.sOver && Object.keys(d.sOver).length) S.sOver[u] = d.sOver; else delete S.sOver[u];
     S.equip[u] = d.equip || {}; S.live[u] = d.live !== false;
     S.notes = S.notes || {}; if(d.notes) S.notes[u] = d.notes; else delete S.notes[u];
+    S.editedAt = S.editedAt || {}; if(d.editedAt) S.editedAt[u] = d.editedAt;
   }
   migrateRoll();   // saved data may still hold an older nominal roll
   // integrity: drop any attachment whose person or destination no longer exists
@@ -2989,7 +3140,7 @@ el("wipe").onclick = async () => {
 // A compact, self-contained snapshot of everything — no storage needed.
 function sessionSnapshot(){
   return {v:3, persons:S.persons, status:S.status, reason:S.reason, attach:S.attach,
-          appt:S.appt, gear:S.gear, guests:S.guests, sOver:S.sOver, cats:S.cats, catsRemoved:S.catsRemoved||[],
+          appt:S.appt, sect:S.sect, gear:S.gear, guests:S.guests, sOver:S.sOver, cats:S.cats, catsRemoved:S.catsRemoved||[],
           items:S.items, itemsRemoved:S.itemsRemoved||[], rollRev:S.rollRev||ROLL_REV,
           rules:S.rules, rulesRev:S.rulesRev||RULES_REV, labels:S.labels, equip:S.equip, live:S.live,
           notes:S.notes, meta:{act:el("act").value, caa:el("caa").value}};
@@ -3014,10 +3165,11 @@ function mergeUnit(u, d, cats, items){
   const oldIds = personsOf(u).map(p => p.id);
   if(Array.isArray(d.persons) && d.persons.length)
     S.persons = S.persons.filter(p => p.unit !== u).concat(d.persons);
-  [S.status, S.reason, S.attach, S.appt, S.gear].forEach(o => oldIds.forEach(id => { delete o[id]; }));
+  S.sect = S.sect || {};
+  [S.status, S.reason, S.attach, S.appt, S.sect, S.gear].forEach(o => oldIds.forEach(id => { delete o[id]; }));
   Object.assign(S.status, d.status||{}); Object.assign(S.reason, d.reason||{});
   Object.assign(S.attach, d.attach||{}); Object.assign(S.appt, d.appt||{});
-  Object.assign(S.gear, d.gear||{});
+  Object.assign(S.sect, d.sect||{}); Object.assign(S.gear, d.gear||{});
   S.guests = (S.guests||[]).filter(g => g.unit !== u).concat(Array.isArray(d.guests) ? d.guests : []);
   if(d.sOver && Object.keys(d.sOver).length) S.sOver[u] = d.sOver; else delete S.sOver[u];
   S.equip[u] = d.equip || {}; S.live[u] = d.live !== false;
@@ -3048,7 +3200,7 @@ el("imp").onclick = () => {
   if(!d || !Array.isArray(d.persons)){ setStat("Session code is incomplete — nothing loaded."); return; }
   S.persons = d.persons;
   S.status = d.status || {}; S.reason = d.reason || {}; S.attach = d.attach || {};
-  S.appt = d.appt || {}; S.gear = d.gear || {}; S.guests = d.guests || [];
+  S.appt = d.appt || {}; S.sect = d.sect || {}; S.gear = d.gear || {}; S.guests = d.guests || [];
   if(Array.isArray(d.cats) && d.cats.length) S.cats = d.cats;
   S.catsRemoved = Array.isArray(d.catsRemoved) ? d.catsRemoved : [];
   if(d.rollRev) S.rollRev = d.rollRev;
@@ -3105,7 +3257,7 @@ const DEV_ID = (() => {
   } catch(e){ return "d" + Math.random().toString(36).slice(2,9); }
 })();
 let syncCfg = {url:"", room:"", on:false};
-let es = null, applyingRemote = false, syncSeen = {};
+let es = null, applyingRemote = false, syncSeen = {}, connectPush = [];
 
 function loadSyncCfg(){
   try { const raw = localStorage.getItem("rawdy_sync"); if(raw) syncCfg = {...syncCfg, ...JSON.parse(raw)}; } catch(e){}
@@ -3260,9 +3412,20 @@ async function syncConnect(){
   try {
     const r = await fetch(base + ".json");
     if(!r.ok) throw new Error("HTTP " + r.status + " — check the URL and that the database rules allow access");
-    const d = await r.json();
-    if(d){ if(d.global) applyRemoteGlobal(d.global);
-           if(d.units) Object.keys(d.units).forEach(u => { if(UNITS.includes(u)) applyRemoteUnit(u, d.units[u]); }); }
+    const d = await r.json() || {};
+    // Newest wins, per platoon. A phone that was edited offline keeps its work
+    // and pushes it up; otherwise it takes the room's copy. Nobody is wiped.
+    const remoteUnits = d.units || {};
+    const push = [];
+    UNITS.forEach(u => {
+      const rp = remoteUnits[u];
+      const rAt = rp ? (rp.at || 0) : 0;
+      const lAt = (S.editedAt || {})[u] || 0;
+      if(rp && rAt >= lAt) applyRemoteUnit(u, rp);
+      else if(lAt > rAt) push.push(u);
+    });
+    if(d.global) applyRemoteGlobal(d.global);
+    connectPush = push;
   } catch(e){ setSyncState("error", e.message); return; }
   try {
     es = new EventSource(base + ".json");
@@ -3272,9 +3435,10 @@ async function syncConnect(){
     es.onerror = () => { if(syncCfg.on) setSyncState("retry", "connection dropped — retrying"); };
   } catch(e){ setSyncState("error", e.message); return; }
   syncCfg.on = true; saveSyncCfg(); setSyncState("live");
-  // publish what this phone already holds so the room starts in step
-  UNITS.forEach(u => syncPush("unit", u));
-  syncPush("global");
+  // send up only what this phone holds NEWER than the room
+  (connectPush || []).forEach(u => syncPush("unit", u));
+  if(!(connectPush || []).length && !Object.keys(syncSeen).length) syncPush("global");
+  connectPush = [];
 }
 function syncLink(){
   try {
@@ -3347,7 +3511,6 @@ loadSyncCfg();
     copyText(L, "Invite link copied — WhatsApp it to the PSes");
   };
   setSyncState(syncCfg.on ? "connecting" : "off");
-  if(syncCfg.on && syncBase()) syncConnect();
   // a phone that sleeps drops the stream; pick it up again on return
   document.addEventListener("visibilitychange", () => {
     if(!document.hidden && syncCfg.on && (!es || es.readyState === 2)) syncConnect();
@@ -3374,6 +3537,9 @@ setInterval(checkForUpdate, 60 * 60 * 1000);
     shareOn = false;
   }
   showShareBanner();
+  // only now — after the phone's own saved work is back — join the room, so a
+  // slow network can never let stale local data overwrite the shared picture
+  if(syncCfg.on && syncBase()) await syncConnect();
 })();
 </script>
 </body>

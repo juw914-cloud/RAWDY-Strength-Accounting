@@ -1,1 +1,1 @@
-{"build": 42, "note": "fixes live sync HTTP 400 — item names like BFI/PU are no longer used as database keys"}
+{"build": 44, "note": "scoped resets, remove-tag in one tap, shift men between sections, section strength follows, easy item delete that sticks"}
