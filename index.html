@@ -79,6 +79,9 @@ body{margin:0; background:#0E100C; }
 .ovnote{margin-top:7px; font-size:11px; color:#E8C547; background:rgba(201,162,39,0.14);
   border-radius:3px; padding:6px 9px; display:flex; justify-content:space-between; align-items:center; gap:8px;}
 .ovnote button{font-size:10.5px; padding:4px 9px; min-height:0;}
+/* strength being borrowed from another unit — say so plainly, always */
+.innote{margin-top:7px; font-size:11px; color:#9BBC7A; background:rgba(122,155,90,0.16);
+  border-left:3px solid var(--ok); border-radius:3px; padding:6px 9px; line-height:1.5;}
 
 /* ---- roster chips ---- */
 .filter{width:100%; margin-bottom:8px;}
@@ -236,6 +239,14 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
 .ledger .l b{font-variant-numeric:tabular-nums; white-space:nowrap;}
 .ledger .l .w{color:var(--muted); font-size:11px;}
 .scroll{max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;}
+/* coy parade-state table, laid out like the printed sheet */
+#pstab{border:1px solid var(--border2);}
+#pstab td{border:1px solid var(--border2); padding:6px 8px; font-size:11.5px; text-align:center;}
+#pstab .psband td{background:#101208; color:#EAE7D8; font-family:var(--fh); font-weight:700;
+  letter-spacing:0.08em; text-align:center; font-size:12px;}
+#pstab .psband.coy td{background:var(--acc); color:#161810;}
+#pstab .pshead td{color:var(--dim); font-style:italic; font-size:10.5px; line-height:1.3;}
+#pstab .psval td{font-family:var(--fm); font-size:15px; font-weight:700; color:var(--acc2); background:var(--bg);}
 /* Generate sits at the bottom of a very long page; on a phone that is five screens
    of scrolling, so the action bar is pinned to the viewport instead. */
 .rw{padding-bottom:78px;}
@@ -308,7 +319,7 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
 <div class="card hdr">
   <h1>RAWDY — Strength &amp; Equipment Accounting</h1>
   <div class="note">Company-level manpower and equipment accounting for HQ, PL1, PL2, PL3.
-    <span id="build" style="float:right; font-family:var(--fm); color:var(--muted);">BUILD 31 · 27JUL26</span></div>
+    <span id="build" style="float:right; font-family:var(--fm); color:var(--muted);">BUILD 36 · 27JUL26</span></div>
 </div>
 
 <div class="card">
@@ -353,13 +364,31 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
 </div>
 
 <details class="card">
+  <summary>Parade state table — coy sheet format</summary>
+  <div class="note" style="margin:9px 0;">The same columns as the company sheet, filled in from the roster.
+    It keeps the sheet's own checks true: <b>TOTAL − SBF − Others = MOVE OUT</b> and
+    <b>MOVE OUT − NBC/SEND OUT = PARTICIPATING</b>.
+    <b>Others</b> covers MC, MA, RSO, RSI, leave, course, duty and anyone attached out.</div>
+  <div class="bar">
+    <button type="button" id="ps-copy">Copy for Excel</button>
+    <button type="button" id="ps-msg">Copy as message</button>
+  </div>
+  <div class="scroll"><table id="pstab"></table></div>
+</details>
+
+<details class="card">
   <summary>How the counting works</summary>
   <div class="note" style="margin-top:9px; line-height:1.7;">
     <b>Total strength</b> always shows your platoon's own roster figure — it never moves.
     Any change is shown <span style="color:#FF6B4A;">in red beside it</span> (e.g. <span style="color:#FF6B4A;">−1 out  +2 in</span>) so the difference is visible at a glance.<br><br>
     <b>Move out</b> and <b>participating</b> do reflect the attachments, because those are the numbers you actually march with.<br><br>
-    <b>Move out</b> = total held, minus stay-backs (MC, SBF, MA, Duty).<br>
+    <b>Move out</b> = total held, minus stay-backs (MC, SBF, MA, RSO, RSI, Duty, leave, course).<br>
     <b>Participating</b> = move out, minus those moving but not participating (safety walker, conducting staff, etc).<br><br>
+    A few appointments carry a status by themselves — <b>ASA and SAGE move out but do not participate</b>,
+    and <b>MPAT</b> is attached out of the coy. Tagging the man overrides it, so it is only a default.<br><br>
+    Pull a man into another platoon and he leaves his own platoon's figures and joins theirs — with his gear.
+    Because that draws on someone else's strength, the tool <b>asks first and shows both platoons' figures</b>,
+    and the receiving platoon keeps a green note saying how many of its pax are accounted from elsewhere.<br><br>
     <b>Attached out</b> means he goes out for training, but under another coy or unit — so he is no longer
     on your move out or your participating strength. If he is attached to <b>another coy</b>, the company total
     drops as well, because he is not ours for this activity. If he is attached to <b>one of our own platoons</b>,
@@ -424,10 +453,10 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
     <div class="note" style="margin-top:7px;">Appointments drawing no PANTES (comma separated):</div>
     <input type="text" id="r-pmex" style="width:100%; margin-top:4px;"></div>
   <div class="eqg"><h3>Automatic status by appointment</h3>
-    <div class="note" style="margin-bottom:6px;">These apply by themselves — e.g. ASA and SAGE move out but do not participate. Tapping a man and choosing any status overrides his automatic one.</div>
+    <div class="note" style="margin-bottom:6px;">These carry a status by themselves — <b>ASA and SAGE move out but do not participate</b>. Tapping the man and choosing any status overrides his automatic one, so it is a default, not a lock.</div>
     <div id="r-auto"></div><button type="button" id="r-auto-add" style="font-size:11px;">+ Add rule</button></div>
   <div class="eqg"><h3>Always attached out</h3>
-    <div class="note" style="margin-bottom:6px;">Appointments automatically attached out of the company (comma separated) — e.g. MPAT. Override any individual from his name.</div>
+    <div class="note" style="margin-bottom:6px;">Appointments always attached out of the coy (comma separated) — e.g. MPAT. Override any individual from his name.</div>
     <input type="text" id="r-autoatt" style="width:100%;"></div>
   <button type="button" id="r-reset" style="font-size:11px;">Restore default rules</button>
 </details>
@@ -619,7 +648,8 @@ const DEFAULT_RULES = {
   itemNotes: {"LENSATIC COMPASS": "from commanders", "GROUNDSHEET": "from section", "PRC940": "from signaller",
               "ET BLADE": "from section", "ET POUCH": "from section", "ET STICK": "from section"},
   tagEstab: {"PANEL MARKERS": 4, "TENT PINS": 36, "MARSHALLING WANDS": 2, "MARSHALLING GLOVES": 1, "MALLET": 1, "LENSATIC COMPASS": 1, "WIND METER": 1, "GROUNDSHEET": 1, "ET BLADE": 1, "ET POUCH": 1, "ET STICK": 1, "IR MARKER": 4, "PRC940": 1, "GREEN LIGHT STICKS": 8},
-  autoStatus: [["ASA", "sbf"], ["SAGE", "moving"]],
+  // ASA moves out but does NOT participate — fixed, unless the man is tagged otherwise.
+  autoStatus: [["ASA", "moving"], ["SAGE", "moving"]],
   autoAttachOut: ["MPAT"]
 };
 // Wording used in the GENERATED MESSAGE only (screens keep HQ/PL1/2/3 codes).
@@ -640,8 +670,8 @@ const RANK_CHOICES = ["","CPT","LTA","2LT","3WO","MSG","2SG","3SG","ME1-1","CPL"
 const WEAPON_TO_SFT = {"SAR21":"SAR 21 SFT","LMG":"LMG SFT","GPMG":"GPMG SFT","M203":"M203 SFT",
   "MATADOR":"MATADOR SFT","M110":"M110 SFT"};
 const EXTERNAL = "__EXT__";
-const BUILD_ID = "31 · 27JUL26";
-const BUILD_NO = 31;   // attached out of the company entirely
+const BUILD_ID = "36 · 27JUL26";
+const BUILD_NO = 36;   // attached out of the company entirely
 
 // ---- state ----
 function freshState(){
@@ -696,7 +726,10 @@ function ensureDefaultCats(){
 // rev 4: parang/tripflare 03; vine cutter PL2 only; BINO to the MG comd; ET notes.
 // rev 5: stores figures set to the CONFIRMED establishment (not "only if untouched"),
 //        WIRE CUTTER 06 added. These were stated directly, so they are authoritative.
-const RULES_REV = 5;
+// rev 6: automatic status / auto attach-out rules cleared.
+// rev 7: reinstated — ASA and SAGE move out but do NOT participate (was: ASA stayed
+//        back), MPAT attached out. An explicit tag on the man still overrides.
+const RULES_REV = 7;
 function migrateRules(){
   const rev = S.rulesRev || 1;
   if(rev >= RULES_REV) return;
@@ -737,6 +770,15 @@ function migrateRules(){
     se["WIRE CUTTER"] = 6;
     se["VINE CUTTER"] = 0;                       // PL2 only, via the exception below
     S.rules.estabUnit = {...(S.rules.estabUnit || {}), "VINE CUTTER": {PL2: 2}};
+  }
+  if(rev < 6){
+    // (rev 6 briefly cleared the automatic rules; rev 7 puts them back correctly)
+    Object.keys(S.status).forEach(pid => { if(S.status[pid] === PRESENT) delete S.status[pid]; });
+    Object.keys(S.attach).forEach(pid => { if(S.attach[pid] === OFF) delete S.attach[pid]; });
+  }
+  if(rev < 7){
+    S.rules.autoStatus = [["ASA", "moving"], ["SAGE", "moving"]];
+    S.rules.autoAttachOut = ["MPAT"];
   }
   S.rulesRev = RULES_REV;
 }
@@ -865,6 +907,78 @@ function count(unit){
           partic: overOf(unit,"pa") || strength(paC, paT),
           overridden: !!(overOf(unit,"tot") || overOf(unit,"mo") || overOf(unit,"pa")),
           delta: deltaText(out, inCnt + guestCnt, strength(heldC, heldT))};
+}
+
+// Strength broken down by section, on the same rules as the platoon figure:
+// STR = the section's own roster, MO / PT = what that section actually fields.
+function sectionRows(unit){
+  const secs = [];
+  personsOf(unit).forEach(p => { if(!secs.includes(p.section)) secs.push(p.section); });
+  const rows = secs.map(sec => {
+    let str = 0, mo = 0, pt = 0;
+    personsOf(unit).filter(p => p.section === sec).forEach(p => {
+      str++;
+      if(attachOf(p)) return;                       // gone to another unit
+      const c = statusOf(p);
+      const kind = c ? c.kind : "present";
+      if(kind === "stayback") return;
+      mo++;
+      if(kind === "moveout_np" || kind === "moveout_np_ng") return;
+      pt++;
+    });
+    return {label: String(sec).replace(/^SECTION\s+/i, "SEC "), str, mo, pt};
+  });
+  // men held here on another unit's account sit outside this platoon's sections
+  const r = count(unit);
+  const inn = r.inCnt + r.guestCnt;
+  if(inn) rows.push({label:"ATT IN", str:inn, mo:inn, pt:inn, borrowed:true});
+  return rows;
+}
+
+// ============================================================================
+// COY PARADE-STATE TABLE — the columns the company sheet uses.
+//   TOTAL(0) − SBF(4) − Others(5) = MOVE OUT(1)
+//   MOVE OUT(1) − NBC/SEND OUT(3) = PARTICIPATING(2)
+// "Others" is everyone else off move-out: MC, MA, RSO, RSI, leave, course,
+// duty and anyone attached out. Deriving it as the remainder keeps the sheet's
+// own cross-checks true no matter how the men are tagged.
+// ============================================================================
+function paradeRow(u){
+  const r = count(u);
+  let sbf = 0;
+  personsOf(u).forEach(p => {
+    if(attachOf(p)) return;
+    const c = statusOf(p);
+    if(c && c.kind === "stayback" && /\bSBF\b/i.test(c.label)) sbf++;
+  });
+  const total = r.rosC + r.rosT + r.inCnt + r.guestCnt;
+  const mo = r.moC + r.moT, pa = r.paC + r.paT;
+  return {total, mo, pa, nbc: mo - pa, sbf, others: total - sbf - mo};
+}
+function paradeCoy(){
+  let total = 0, sbf = 0, mo = 0, pa = 0;
+  UNITS.forEach(u => {
+    const x = paradeRow(u), r = count(u);
+    sbf += x.sbf; mo += x.mo; pa += x.pa;
+    total += r.rosC + r.rosT;          // rosters only — a within-coy move cancels out
+  });
+  total += (S.guests || []).length;    // men in from outside the coy
+  return {total, mo, pa, nbc: mo - pa, sbf, others: total - sbf - mo};
+}
+const PS_COLS = ["TOTAL (0)", "MOVE OUT (1)", "PARTICIPATING (2)", "NBC/SEND OUT (3)", "SBF (4)", "Others (5)"];
+const psVals = x => [x.total, x.mo, x.pa, x.nbc, x.sbf, x.others];
+function paradeTable(){
+  return [{name: (S.labels && S.labels.coy) || "ALPHA COMPANY", row: paradeCoy(), coy: true}]
+    .concat(UNITS.map(u => ({name: unitName(u), row: paradeRow(u)})));
+}
+function renderParade(){
+  const t = el("pstab"); if(!t) return;
+  t.innerHTML = paradeTable().map(b => {
+    const v = psVals(b.row);
+    return `<tr class="psband${b.coy ? " coy" : ""}"><td colspan="6">${b.name}</td></tr>
+      <tr class="pshead">${PS_COLS.map(c => `<td>${c}</td>`).join("")}</tr>
+      <tr class="psval">${v.map(x => `<td>${fmt2(x)}</td>`).join("")}</tr>`;
+  }).join("");
 }
 
 // The red note beside Total: what changed AND the resulting strength, worked out.
@@ -1098,6 +1212,7 @@ function buildPanels(){
             <input type="text" class="vedit" id="ov-${u}-pa" style="display:none;" placeholder="e.g. 28 (08 + 20)"></div>
         </div>
         <div class="ovnote" id="ovn-${u}" style="display:none;"></div>
+        <div class="innote" id="inn-${u}" style="display:none;"></div>
       </div>
 
       <div class="card">
@@ -1172,7 +1287,22 @@ function buildPanels(){
       "RAWDY-PL " + JSON.stringify({v:3, unit:u, cats:S.cats, items:S.items, data:unitPayload(u)}),
       u + " code copied — WhatsApp it; the other phone presses Load session code to merge " + u + " only");
     el(`adj-${u}`).onclick = () => {
-      const on = el(`adj-${u}`).classList.toggle("on");
+      const btn = el(`adj-${u}`);
+      // Overriding the calculation is allowed, but never by accident: show what the
+      // tool worked out and warn that the override is flagged everywhere.
+      if(!btn.classList.contains("on")){
+        const c = count(u);
+        if(!confirm(
+          `Set ${unitName(u)}'s strength by hand?\n\n` +
+          `Worked out from the roster, the men you tagged and any attachments:\n\n` +
+          `   TOTAL          ${c.calcTotal}\n` +
+          `   MOVE OUT       ${c.calcMoveout}\n` +
+          `   PARTICIPATING  ${c.calcPartic}\n\n` +
+          `Your own number replaces the calculation for this platoon. It is marked ` +
+          `"set by hand" on this screen and in the generated message, so the coy can see ` +
+          `it is not the worked-out figure.\n\nContinue?`)) return;
+      }
+      const on = btn.classList.toggle("on");
       ["tot","mo","pa"].forEach(k => {
         el(`ov-${u}-${k}`).style.display = on ? "" : "none";
         el(`e-${u}-${k}`).style.display = on ? "none" : "";
@@ -1340,6 +1470,15 @@ function renderLedger(u){
   r.partLines.forEach(x => L.push(row("add", `of which ${x.label.toLowerCase()}`, `${x.n}`, "moves out & participates, gear drawn")));
   if(overOf(u,"pa")) L.push(row("ded", "Participating set by hand", overOf(u,"pa"), "overrides the calculation"));
   if(overOf(u,"tot")) L.push(row("ded", "Total set by hand", overOf(u,"tot"), "overrides the calculation"));
+
+  // section breakdown — who each section actually fields
+  const secs = sectionRows(u);
+  if(secs.length){
+    L.push(`<div class="l head" style="margin-top:8px;"><span>BY SECTION</span><b class="w">STR &nbsp; MO &nbsp; PT</b></div>`);
+    secs.forEach(s => L.push(
+      `<div class="l"><span>${s.label}${s.borrowed?' <span class="w">accounted elsewhere</span>':''}</span>` +
+      `<b>${fmt2(s.str)} &nbsp; ${fmt2(s.mo)} &nbsp; ${fmt2(s.pt)}</b></div>`));
+  }
   el(`led-${u}`).innerHTML = L.join("");
 }
 
@@ -1412,8 +1551,10 @@ function renderAttach(u){
       : `<div class="pisug" style="cursor:default; color:var(--muted);">No match — he may already be attached somewhere.</div>`;
     piR.querySelectorAll("[data-pull]").forEach(row => row.onclick = () => {
       const pid = row.dataset.pull;
+      if(!confirmTransfer(pid, u)) return;
       S.attach[pid] = {to: u, mo: true, pa: true, note: ""};   // same shared record as attach-out
       delete S.status[pid];
+      piQ.value = ""; piR.innerHTML = "";
       renderAll(); saveAll();
     });
   };
@@ -1537,6 +1678,20 @@ function renderAll(){
         i.value = overOf(u,k) || (k==="tot" ? rr.calcTotal : k==="mo" ? rr.calcMoveout : rr.calcPartic);
       }
     });
+    // spell out any strength this platoon is holding on another unit's account
+    const inn = el(`inn-${u}`);
+    if(inn){
+      const n = r.inCnt + r.guestCnt;
+      if(n){
+        const src = [...new Set(
+          Object.keys(S.attach).filter(pid => { const a = S.attach[pid]; return a && a !== OFF && a.to === u; })
+            .map(byId).filter(x => x && x.unit !== u).map(x => unitName(x.unit))
+            .concat(guestsOf(u).map(g => g.from)))];
+        inn.style.display = "";
+        inn.innerHTML = `<b>${fmt2(n)} pax counted here are attached in</b> from ${src.join(", ")} — ` +
+          `their strength is accounted from there, not from ${unitName(u)}'s own roster.`;
+      } else inn.style.display = "none";
+    }
     set(`tag-${u}`, r.tagged ? `${r.tagged} tagged` : "");
     set(`tabs-${u}`, r.original.split(" ")[0] + (r.out||r.inCnt ? "*" : ""));
     renderChips(u); renderAttach(u); renderEquip(u); renderLedger(u);
@@ -1559,7 +1714,7 @@ function renderAll(){
   el("coy-note").textContent = c.ext
     ? `${c.ext} pax attached out to another coy/unit — they are not on the company's strength for this activity.`
     : "";
-  renderRoll(); renderGuide();
+  renderRoll(); renderGuide(); renderParade();
 }
 
 // ============================================================================
@@ -1684,6 +1839,7 @@ function openSheet(pid, anchor){
     const to = d.querySelector("#s-to").value;
     let note = "";
     if(to === EXTERNAL){ note = (prompt("Which coy / unit is he attached to? (shown on the report)", "") || "").trim().toUpperCase() || "ANOTHER COY"; }
+    else if(!confirmTransfer(pid, to)) return;   // moving him within the coy — show both sides
     S.attach[pid] = {to, mo:true, pa:true, note};
     delete S.status[pid];
     closeSheet(); renderAll(); saveAll();
@@ -1710,6 +1866,29 @@ function openSheet(pid, anchor){
 
   sheetDoc = e => { if(sheet && !sheet.contains(e.target)) closeSheet(); };
   setTimeout(() => document.addEventListener("click", sheetDoc), 0);
+}
+
+// Taking a man off another unit is never silent: show both sides' figures BEFORE
+// and AFTER, so whoever presses it knows whose strength he is drawing on.
+function confirmTransfer(pid, to){
+  const p = byId(pid); if(!p) return false;
+  const from = p.unit;
+  const b1 = count(from), b2 = count(to);
+  const prev = S.attach[pid];
+  S.attach[pid] = {to, mo:true, pa:true, note:""};      // simulate
+  const a1 = count(from), a2 = count(to);
+  if(prev === undefined) delete S.attach[pid]; else S.attach[pid] = prev;
+  return confirm(
+    `Take ${p.rank} ${p.name} (${apptOf(p)}) from ${unitName(from)} into ${unitName(to)}?\n\n` +
+    `${unitName(from)}\n` +
+    `   move out       ${b1.moveout}  →  ${a1.moveout}\n` +
+    `   participating  ${b1.partic}  →  ${a1.partic}\n\n` +
+    `${unitName(to)}\n` +
+    `   move out       ${b2.moveout}  →  ${a2.moveout}\n` +
+    `   participating  ${b2.partic}  →  ${a2.partic}\n\n` +
+    `His weapon and gear move with him.\n` +
+    `${unitName(to)} will then be holding 1 pax whose strength is accounted from ${unitName(from)} — ` +
+    `not from ${unitName(to)}'s own roster.`);
 }
 
 // Removing an attachment is deleting ONE record — both platoons restore at once.
@@ -1771,6 +1950,30 @@ function renderRoll(){
       row.map((c,i) => `<td${i===6?' style="font-size:11px;color:var(--muted);"':""}>${c}</td>`).join("") + "</tr>";
   }).join("");
 }
+// paste straight into the coy spreadsheet
+el("ps-copy").onclick = () => {
+  const L = [];
+  paradeTable().forEach(b => {
+    L.push(b.name);
+    L.push(PS_COLS.join("\t"));
+    L.push(psVals(b.row).join("\t"));
+  });
+  copyText(L.join("\n"), "Parade state copied — paste into the coy sheet");
+};
+el("ps-msg").onclick = () => {
+  const L = [`*${(S.labels && S.labels.coy) || "ALPHA COMPANY"} PARADE STATE*`];
+  const act = el("act").value.trim(); if(act) L.push(`*${act.toUpperCase()}*`);
+  const caa = el("caa").value.trim(); if(caa) L.push(`_CAA ${caa}_`);
+  L.push("");
+  paradeTable().forEach(b => {
+    const v = psVals(b.row);
+    L.push(`*${b.name}*`);
+    L.push("```\n" + [["TOTAL", v[0]], ["MOVE OUT", v[1]], ["PARTIC", v[2]],
+      ["NBC/SENT", v[3]], ["SBF", v[4]], ["OTHERS", v[5]]]
+      .map(([k,n]) => `${k.padEnd(9)}${fmt2(n).padStart(4)}`).join("\n") + "\n```");
+  });
+  copyText(L.join("\n"), "Parade state copied as a message");
+};
 el("rollq").oninput = renderRoll;
 el("rollcopy").onclick = () => {
   const head = ["S/N","Unit","Section","Rank","Name","Appointment","Loadout","Status"].join("\t");
@@ -1852,7 +2055,31 @@ function unitBody(u, st){
   if(r.out) flow.push(`Attached out: ${sCnt(r.outC, r.outT)}`);
   if(r.inCnt + r.guestCnt) flow.push(`Attached in: ${sCnt(r.inC + r.gC, r.inT + r.gT)}`);
   if(flow.length) L.push(`_${flow.join(" · ")} — held ${tight(r.held)}_`);
+  // a hand-set figure must never look like a calculated one
+  if(r.overridden){
+    const which = ["tot","mo","pa"].filter(k => overOf(u,k))
+      .map(k => k === "tot" ? "total" : k === "mo" ? "move out" : "participating").join(", ");
+    L.push(`_⚠ ${which} set by hand — calculated: ${tight(r.calcTotal)} / ${tight(r.calcMoveout)} / ${tight(r.calcPartic)}_`);
+  }
   L.push("");
+
+  // ---- by section ----
+  const secs = sectionRows(u);
+  if(secs.length > 1 || (secs.length === 1 && secs[0].label !== "HQ")){
+    if(blocky){
+      L.push("*BY SECTION*");
+      const lw = Math.max(6, ...secs.map(s => s.label.length));
+      const cw = Math.max(3, ...secs.map(s => Math.max(String(s.str).length, String(s.mo).length, String(s.pt).length)));
+      const line = (a,b,c2,d) => `${String(a).padEnd(lw)}  ${String(b).padStart(cw)}  ${String(c2).padStart(cw)}  ${String(d).padStart(cw)}`;
+      L.push("```\n" + [line("", "STR", "MO", "PT"),
+        ...secs.map(s => line(s.label, s.str, s.mo, s.pt))].join("\n") + "\n```");
+    } else {
+      L.push("*By section*");
+      secs.forEach(s => L.push(`${s.label}: ${s.str} · MO ${s.mo} · PT ${s.pt}`));
+    }
+    if(secs.some(s => s.borrowed)) L.push("_ATT IN = held here, accounted from another unit._");
+    L.push("");
+  }
 
   // status breakdown — numbered name lists under a bold count header
   S.cats.forEach(c => {
