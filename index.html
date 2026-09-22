@@ -564,6 +564,15 @@ details.eqc[open] > .eqhd .nm::before{content:'▾';}
 
 .eqb{columns:250px; column-gap:20px; padding:2px 10px 8px;}
 .eqgp{break-inside:avoid; -webkit-column-break-inside:avoid; page-break-inside:avoid; padding-top:7px;}
+.eqgh{cursor:pointer;}
+.eqgh::after{content:" ✎"; opacity:0.55; font-weight:400;}
+.eqb .it label.inm{cursor:pointer; text-decoration:underline dotted rgba(179,177,158,0.45); text-underline-offset:3px;}
+.eqkey .k-tip{flex-basis:100%; color:var(--dim);}
+@media (min-width:641px){ .sheet.imenu{width:300px;} }
+.imenu .imrow{display:flex; align-items:center; gap:8px; padding:5px 2px;}
+.imenu .imrow > span{flex:0 0 70px; font-size:11.5px; color:var(--dim);}
+.imenu .imrow select{flex:1; min-width:0;}
+.imenu .imrow button{flex:1; text-align:left;}
 .eqgh{font-family:var(--fh); font-size:9.5px; font-weight:700; letter-spacing:0.13em; text-transform:uppercase;
   color:var(--cc); padding:2px 0 3px; border-bottom:1px solid var(--border2);}
 .eqb .it{display:grid; grid-template-columns:minmax(0,1fr) 60px 30px; align-items:center; gap:8px;
@@ -814,7 +823,7 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
   <div class="ttl"><h1>RAWDY</h1><span class="sub">Strength &amp; equipment</span></div>
   <div class="meta">
     <span id="sy-pill" style="display:none;">SYNC OFF</span>
-    <span id="build">BUILD 64 · 22SEP26</span>
+    <span id="build">BUILD 65 · 22SEP26</span>
   </div>
 </div>
 
@@ -1293,6 +1302,122 @@ function ensureItems(){
   });
 }
 // an item's per-platoon figures (typed, held at zero, manual) follow it to its new category
+// ---- change an item where it stands: remove, rename, move ----
+// Remove an item from the catalogue (every platoon). Recorded in itemsRemoved —
+// built-in or added — so another phone's list cannot quietly bring it back.
+function removeItem(k, name){
+  S.items[k] = (S.items[k] || []).filter(x => x !== name);
+  S.itemsRemoved = S.itemsRemoved || [];
+  if(!S.itemsRemoved.includes(name)) S.itemsRemoved.push(name);
+  [S.rules.storeEstab, S.rules.tagEstab, S.rules.itemNotes, S.rules.estabUnit, S.rules.perman].forEach(m => { if(m) delete m[name]; });
+  if(S.rules.eqItemGroup) delete S.rules.eqItemGroup[grpKey(k, name)];
+  const key = zeroKey(k, slug(name));
+  UNITS.forEach(u => {
+    [S.zero, S.eqSet].forEach(m => { const x = (m || {})[u]; if(x) delete x[key]; });
+    const e = ((S.equip || {})[u] || {})[k]; if(e) delete e[slug(name)];
+  });
+}
+// Rename an item everywhere it is used: the list, every platoon's figures, the
+// rules that issue it, the stores figures and notes, men's own gear, its heading.
+function renameItem(k, from, to){
+  const i = (S.items[k] || []).indexOf(from); if(i < 0) return false;
+  S.items[k][i] = to;
+  const a = zeroKey(k, slug(from)), b = zeroKey(k, slug(to));
+  UNITS.forEach(u => {
+    [S.zero, S.eqSet].forEach(m => { const x = (m || {})[u]; if(x && x[a] !== undefined){ x[b] = x[a]; delete x[a]; } });
+    const e = ((S.equip || {})[u] || {})[k]; if(e && e[slug(from)] !== undefined){ e[slug(to)] = e[slug(from)]; delete e[slug(from)]; }
+  });
+  const R = S.rules, sw = v => v === from ? to : v;
+  (R.weapon || []).forEach(r => { r[1] = sw(r[1]); });
+  (R.sft || []).forEach(r => { r[1] = sw(r[1]); });
+  (R.signal || []).forEach(r => { if(Array.isArray(r[2])) r[2] = r[2].map(sw); });
+  (R.accessories || []).forEach(r => { r[0] = sw(r[0]); r[1] = sw(r[1]); });
+  [R.storeEstab, R.tagEstab, R.itemNotes, R.estabUnit, R.perman].forEach(m => { if(m && m[from] !== undefined){ m[to] = m[from]; delete m[from]; } });
+  if(R.eqItemGroup && R.eqItemGroup[grpKey(k, from)] !== undefined){ R.eqItemGroup[grpKey(k, to)] = R.eqItemGroup[grpKey(k, from)]; delete R.eqItemGroup[grpKey(k, from)]; }
+  Object.values(S.gear || {}).forEach(g => { if(!g) return;
+    if(g.weapon === from) g.weapon = to;
+    if(Array.isArray(g.signals)) g.signals = g.signals.map(sw); });
+  // the old name stays gone — a built-in is not re-added, and another phone's older list cannot bring it back
+  S.itemsRemoved = (S.itemsRemoved || []).filter(x => x !== to);
+  if(!S.itemsRemoved.includes(from)) S.itemsRemoved.push(from);
+  return true;
+}
+function itemsChanged(msg){
+  applyItems(); buildPanels(); renderItems(); renderRules(); renderAll(); saveGlobal(); saveAll();
+  if(msg) setStat(msg);
+}
+// Rename a heading for every platoon; an empty answer puts the original name back
+function renameGroup(k, gid){
+  const cur = groupName(k, gid);
+  const v = prompt(`Rename the heading "${cur}" (every platoon sees it).\n\nLeave it empty to go back to "${gid}".`, cur);
+  if(v === null) return;
+  const nv = cleanItemName(v);
+  S.rules.eqGroupName = S.rules.eqGroupName || {};
+  if(!nv || nv === gid.toUpperCase()) delete S.rules.eqGroupName[grpKey(k, gid)];
+  else S.rules.eqGroupName[grpKey(k, gid)] = nv;
+  itemsChanged(`Heading renamed to ${nv || gid}`);
+}
+// The small menu that opens on an item's name
+let imenu = null, imenuDoc = null;
+function closeItemMenu(){ if(imenu){ imenu.remove(); imenu = null; } if(imenuDoc){ document.removeEventListener("click", imenuDoc); imenuDoc = null; } }
+function openItemMenu(u, k, name, anchor){
+  closeItemMenu(); closeSheet(); if(typeof closeQuick === "function") closeQuick();
+  const grouped = !!DEF_GROUPS[k];
+  const esc = x => String(x).replace(/"/g, "&quot;");
+  const d = document.createElement("div");
+  d.className = "sheet quick imenu";
+  d.innerHTML = `<div class="who"><span>${name}</span><span class="cur">${catLabel(k)}${grouped ? " · " + groupName(k, groupOf(k, name)) : ""}</span><button type="button" class="xclose" id="im-x">✕</button></div>
+    <div class="imrow"><button type="button" id="im-ren">✎ Rename</button></div>
+    ${grouped ? `<div class="imrow"><span>Heading</span><select id="im-grp">
+      ${groupChoices(k).map(g => `<option value="${esc(g)}"${groupOf(k, name) === g ? " selected" : ""}>${groupName(k, g)}</option>`).join("")}
+      <option value="__NEW__">+ New heading…</option></select></div>` : ""}
+    <div class="imrow"><span>Category</span><select id="im-cat">
+      ${EQ_CATS.map(([k2, l2]) => `<option value="${k2}"${k2 === k ? " selected" : ""}>${l2}</option>`).join("")}</select></div>
+    <div class="imrow"><button type="button" id="im-del" class="danger">✕ Remove from the list</button></div>
+    <div class="note plain" style="padding:4px 3px 0;">Changes apply to every platoon.</div>`;
+  document.querySelector(".rw").appendChild(d);
+  imenu = d;
+  if(anchor && window.innerWidth > 640){
+    const r = anchor.getBoundingClientRect();
+    d.style.top = (window.scrollY + Math.min(r.bottom + 4, window.innerHeight - d.offsetHeight - 10)) + "px";
+    d.style.left = (window.scrollX + Math.min(r.left, window.innerWidth - d.offsetWidth - 12)) + "px";
+  }
+  d.querySelector("#im-x").onclick = closeItemMenu;
+  d.querySelector("#im-ren").onclick = () => {
+    const v = prompt(`New name for "${name}":`, name); if(v === null) return;
+    const nv = cleanItemName(v);
+    if(!nv || nv === name){ return; }
+    const home = itemHome(nv);
+    if(home && !(home[0] === k && home[1] === name)){ alert(`${home[1]} is already in ${catLabel(home[0])} — pick another name.`); return; }
+    if(Object.values(DEF_ITEMS).some(l => l.includes(name)) &&
+       !confirm(`${name} is a built-in item — the auto-count rules issue it. They will issue ${nv} instead.\n\nRename it?`)) return;
+    closeItemMenu(); renameItem(k, name, nv); itemsChanged(`${name} renamed to ${nv}`);
+  };
+  const gs = d.querySelector("#im-grp");
+  if(gs) gs.onchange = () => {
+    let g = gs.value;
+    if(g === "__NEW__"){ const v = prompt("Name the new heading:", ""); if(!v || !cleanItemName(v)){ gs.value = groupOf(k, name); return; } g = cleanItemName(v); }
+    S.rules.eqItemGroup = S.rules.eqItemGroup || {};
+    if(g === defaultGroupOf(k, name)) delete S.rules.eqItemGroup[grpKey(k, name)]; else S.rules.eqItemGroup[grpKey(k, name)] = g;
+    closeItemMenu(); itemsChanged(`${name} moved under ${groupName(k, g)}`);
+  };
+  d.querySelector("#im-cat").onchange = e => {
+    const to = e.target.value; if(!to || to === k) return;
+    S.items[k] = S.items[k].filter(x => x !== name);
+    S.items[to] = S.items[to] || []; if(!S.items[to].includes(name)) S.items[to].push(name);
+    if(to === "store" && S.rules.storeEstab[name] === undefined) S.rules.storeEstab[name] = 0;
+    if(to === "tag" && S.rules.tagEstab[name] === undefined) S.rules.tagEstab[name] = 0;
+    if(S.rules.eqItemGroup) delete S.rules.eqItemGroup[grpKey(k, name)];
+    moveItemKeys(k, to, name);
+    closeItemMenu(); itemsChanged(`${name} moved to ${catLabel(to)}`);
+  };
+  d.querySelector("#im-del").onclick = () => {
+    if(!confirm(`Remove "${name}" from ${catLabel(k)}?\n\nIt disappears from every platoon and from the report. You can add it back any time.`)) return;
+    closeItemMenu(); removeItem(k, name); itemsChanged(`${name} removed`);
+  };
+  imenuDoc = e => { if(imenu && e.target.isConnected && !imenu.contains(e.target)) closeItemMenu(); };
+  setTimeout(() => document.addEventListener("click", imenuDoc), 0);
+}
 function moveItemKeys(from, to, name){
   const a = zeroKey(from, slug(name)), b = zeroKey(to, slug(name));
   UNITS.forEach(u => {
@@ -1334,20 +1459,30 @@ function applyItems(){
   WEAPON_ITEMS = S.items.wpn; SIGNALS_ITEMS = S.items.sig; OPTICS_ITEMS = S.items.opt; PANTES_ITEMS = S.items.pan;
   STORE_ITEMS = S.items.store; TAG_ITEMS = S.items.tag;
 }
-// Screen grouping: keep the built-in groups for items still present, and gather
-// anything the user has added under "Other" so nothing is ever hidden.
+// Screen grouping: the built-in groups, then any heading the user made, then
+// "Other" for anything not placed — so nothing is ever hidden. Headings can be
+// renamed and items moved between them; both live in S.rules, so they sync.
+//   S.rules.eqGroupName["sig|Other"] = "RADIOS"     (a heading's shown name)
+//   S.rules.eqItemGroup["sig|FEFEFEFE"] = "Comms"     (an item placed under a heading)
+const grpKey = (k, x) => k + "|" + x;
+function groupName(k, id){ return ((S.rules || {}).eqGroupName || {})[grpKey(k, id)] || id; }
+function defaultGroupOf(k, item){ const d = (DEF_GROUPS[k] || []).find(([, items]) => items.includes(item)); return d ? d[0] : "Other"; }
+function groupOf(k, item){ return ((S.rules || {}).eqItemGroup || {})[grpKey(k, item)] || defaultGroupOf(k, item); }
 function groupsFor(k){
   const list = S.items[k] || [];
   const defs = DEF_GROUPS[k];
-  if(!defs) return [["", list]];
-  const used = new Set();
-  const out = defs.map(([t, items]) => {
-    const keep = items.filter(i => list.includes(i));
-    keep.forEach(i => used.add(i));
-    return [t, keep];
-  }).filter(x => x[1].length);
-  const rest = list.filter(i => !used.has(i));
-  if(rest.length) out.push(["Other", rest]);
+  if(!defs) return [["", list, ""]];
+  const order = defs.map(([t]) => t);
+  const byG = {};
+  list.forEach(i => { const g = groupOf(k, i); if(!order.includes(g) && g !== "Other") order.push(g); (byG[g] = byG[g] || []).push(i); });
+  order.push("Other");
+  return order.filter(g => (byG[g] || []).length).map(g => [groupName(k, g), byG[g], g]);
+}
+// Every heading this category can offer (for "Move to heading…"), empty ones included
+function groupChoices(k){
+  const out = (DEF_GROUPS[k] || []).map(([t]) => t);
+  Object.entries((S.rules || {}).eqItemGroup || {}).forEach(([key, g]) => { if(key.startsWith(k + "|") && !out.includes(g) && g !== "Other") out.push(g); });
+  out.push("Other");
   return out;
 }
 const MAP_COMPASS_EXCLUDE = ["MEDIC", "CQ", "ASA"];
@@ -1394,8 +1529,8 @@ const RANK_CHOICES = ["","CPT","LTA","2LT","3WO","MSG","SSG","2SG","3SG","ME1-1"
 const WEAPON_TO_SFT = {"SAR21":"SAR 21 SFT","LMG":"LMG SFT","GPMG":"GPMG SFT","M203":"M203 SFT",
   "MATADOR":"MATADOR SFT","M110":"M110 SFT"};
 const EXTERNAL = "__EXT__";
-const BUILD_ID = "64 · 22SEP26";
-const BUILD_NO = 64;   // attached out of the company entirely
+const BUILD_ID = "65 · 22SEP26";
+const BUILD_NO = 65;   // attached out of the company entirely
 
 // ---- state ----
 function freshState(){
@@ -2081,6 +2216,7 @@ function buildPanels(){
           <span><i class="k-nil"></i>nil</span>
           <span><i class="k-held"></i>held at 0 — tap <b>&nbsp;0&nbsp;</b> to hold, again to release</span>
           <span><i class="k-set"></i>set by hand — clear the box to go back to the count</span>
+          <span class="k-tip">Tap an item's <b>name</b> to rename, move or remove it · tap a <b>heading</b> to rename it</span>
           <span class="status" id="zn-${u}"></span>
         </div>
         ${EQ_CATS.map(([k, label, sub]) => `
@@ -2122,7 +2258,7 @@ function buildPanels(){
   // One row per item:  NAME ........ [QTY] [0]
   const eqRow = (u, k, i) => {
     const id = slug(i);
-    return `<div class="it" id="it-${u}-${k}-${id}"><label for="q-${u}-${k}-${id}">${i}</label>` +
+    return `<div class="it" id="it-${u}-${k}-${id}"><label class="inm" data-k="${k}" data-item="${i}" title="Rename, move or remove">${i}</label>` +
       `<input type="number" min="0" inputmode="numeric" placeholder="–" id="q-${u}-${k}-${id}">` +
       `<button type="button" class="zx" data-u="${u}" data-k="${k}" data-i="${id}" ` +
       `title="Hold this item at zero (the item stays in the list)">0</button></div>`;
@@ -2131,8 +2267,8 @@ function buildPanels(){
     // Weapon / signal / PANTES keep their weapon-system groups (the whole GPMG
     // detail sits together); stores are a single list that flows across columns.
     ["wpn","sig","opt","pan"].forEach(k => {
-      el(`eq-${u}-${k}`).innerHTML = groupsFor(k).map(([h,items]) =>
-        `<div class="eqgp">${h ? `<div class="eqgh">${h}</div>` : ""}${items.map(i => eqRow(u, k, i)).join("")}</div>`).join("");
+      el(`eq-${u}-${k}`).innerHTML = groupsFor(k).map(([h,items,gid]) =>
+        `<div class="eqgp">${h ? `<div class="eqgh" data-k="${k}" data-g="${gid}" title="Tap to rename this heading">${h}</div>` : ""}${items.map(i => eqRow(u, k, i)).join("")}</div>`).join("");
     });
     [["store",STORE_ITEMS],["tag",TAG_ITEMS]].forEach(([k,items]) => {
       el(`eq-${u}-${k}`).innerHTML = items.map(i => eqRow(u, k, i)).join("");
@@ -2256,6 +2392,8 @@ function buildPanels(){
     });
     ["wpn","sig","opt","pan","store","tag"].forEach(k => {
       el(`eq-${u}-${k}`).addEventListener("click", e => {
+        const nm = e.target.closest(".inm"); if(nm){ openItemMenu(u, nm.dataset.k, nm.dataset.item, nm); return; }
+        const gh = e.target.closest(".eqgh"); if(gh){ renameGroup(gh.dataset.k, gh.dataset.g); return; }
         const b = e.target.closest(".zx"); if(!b) return;
         S.zero = S.zero || {}; S.zero[u] = S.zero[u] || {};
         const key = zeroKey(b.dataset.k, b.dataset.i);
@@ -3846,11 +3984,8 @@ function renderItems(){
     }
     if(e.target.classList.contains("del") && row){
       const k = row.dataset.k, i = +row.dataset.idx, name = S.items[k][i];
-      if(!confirm(`Remove "${name}" from ${k === "wpn" ? "Weapon" : k.toUpperCase()}?\n\nIt stops being counted and disappears from the report.`)) return;
-      S.items[k].splice(i,1);
-      S.itemsRemoved = S.itemsRemoved || [];
-      if(DEF_ITEMS[k].includes(name) && !S.itemsRemoved.includes(name)) S.itemsRemoved.push(name);
-      [S.rules.storeEstab, S.rules.tagEstab, S.rules.itemNotes, S.rules.estabUnit].forEach(m => { if(m) delete m[name]; });
+      if(!confirm(`Remove "${name}" from ${catLabel(k)}?\n\nIt stops being counted and disappears from the report.`)) return;
+      removeItem(k, name);
       refresh(); return;
     }
     if(e.target.classList.contains("iaddb")){

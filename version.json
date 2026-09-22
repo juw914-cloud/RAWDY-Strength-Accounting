@@ -1,1 +1,1 @@
-{"build": 64, "note": "When live sync cannot reach the database it now says why and what to do: a downloaded or preview copy of RAWDY gets a button to open the web link (already set to your room); on the web link it points to a blocked network and gives a one-tap database check. Invites always use the web link."}
+{"build": 65, "note": "Equipment: tap an item's name to rename it, move it to another heading or category, or remove it — right where it is, for every platoon. Tap a blue heading (COMMS, OTHER…) to rename it. A removed item no longer comes back from another phone."}
