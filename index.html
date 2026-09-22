@@ -823,7 +823,7 @@ td{padding:5px 8px; border-bottom:1px solid var(--border);}
   <div class="ttl"><h1>RAWDY</h1><span class="sub">Strength &amp; equipment</span></div>
   <div class="meta">
     <span id="sy-pill" style="display:none;">SYNC OFF</span>
-    <span id="build">BUILD 65 · 22SEP26</span>
+    <span id="build">BUILD 67 · 22SEP26</span>
   </div>
 </div>
 
@@ -1529,8 +1529,8 @@ const RANK_CHOICES = ["","CPT","LTA","2LT","3WO","MSG","SSG","2SG","3SG","ME1-1"
 const WEAPON_TO_SFT = {"SAR21":"SAR 21 SFT","LMG":"LMG SFT","GPMG":"GPMG SFT","M203":"M203 SFT",
   "MATADOR":"MATADOR SFT","M110":"M110 SFT"};
 const EXTERNAL = "__EXT__";
-const BUILD_ID = "65 · 22SEP26";
-const BUILD_NO = 65;   // attached out of the company entirely
+const BUILD_ID = "67 · 22SEP26";
+const BUILD_NO = 67;   // attached out of the company entirely
 
 // ---- state ----
 function freshState(){
@@ -3630,7 +3630,6 @@ function unitBody(u, inCoy){
   L.push(fig("Total", r.original), fig("Move out", r.moveout), fig("Participating", r.partic));
   if(r.out) L.push(`Attached out: ${sCnt(r.outC, r.outT)}`);
   if(r.inCnt + r.guestCnt) L.push(`Attached in: ${sCnt(r.inC + r.gC, r.inT + r.gT)}`);
-  if(r.out || r.inCnt + r.guestCnt) L.push(`Now holding: ${tight(r.held)}`);
   if(r.overridden){
     const which = ["tot","mo","pa"].filter(k => overOf(u,k))
       .map(k => k === "tot" ? "total" : k === "mo" ? "move out" : "participating").join(", ");
@@ -3766,7 +3765,6 @@ function companyReport(){
   const outFrom = UNITS.filter(u => count(u).outCoy > 0).map(unitName);
   if(c.ext) L.push(`Attached out of coy: ${sCnt(c.extC, c.extT)}${outFrom.length ? ` — from ${outFrom.join(", ")}` : ""}`);
   if(c.extIn) L.push(`Attached in from other units: ${sCnt(c.extInC, c.extInT)}`);
-  if(c.ext || c.extIn) L.push(`Now holding: ${tight(c.held)}`);
   L.push("", "*BY UNIT* — total / move out / participating");
   UNITS.forEach(u => { const r = count(u);
     L.push(`${u}: *${firstNum(r.original)}* / ${firstNum(r.moveout)} / ${firstNum(r.partic)}`); });
