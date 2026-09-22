@@ -1,1 +1,1 @@
-{"build": 47, "note": "Equipment numbers colour-coded — drawn quantities highlighted in gold, nil values faded."}
+{"build": 64, "note": "When live sync cannot reach the database it now says why and what to do: a downloaded or preview copy of RAWDY gets a button to open the web link (already set to your room); on the web link it points to a blocked network and gives a one-tap database check. Invites always use the web link."}
