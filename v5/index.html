@@ -1,0 +1,1104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#14181d">
+<title>RAWDY Strength</title>
+<style>
+:root{
+  --bg:#f3f4f1; --card:#ffffff; --ink:#15191d; --mute:#5d6670; --line:#dde1dc;
+  --acc:#3d5a2a; --accink:#ffffff; --gold:#9a6b00; --green:#1f7a3f; --red:#b3261e; --blue:#1d5fae; --grey:#6b7280;
+  --redbg:#fbeaea; --bluebg:#e8f0fb; --greenbg:#e6f4ea; --goldbg:#fbf3df; --greybg:#eef0f2;
+  --wa:#d9fdd3; --wabg:#efeae2;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101317; --card:#181c21; --ink:#e9ecef; --mute:#9aa3ad; --line:#2a3037;
+    --acc:#7fa35e; --accink:#0d1208; --gold:#e0b03c; --green:#5cc983; --red:#ff7b72; --blue:#7fb2ff; --grey:#9aa3ad;
+    --redbg:#3a1d1c; --bluebg:#18273b; --greenbg:#15301f; --goldbg:#3a2f12; --greybg:#242a31;
+    --wa:#144d37; --wabg:#0b141a;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.wrap{max-width:760px;margin:0 auto;padding:0 12px 120px}
+header{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line)}
+.hd{max-width:760px;margin:0 auto;padding:8px 12px 6px;display:flex;align-items:center;gap:8px}
+.hd h1{font-size:18px;margin:0;letter-spacing:.5px;white-space:nowrap}
+.hd .sub{font-size:12px;color:var(--mute)}
+.hd .sp{flex:1}
+.pill{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:99px;padding:3px 9px;font-size:12px;background:var(--card);white-space:nowrap}
+.pill.ok{color:var(--green);border-color:color-mix(in srgb,var(--green) 40%,transparent)}
+.pill.warn{color:var(--gold);border-color:color-mix(in srgb,var(--gold) 40%,transparent)}
+.pill.bad{color:var(--red);border-color:color-mix(in srgb,var(--red) 40%,transparent)}
+.tabs{max-width:760px;margin:0 auto;display:flex;gap:4px;padding:0 12px 8px;overflow-x:auto}
+.tab{flex:1;min-width:58px;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:7px 4px;text-align:center;font-weight:600;font-size:14px}
+.tab small{display:block;font-weight:500;font-size:11px;color:var(--mute)}
+.tab.on{background:var(--acc);color:var(--accink);border-color:var(--acc)}
+.tab.on small{color:inherit;opacity:.85}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin:12px 0}
+.card h2{font-size:13px;letter-spacing:.6px;text-transform:uppercase;color:var(--mute);margin:0 0 8px;display:flex;align-items:center;gap:8px}
+.card h2 .sp{flex:1}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.act input{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:9px 10px}
+.act input.caa{flex:0 0 140px}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tile{border-radius:12px;padding:10px 8px;background:var(--bg);text-align:center;border:1px solid var(--line)}
+.tile .k{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--mute)}
+.tile .v{font-size:30px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+.tile .s{font-size:12px;color:var(--mute);font-variant-numeric:tabular-nums}
+.tile.mo .v{color:var(--gold)} .tile.pa .v{color:var(--green)}
+.delta{font-size:12px;color:var(--red);margin-top:2px}
+td:first-child,th:first-child{white-space:nowrap}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:9px 12px;font-weight:600}
+.btn.pri{background:var(--acc);color:var(--accink);border-color:var(--acc)}
+.btn.sm{padding:5px 9px;font-size:13px;font-weight:600}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--red)}
+.btn:disabled{opacity:.5}
+.list{display:flex;flex-direction:column;gap:2px}
+.grp{margin-top:8px}
+.grp > b{font-size:12px;letter-spacing:.4px;text-transform:uppercase}
+.ln{display:flex;gap:8px;align-items:baseline;padding:6px 8px;border-radius:8px;cursor:pointer}
+.ln:hover{background:var(--bg)}
+.ln .n{flex:1;min-width:0}
+.ln .r{font-size:12px;color:var(--mute)}
+.src{font-size:10px;font-weight:700;letter-spacing:.4px;border-radius:5px;padding:1px 5px;white-space:nowrap}
+.src.bn{background:var(--greybg);color:var(--grey)}
+.src.ps{background:var(--goldbg);color:var(--gold)}
+.src.auto{background:var(--bluebg);color:var(--blue)}
+.src.chk{background:var(--redbg);color:var(--red)}
+.k-out{border-left:3px solid var(--red)} .k-np{border-left:3px solid var(--blue)} .k-in{border-left:3px solid var(--green)} .k-att{border-left:3px solid var(--grey)}
+.sect{font-size:12px;font-weight:700;letter-spacing:.5px;color:var(--mute);text-transform:uppercase;margin:12px 2px 4px;display:flex;gap:8px}
+.sect span{font-weight:500}
+.chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.chip{border:1px solid var(--line);border-left-width:4px;border-left-color:var(--green);background:var(--card);border-radius:10px;padding:7px 8px;text-align:left;min-height:48px}
+.chip .nm{font-weight:600;font-size:13px;line-height:1.25;display:block}
+.chip .ap{font-size:11px;color:var(--mute);display:block}
+.chip .st{font-size:11px;font-weight:700;display:inline-block;margin-top:2px;border-radius:5px;padding:0 5px}
+.chip.out{border-left-color:var(--red);background:var(--redbg)} .chip.out .st{color:var(--red)}
+.chip.np{border-left-color:var(--blue);background:var(--bluebg)} .chip.np .st{color:var(--blue)}
+.chip.att{border-left-color:var(--grey);background:var(--greybg)} .chip.att .st{color:var(--grey)}
+.chip.in{border-left-color:var(--green);background:var(--greenbg)} .chip.in .st{color:var(--green)}
+.chip .stat{font-size:10px;font-weight:700;color:var(--gold);margin-left:4px}
+.legend{font-size:12px;color:var(--mute);display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+table.ut{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.ut th,.ut td{padding:7px 4px;text-align:right;border-bottom:1px solid var(--line);font-size:14px}
+.ut th{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.4px;font-weight:600}
+.ut td:first-child,.ut th:first-child{text-align:left}
+.ut tr.tot td{font-weight:700;border-bottom:0}
+.ut .mo{color:var(--gold)} .ut .pa{color:var(--green)} .ut .tg{color:var(--red)}
+.ut tbody tr{cursor:pointer}
+details.eq{border-top:1px solid var(--line);padding:6px 0}
+details.eq:first-of-type{border-top:0}
+details.eq summary{font-weight:700;font-size:14px;cursor:pointer;list-style:none;display:flex;gap:8px;padding:4px 0}
+details.eq summary::-webkit-details-marker{display:none}
+details.eq summary::before{content:"▸";color:var(--mute)}
+details.eq[open] summary::before{content:"▾"}
+details.eq summary span{font-weight:500;color:var(--mute);font-size:13px}
+.er{display:flex;align-items:center;gap:8px;padding:4px 0 4px 16px;font-variant-numeric:tabular-nums}
+.er .q{min-width:52px;text-align:right;font-weight:700;border:1px dashed transparent;border-radius:6px;padding:2px 6px;background:none}
+.er .q.set{color:var(--gold);border-color:var(--gold)}
+.er .q:hover{border-color:var(--line)}
+.er .i{flex:1}
+.er .note{font-size:12px;color:var(--mute)}
+.er input{width:64px;text-align:right;border:1px solid var(--acc);border-radius:6px;padding:3px 6px;background:var(--bg)}
+.wa{background:var(--wabg);border-radius:12px;padding:10px;max-height:420px;overflow:auto}
+.bub{background:var(--wa);border-radius:10px 2px 10px 10px;padding:8px 10px;white-space:pre-wrap;word-wrap:break-word;font-size:14px;margin-left:8%}
+.bub .tm{display:block;text-align:right;font-size:11px;color:var(--mute);margin-top:4px}
+textarea.out{width:100%;min-height:260px;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg);font:13px/1.4 ui-monospace,Menlo,Consolas,monospace}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;background:var(--card);padding:6px 10px;font-size:13px;font-weight:600}
+.seg button.on{background:var(--acc);color:var(--accink)}
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:25;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(6px);border-top:1px solid var(--line);padding:8px 12px calc(8px + env(safe-area-inset-bottom))}
+.dock .in{max-width:760px;margin:0 auto;display:flex;gap:8px}
+.dock .btn{flex:1}
+.note{font-size:13px;color:var(--mute)}
+.notice{border-radius:10px;padding:8px 10px;font-size:13px;margin:8px 0}
+.notice.warn{background:var(--goldbg);color:var(--ink)}
+.notice.bad{background:var(--redbg)}
+.notice.ok{background:var(--greenbg)}
+.notice a,.linkish{color:var(--blue);text-decoration:underline;cursor:pointer;background:none;border:0;padding:0;font-weight:600}
+/* sheet */
+.veil{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:40;display:none}
+.veil.on{display:block}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;background:var(--card);border-radius:16px 16px 0 0;max-height:88vh;overflow:auto;padding:14px 14px calc(14px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .18s ease}
+.sheet.on{transform:none}
+@media (min-width:700px){.sheet{left:50%;right:auto;width:560px;margin-left:-280px;bottom:auto;top:8vh;border-radius:16px;transform:scale(.97);opacity:0;pointer-events:none;transition:.15s}.sheet.on{transform:none;opacity:1;pointer-events:auto}}
+.sheet h3{margin:0 0 2px;font-size:17px}
+.sheet .meta{font-size:13px;color:var(--mute);margin-bottom:8px}
+.bnbox{background:var(--bg);border-radius:10px;padding:8px 10px;font-size:13px;margin:8px 0}
+.bnbox b{font-size:11px;letter-spacing:.4px;text-transform:uppercase;color:var(--mute);display:block}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}
+.opt{border:1px solid var(--line);border-radius:10px;padding:9px 8px;background:var(--card);text-align:left;font-weight:600;font-size:13px;display:flex;gap:6px;align-items:center}
+.opt i{width:9px;height:9px;border-radius:50%;flex:0 0 9px}
+.opt.on{outline:2px solid var(--acc);outline-offset:-1px;background:var(--greenbg)}
+.fld{display:flex;flex-direction:column;gap:3px;margin:8px 0}
+.fld label{font-size:12px;color:var(--mute);font-weight:600}
+.fld input,.fld select{border:1px solid var(--line);border-radius:10px;padding:9px 10px;background:var(--bg)}
+.sheet .foot{display:flex;gap:8px;margin-top:12px}
+.sheet .foot .btn{flex:1}
+details.more summary{cursor:pointer;font-weight:600;font-size:14px;padding:6px 0;color:var(--blue)}
+.toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:99px;font-size:14px;z-index:60;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw;text-align:center}
+.toast.on{opacity:1}
+.upd{display:none;background:var(--goldbg);border-bottom:1px solid var(--line);padding:8px 12px;text-align:center;font-size:14px}
+.upd.on{display:block}
+.build{font-size:11px;color:var(--mute);text-align:center;margin:18px 0}
+.hide{display:none!important}
+@media (max-width:380px){.tile .v{font-size:26px}.chips{grid-template-columns:1fr 1fr}.hd .sub{display:none}.act input.caa{flex-basis:118px}}
+</style>
+</head>
+<body>
+<div class="upd" id="upd">A new version of RAWDY is ready. <button class="linkish" id="upd-go">Update now</button></div>
+<header>
+  <div class="hd">
+    <div style="min-width:0"><h1 id="h-coy">RAWDY</h1><div class="sub">Alpha Coy strength</div></div>
+    <div class="sp"></div>
+    <button class="pill" id="bn-pill" title="Battalion parade state">BN …</button>
+    <button class="pill" id="sy-pill" title="Live sync">SYNC …</button>
+  </div>
+  <nav class="tabs" id="tabs"></nav>
+</header>
+
+<main class="wrap">
+  <section class="card act">
+    <div class="row">
+      <input id="act" placeholder="Activity (e.g. 6KM TACT MARCH)" autocomplete="off">
+      <input id="caa" class="caa" placeholder="CAA" autocomplete="off">
+    </div>
+    <div id="bn-note"></div>
+  </section>
+
+  <div id="view"></div>
+
+  <section class="card" id="sendcard">
+    <h2>Send up <span class="sp"></span>
+      <span class="seg" id="mode"><button data-m="str">Strength</button><button data-m="full">+ Equipment</button></span>
+    </h2>
+    <div class="wa" id="wa"><div class="bub" id="bub"></div></div>
+    <details class="more"><summary>Edit the text before sending</summary><textarea class="out" id="out"></textarea></details>
+  </section>
+
+  <section class="card" id="setup">
+    <h2>Set up</h2>
+    <details class="more" id="d-sync"><summary>Live sync between phones</summary>
+      <p class="note">Every PS updates only their own platoon. The CSM sees all four on the COY tab.</p>
+      <div class="fld"><label for="sy-url">Database address</label><input id="sy-url" placeholder="https://….firebasedatabase.app" autocomplete="off"></div>
+      <div class="fld"><label for="sy-room">Room code</label><input id="sy-room" placeholder="ALPHA-XXXX" autocomplete="off"></div>
+      <div class="row"><button class="btn pri" id="sy-go">Connect</button><button class="btn" id="sy-wa">Send invite on WhatsApp</button><button class="btn ghost danger" id="sy-off">Stop on this phone</button></div>
+      <p class="note" id="sy-state"></p>
+    </details>
+    <details class="more" id="d-bn"><summary>Battalion parade state sheet</summary>
+      <p class="note">RAWDY reads attendance from the Bn sheet's Alpha HQ, P1, P2 and P3 tabs every few minutes. Medical status remarks are shown on the man's card only and are never saved or sent.</p>
+      <div class="fld"><label for="bn-id">Sheet link or ID</label><input id="bn-id" autocomplete="off"></div>
+      <div class="row"><button class="btn pri" id="bn-save">Save and read now</button><button class="btn" id="bn-open">Open the sheet</button></div>
+      <p class="note" id="bn-diag"></p>
+    </details>
+    <details class="more"><summary>New activity / reset</summary>
+      <p class="note"><b>New activity</b> clears every tag, attachment and typed equipment figure for <b>your platoon</b> on every phone, so the new activity starts from the Bn parade state. Appointments and weapon changes stay.</p>
+      <div class="row"><button class="btn" id="new-act">New activity for this tab</button><button class="btn ghost danger" id="new-all">New activity for the whole coy</button></div>
+    </details>
+  </section>
+  <div class="build" id="build"></div>
+</main>
+
+<div class="dock"><div class="in">
+  <button class="btn" id="d-refresh">Refresh Bn</button>
+  <button class="btn pri" id="d-copy">Copy message</button>
+  <button class="btn" id="d-wa">WhatsApp</button>
+</div></div>
+
+<div class="veil" id="veil"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+// ============================================================================
+// RAWDY v5 — strength & equipment accounting for ALPHA COY.
+// The Bn parade state sheet is the source of the roll and of attendance. A PS
+// only records what is special to the activity (not participating, stay back,
+// attach) and RAWDY works out strength, equipment and the WhatsApp message.
+// Identity = the man's name (normalised); every record is keyed by it.
+// ============================================================================
+const BUILD = "5.0 · 181026";
+const BUILD_NO = 500;
+const UNITS = ["HQ","PL1","PL2","PL3"];
+const UNIT_LABEL = {HQ:"COY HQ", PL1:"PLATOON 1", PL2:"PLATOON 2", PL3:"PLATOON 3"};
+const UNIT_SHORT = {HQ:"HQ", PL1:"PLT 1", PL2:"PLT 2", PL3:"PLT 3"};
+const COY = "ALPHA COY";
+const BN_DEFAULT = "102vWELVy8jHWoWjR8ADaRi4Ld7SH2zwMkvhvGqKs0QY";
+const BN_TABS = {HQ:"Alpha HQ", PL1:"Alpha P1", PL2:"Alpha P2", PL3:"Alpha P3"};
+const CMD_RANKS = ["CPT","MAJ","LTA","2LT","3WO","2WO","1WO","MSG","SSG","2SG","3SG","ME1","ME1-1","ME2","SCT"];
+const BASE = [["HQ","CPT","KASHKEN RAY HODGE","OC","HQ"],["HQ","CPT","CHOW HANWEI","2IC/HUB COMD","HQ"],["HQ","3WO","WONG JUN WEI","CSM","HQ"],["HQ","3SG","NGAN JUN BIN","COY MEDIC","HQ"],["HQ","3SG","LOW JIA JUN","M110 COMD","HQ"],["HQ","3SG","PAN ZHENG WEI, RYAN","MPAT COMD","HQ"],["HQ","3SG","LAI SUNG KEI JOSHUA","M110 COMD","HQ"],["HQ","SCT","YEO SHENG KAI DARIUS","CQ","HQ"],["HQ","LCP","TAN YEE HANG","SAGE","HQ"],["HQ","LCP","KISHHOTHARAN","SAGE","HQ"],["HQ","PTE","TAI KAI JIE, JAVIER","SAGE","HQ"],["HQ","LCP","CHIA WEI HENG ACKERUS","ASA","HQ"],["HQ","LCP","YEO RUI KANG JOSH","ASA","HQ"],["HQ","PTE","ELIJAH JOHN CHIA JIAN AN","ASA","HQ"],["HQ","PTE","WANG WEILAN","SIG","HQ"],["HQ","LCP","SHAHRIZZAT BIN HAIZAD","SIG","HQ"],["HQ","LCP","MUHAMMAD SYARAF BIN NORAZAM","SIG","HQ"],["HQ","CPL","NG ZHENG WEI","MARKSMAN","HQ"],["HQ","LCP","ANKAM SHREY","MARKSMAN","HQ"],["HQ","PTE","JAEVYN QUSHAIRI KHOO JIAYUN","MPAT OPR","HQ"],["HQ","LCP","MUHAMMAD AMIRRUL BIN SAMSURI","MPAT OPR","HQ"],["HQ","LCP","TECH EASON","MPAT OPR","HQ"],["HQ","CPL","KOH KAI EN, ASHER","MPAT OPR","HQ"],["HQ","PTE","AROCKIASAMY SHERVIN","MPAT OPR","HQ"],["PL1","LTA","MIKHAIL DANIAL LUM","PC","HQ"],["PL1","MSG","NIC UZZAIR BIN MOHAMMED ZAMRI","PS","HQ"],["PL1","3SG","ANIQ RIFQY BIN MOHAMED ALFYAN","SC","SECTION 1"],["PL1","3SG","JONAH RUOKUOVOR YIMSUNG","SC","SECTION 1"],["PL1","3SG","TAN LONG KIAT DARREN","SC","SECTION 2"],["PL1","3SG","WU JIA AN","SC","SECTION 3"],["PL1","3SG","IBRAHIM BIN NOBRAHAM","GPMG COMD","HQ"],["PL1","LCP","SAMUEL RYAN WONG LYE EN","SENSOR OPR","HQ"],["PL1","CPL","LIN YUXUAN","RUNNER","HQ"],["PL1","LCP","SYED ERFAN BIN FARUK ALI","PL MEDIC","HQ"],["PL1","LCP","ADLI MANNIE TANCOCK","GPMG OPR","HQ"],["PL1","CPL","FAVIAN NG JIA QUAN","ASST OPR","HQ"],["PL1","CPL","TALUT ALI BIN ABDULLAH","1ST MAT","SECTION 1"],["PL1","LCP","TAY WEI JIE, RYAN","1ST M203","SECTION 1"],["PL1","LCP","ONG HONG KAI, RONALD","1ST LMG","SECTION 1"],["PL1","CPL","YII KAH NUM","2ND M203 (2IC)","SECTION 1"],["PL1","CPL","DARWYS BIN SAIFUL BHARI","2ND LMG","SECTION 1"],["PL1","PTE","LIN KELI","1ST MAT","SECTION 2"],["PL1","PTE","MUHAMMAD NURRAIZAT BIN RAMDAN","1ST M203","SECTION 2"],["PL1","PTE","TITUS LIM YU HENG","2ND MAT","SECTION 2"],["PL1","LCP","MUHAMMAD AAQIL BIN MOHAMED JAHANKEER","1ST LMG","SECTION 2"],["PL1","CPL","DARIUS LEE","2ND M203 (2IC)","SECTION 2"],["PL1","LCP","GABRIEL SUFIAN PIRACCI","2ND LMG","SECTION 2"],["PL1","PTE","AMANNDAVE SINGH BESSI","SPARE","SECTION 2"],["PL1","PTE","SARAVANAN RAMESH","SPARE","SECTION 2"],["PL1","PTE","SAMUEL TAN KAIEN","1ST MAT","SECTION 3"],["PL1","CPL","ABDULLAH AUFA BIN MOHAMMAD HAIZAL","1ST M203","SECTION 3"],["PL1","CPL","LIEW WEN WEI","2ND MAT","SECTION 3"],["PL1","LCP","XIAO JIEMING","1ST LMG","SECTION 3"],["PL1","LCP","PUZHALESWARAN S/O VIJAYARDRAN","2ND M203 (2IC)","SECTION 3"],["PL1","LCP","BENJAMIN THEN KAI SHENG","2ND LMG","SECTION 3"],["PL1","LCP","JAY JAMES KWAN ZHEN CHERN","SPARE","SECTION 3"],["PL2","2LT","ETHAN LAU SEO JOON","PC","HQ"],["PL2","2SG","TAY YUN SENG VINCENT","PS","HQ"],["PL2","3SG","MOHAMAD ADIL BIN MOHAMAD ALI","SPARE SC","SECTION 1"],["PL2","3SG","MUHAMMAD KHAIRY BIN SAPARI","APS2","HQ"],["PL2","3SG","LOW BOON TSU","GPMG COMD","HQ"],["PL2","3SG","CHHAN SOON PENG","SC","SECTION 2"],["PL2","3SG","ALDRICH RUZZEL BELTRAN SINGH","SC","SECTION 2"],["PL2","3SG","MUHAMMAD ZUFAR BIN ZAKIR","SC","SECTION 3"],["PL2","LCP","ETHAN ALEXANDER TAN TOH LUCK","RUNNER","HQ"],["PL2","CPL","NG JIA BAO","PL MEDIC","HQ"],["PL2","CPL","JARIS NABIL BIN ZANI","GPMG OPR","HQ"],["PL2","CPL","DEAN LOH JUN YU","SPARE","HQ"],["PL2","LCP","MOHAMED RAIQAL BIN MOHAMED YAZID","1ST MAT","SECTION 1"],["PL2","LCP","SARAVANA PANDIAN RITHISH KUMAR","1ST M203","SECTION 1"],["PL2","CPL","THAKUR JAI ABHIJIT","2ND M203 (2IC)","SECTION 1"],["PL2","LCP","ABDUL FATTAH BIN MOHAMMAD ANWAR","1ST LMG","SECTION 1"],["PL2","CPL","CHEN JIAN CONG","2ND MAT","SECTION 1"],["PL2","LCP","CHUA YU ZHE","2ND LMG","SECTION 1"],["PL2","LCP","MUHAMMAD SUHAIL KHAN BIN FARIS KHAN SURATTEE","SPARE","SECTION 1"],["PL2","LCP","ERNEST SIM YEE HANG","1ST MAT","SECTION 2"],["PL2","CPL","KEITH CHEW JUNG KEE","1ST M203","SECTION 2"],["PL2","LCP","FOO RU CHENG","1ST LMG","SECTION 2"],["PL2","CPL","ONG PIN JUN","2ND M203 (2IC)","SECTION 2"],["PL2","LCP","MUHAMMAD AIMAN BIN SHAMSUL BAHRI","2ND LMG","SECTION 2"],["PL2","PTE","GABRIEL SHOON","SPARE","SECTION 2"],["PL2","PTE","TEYES LEE","SPARE","SECTION 2"],["PL2","PTE","KHOR ZI JIAN","SPARE","SECTION 2"],["PL2","PTE","MIKHAEL JOHNSON","SPARE","SECTION 2"],["PL2","LCP","DANILA LEAN ROD TIMOTHY BORROMEO","1ST MAT","SECTION 3"],["PL2","CPL","CHARLES YAP YU JING","1ST M203","SECTION 3"],["PL2","LCP","WONG JING WEI","2ND MAT","SECTION 3"],["PL2","CPL","TEO KAI DE CAYDEN","1ST LMG","SECTION 3"],["PL2","CPL","ADWA SHAQUILLE BIN ANDYIRWAN","2ND M203 (2IC)","SECTION 3"],["PL3","2LT","LIM THENG XIANG","APC","HQ"],["PL3","2LT","AIKEN ANG WEI YANG","PC","HQ"],["PL3","3SG","DARYL YU ZIJUN","PS","HQ"],["PL3","3SG","AMIR HAMZAH KHAN","SC","SECTION 3"],["PL3","3SG","LOH JING YANG","SC","SECTION 1"],["PL3","3SG","EZRA NUR IMAN BIN ZAINAL","SC","SECTION 2"],["PL3","3SG","RANDY ONG ZONG HUI","GPMG COMD","HQ"],["PL3","3SG","YE YONGHONG","APS3","HQ"],["PL3","CPL","IVAN LEONG CHENG YANG","PL MEDIC","HQ"],["PL3","LCP","CHOW WERN","GPMG OPR","HQ"],["PL3","CPL","WONG JINGYUAN","ASST OPR","HQ"],["PL3","PTE","CHEAH SHING HAK","2ND LMG","SECTION 1"],["PL3","CPL","TOK GUAN LONG XAVIER","1ST LMG","SECTION 1"],["PL3","CPL","SHI JIA GENG ALSTON","2ND MAT","SECTION 1"],["PL3","CPL","CHEE ZE HONG","1ST MAT","SECTION 1"],["PL3","CPL","YEW HO WEE","2ND M203 (2IC)","SECTION 1"],["PL3","CPL","GAVAN LEE AN JIE","1ST M203","SECTION 1"],["PL3","PTE","POH JUN MING","SPARE","SECTION 1"],["PL3","LCP","JAYDEN LIM JIE-EN","1ST M203","SECTION 2"],["PL3","CPL","CHONG CHANG LE","2ND M203 (2IC)","SECTION 2"],["PL3","PTE","DAMIEN ANG SHI QIANG","1ST LMG","SECTION 2"],["PL3","LCP","KOH CHEE SENG","1ST MAT","SECTION 2"],["PL3","CPL","NG JUN SIONG, JAYDEN","2ND MAT","SECTION 2"],["PL3","PTE","LIM KIT TJON","2ND LMG","SECTION 2"],["PL3","PTE","MOHAMMAD DANIAL BIN ABDULLAH","1ST MAT","SECTION 3"],["PL3","CPL","SKYLER ANG WEI ZHI","2ND MAT","SECTION 3"],["PL3","LCP","DYLAN ONG YE KAI","SPARE","SECTION 3"],["PL3","LCP","MUHAMMAD DANNIE AL-AQIF BIN JUBIR","2ND LMG","SECTION 3"],["PL3","CPL","MOHAMMAD ZAKIR BIN MOHAMMAD ZAHID","2ND M203 (2IC)","SECTION 3"],["PL3","CPL","RAVI KARTHIKEYAN","1ST M203","SECTION 3"],["PL3","PTE","ONG JIAN YONG GEORGE","SPARE","SECTION 3"]];          // [unit, rank, name, appt, section] — appointments from the 22SEP26 roll
+const RULES = {"weapon":[["MPAT COMD","SAR21"],["MPAT","MPAT"],["MAT","MATADOR"],["M203","M203"],["GPMG COMD","SAR21"],["MG COMD","SAR21"],["LMG","LMG"],["MG OPR","GPMG"],["GPMG","GPMG"],["MM","M110"],["MARKSMAN","M110"],["M110","M110"],["ASA",null],["SAGE",null],["CQ",null]],"sft":[["MAT","MATADOR SFT"],["M203","M203 SFT"],["LMG","LMG SFT"],["MG OPR","GPMG SFT"],["MM","M110 SFT"],["MARKSMAN","M110 SFT"],["M110","M110 SFT"]],"signal":[["OC",null,["NVG","PRC650"]],["PC",null,["NVG","PRC650"]],["PL COMD",null,["NVG","PRC650"]],["PS",null,["NVG","PRC650"]],["APC",null,[]],["MG COMD",null,["NVG","PRC650","BINO"]],["GPMG COMD",null,["NVG","PRC650","BINO"]],["GPMG OPR",null,["UTWS"]],["MG OPR",null,["UTWS"]],["ASST OPR",null,["MG WALLET"]],["SC",null,["NVG","PRC650"]],["SPARE SC",null,["NVG","PRC650"]],["1ST LMG",null,["NVG"]],["MM","3SG",["PRC650"]],["M110 COMD",null,["PRC650"]],["RUNNER",null,["PRC650"]],["SENSOR",null,[]],["MEDIC",null,[]]],"accessories":[["SAR21","SAR21 BFA",1,false],["LMG","LMG BFA",1,false],["GPMG","GPMG BFA",2,false],["SAR21","SAR 21 AMMO POUCH",1,false],["LMG","LMG AMMO POUCH",1,false],["GPMG","GPMG AMMO POUCH",1,false],["GPMG","GPMG CARTRIDGE POUCH",1,false],["GPMG","GPMG AMMO FEEDER",1,false],["GPMG","PYTHON BELT",1,false],["GPMG","SPARE BARREL",1,false],["M110","M110 TRIPOD",1,false],["M110","M110 SILENCER",1,false],["M110","KN252",1,true],["M203","SAR21",1,false],["M203","SAR21 BFA",1,false],["M203","SAR 21 AMMO POUCH",1,false],["MATADOR","SAR21",1,false],["MATADOR","SAR21 BFA",1,false],["MATADOR","SAR 21 AMMO POUCH",1,false],["MPAT","SAR21",1,false],["MPAT","SAR21 BFA",1,false],["MPAT","SAR 21 AMMO POUCH",1,false]],"perman":{"CHOCO BAR":4,"BFI/PU":1,"LH MOUNT":1,"RH MOUNT":1,"FT MOUNT":1,"BT MOUNT":1,"GAMEBOY":1,"GAMEBOY POUCH":1},"pantesExclude":["ASA","CQ","SAGE"],"storeEstab":{"SECTION GROUND SHEET":3,"WIRED GLOVE":6,"ENGINEER GLOVE":6,"BREACHING FLAGS":6,"COLOURED FLAGS":24,"LIGHT STICK":48,"WIRE CUTTER":6,"VINE CUTTER":0,"COVER LITTER":3,"BANGALORE":2,"CLAYMORE":6,"TRIPFLARE":3,"PARANG":3},"estabUnit":{"VINE CUTTER":{"PL2":2}},"itemNotes":{"LENSATIC COMPASS":"from commanders","GROUNDSHEET":"from section","PRC940":"from signaller","ET BLADE":"from section","ET POUCH":"from section","ET STICK":"from section"},"tagEstab":{"PANEL MARKERS":4,"TENT PINS":36,"MARSHALLING WANDS":2,"MARSHALLING GLOVES":1,"MALLET":1,"LENSATIC COMPASS":1,"WIND METER":1,"GROUNDSHEET":1,"ET BLADE":1,"ET POUCH":1,"ET STICK":1,"IR MARKER":4,"PRC940":1,"GREEN LIGHT STICKS":8},"autoStatus":[["ASA","moving"],["SAGE","moving"]],"autoAttachOut":["MPAT"]};        // who draws what, carried over unchanged from BUILD 67
+const EXT = "EXT";
+const P_ = "rawdy5_";
+
+// Equipment catalogue (report order = list order)
+const ITEMS = {
+  wpn:["SAR21","SAR21 BFA","SAR 21 AMMO POUCH","SAR21 MAG","SS","M203","LMG","LMG BFA","LMG AMMO POUCH","LMG MAG",
+       "GPMG","GPMG BFA","GPMG AMMO POUCH","GPMG CARTRIDGE POUCH","GPMG AMMO FEEDER","PYTHON BELT","MG WALLET","SPARE BARREL","MG TRIPOD",
+       "MATADOR","MPAT","M110","M110 SILENCER","M110 TRIPOD","M110 MAG"],
+  sig:["PRC650","PRC940"],
+  opt:["NVG","BINO","KN252","UTWS","COMPASS","MAP","FSS","CDS(FSS)","UOCE","TTS","KHS"],
+  pan:["CHOCO BAR","BFI/PU","LH MOUNT","RH MOUNT","FT MOUNT","BT MOUNT","GAMEBOY","GAMEBOY POUCH","SAR 21 SFT","LMG SFT","M203 SFT","M203 ROUND","GPMG SFT","MATADOR SFT","CLAYMORE SFT","M110 SFT"],
+  store:["SECTION GROUND SHEET","WIRED GLOVE","ENGINEER GLOVE","BREACHING FLAGS","COLOURED FLAGS","LIGHT STICK","WIRE CUTTER","VINE CUTTER","COVER LITTER","BANGALORE","CLAYMORE","TRIPFLARE","PARANG","HAMMER (HEARTLANDER)","SNIP-IT (HEARTLANDER)","CROWBAR (HEARTLANDER)"],
+  tag:["PANEL MARKERS","TENT PINS","MARSHALLING WANDS","MARSHALLING GLOVES","MALLET","LENSATIC COMPASS","WIND METER","GROUNDSHEET","ET BLADE","ET POUCH","ET STICK","IR MARKER","PRC940","GREEN LIGHT STICKS"]
+};
+const EQ_CATS = [["wpn","Weapon / armskote"],["sig","Signal"],["opt","Optics"],["pan","PANTES"],["store","Section stores"],["tag","TAG stores"]];
+const WEAPON_CHOICES = ["SAR21","SS","M203","LMG","GPMG","MATADOR","MPAT","M110"];
+const WEAPON_TO_SFT = {"SAR21":"SAR 21 SFT","LMG":"LMG SFT","GPMG":"GPMG SFT","M203":"M203 SFT","MATADOR":"MATADOR SFT","M110":"M110 SFT"};
+const MAP_COMPASS_EXCLUDE = ["MEDIC","CQ","ASA"];
+const STORE_UNITS = ["PL1","PL2","PL3"];
+
+// What each status means for the activity: mo = moves out, pa = participates,
+// gear = draws weapon & gear, camp = where he is when he does not move out.
+// grp = the heading he is listed under in the message.
+const CATS = [
+  {id:"present", label:"Present",               mo:1, pa:1, gear:1, dot:"var(--green)"},
+  {id:"np",      label:"Not participating",     mo:1, pa:0, gear:1, grp:"NOT PARTICIPATING", dot:"var(--blue)"},
+  {id:"staff",   label:"Safety / conducting",   mo:1, pa:0, gear:0, grp:"NOT PARTICIPATING", dot:"var(--blue)"},
+  {id:"mc",      label:"MC",                    mo:0, camp:"out", grp:"MC", dot:"var(--red)"},
+  {id:"ma",      label:"MA",                    mo:0, camp:"out", grp:"MA", dot:"var(--red)"},
+  {id:"rso",     label:"RSO",                   mo:0, camp:"out", grp:"RSO", dot:"var(--red)"},
+  {id:"rsi",     label:"RSI",                   mo:0, camp:"in",  grp:"RSI", dot:"var(--gold)"},
+  {id:"leave",   label:"Leave / Off",           mo:0, camp:"out", grp:"OFF / LEAVE", dot:"var(--red)"},
+  {id:"course",  label:"Course",                mo:0, camp:"out", grp:"COURSE", dot:"var(--red)"},
+  {id:"ooc",     label:"Out of camp",           mo:0, camp:"out", grp:"OUT OF CAMP", dot:"var(--red)"},
+  {id:"duty",    label:"Duty (guard / COS)",    mo:0, camp:"in",  grp:"DUTY", dot:"var(--gold)"},
+  {id:"sbf",     label:"Stay back (SBF)",       mo:0, camp:"in",  grp:"SBF", dot:"var(--gold)"},
+  {id:"attout",  label:"Attached out",          mo:0, camp:"out", grp:"ATTACHED OUT", dot:"var(--grey)"},
+  {id:"others",  label:"Others",                mo:0, camp:"in",  grp:"OTHERS", dot:"var(--gold)"}
+];
+const GRP_ORDER = ["NOT PARTICIPATING","MC","MA","RSO","RSI","OFF / LEAVE","COURSE","OUT OF CAMP","DUTY","SBF","ATTACHED OUT","OTHERS"];
+const catById = id => CATS.find(c => c.id === id) || CATS[0];
+
+// Bn "Attendance" words → our status
+function bnCat(att){
+  const a = String(att || "").toUpperCase().trim();
+  if(!a || a === "PRESENT") return "present";
+  if(/^MC\b|MEDICAL LEAVE/.test(a)) return "mc";
+  if(/^MA\b|MEDICAL APP/.test(a)) return "ma";
+  if(/^RSO\b|REPORT SICK OUT/.test(a)) return "rso";
+  if(/^RSI\b|REPORT SICK IN/.test(a)) return "rsi";
+  if(/LEAVE|^OFF\b|OFF$/.test(a)) return "leave";
+  if(/COURSE/.test(a)) return "course";
+  if(/ATTACHED OUT|ATT OUT/.test(a)) return "attout";
+  if(/OUT OF CAMP|BOOK ?OUT/.test(a)) return "ooc";
+  if(/DUTY|GUARD|COS\b|BOS\b|DOS\b|CDO\b|CDS\b/.test(a)) return "duty";
+  if(/SBF|STAY ?BACK/.test(a)) return "sbf";
+  return "others";
+}
+
+// ---------------------------------------------------------------------------
+// small helpers
+// ---------------------------------------------------------------------------
+const el = id => document.getElementById(id);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const keyOf = name => String(name || "").toUpperCase().replace(/[^A-Z0-9]+/g, " ").trim();
+const fmt2 = n => String(n).padStart(2, "0");
+const isCmdRank = r => CMD_RANKS.includes(String(r || "").toUpperCase().replace(/\s+/g, ""));
+const store = {
+  get(k, d){ try { const v = localStorage.getItem(P_ + k); return v == null ? d : JSON.parse(v); } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem(P_ + k, JSON.stringify(v)); } catch(e){} }
+};
+let toastT;
+function toast(m){ const t = el("toast"); t.textContent = m; t.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("on"), 2200); }
+function nowCaa(){ const d = new Date(); return `${fmt2(d.getDate())}${fmt2(d.getMonth()+1)}${String(d.getFullYear()).slice(2)} ${fmt2(d.getHours())}${fmt2(d.getMinutes())}HRS`; }
+// "7/8/26" or "14/10/2026" → "070826"
+function ddmmyy(s){
+  const m = String(s || "").trim().match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})$/);
+  if(!m){ const i = String(s || "").trim().match(/^(\d{4})-(\d{1,2})-(\d{1,2})/); return i ? fmt2(i[3]) + fmt2(i[2]) + i[1].slice(-2) : String(s || "").trim(); }
+  return fmt2(m[1]) + fmt2(m[2]) + m[3].slice(-2);
+}
+function agoText(t){
+  if(!t) return "never";
+  const s = Math.round((Date.now() - t) / 1000);
+  if(s < 60) return "just now";
+  if(s < 3600) return Math.round(s / 60) + " min ago";
+  const d = new Date(t);
+  return `${fmt2(d.getDate())}/${fmt2(d.getMonth()+1)} ${fmt2(d.getHours())}${fmt2(d.getMinutes())}H`;
+}
+
+// ---------------------------------------------------------------------------
+// STATE
+//   S.units[u] belongs to that platoon's PS and is what live sync carries.
+//   tags   : key → {cat, reason, bnAt}   (bnAt = Bn attendance when he was tagged)
+//   attach : key → {to: unit | "EXT", note}   ("OFF" = cancel an automatic attach)
+//   appt   : key → appointment            wpn: key → weapon ("" = no weapon)
+//   eq     : item → typed figure           guests: men attached in from outside the coy
+// ---------------------------------------------------------------------------
+function freshUnit(){ return {at:0, tags:{}, attach:{}, appt:{}, wpn:{}, eq:{}, guests:[]}; }
+let S = store.get("state", null);
+if(!S || typeof S !== "object") S = {};
+S.units = S.units || {};
+UNITS.forEach(u => { S.units[u] = Object.assign(freshUnit(), S.units[u] || {}); });
+S.g = S.g || {at:0, act:"", caa:""};
+let ui = store.get("ui", {tab:"COY", mode:"str"});
+function save(){ store.set("state", S); }
+function touchUnit(u){ S.units[u].at = Date.now(); save(); syncPush(u); }
+function touchGlobal(){ S.g.at = Date.now(); save(); syncPush("g"); }
+
+// ---------------------------------------------------------------------------
+// ROLL — from the Bn sheet when it has been read, else the built-in roll.
+// ---------------------------------------------------------------------------
+const BASE_BY_KEY = {};
+BASE.forEach(([unit, rank, name, appt, section]) => { BASE_BY_KEY[keyOf(name)] = {unit, rank, name, appt, section}; });
+let BN = store.get("bn", null);       // {at, units:{u:[{rank,name,code,att,from,to,reason,status,section}]}}
+const BN_REMARKS = {};                // key → status remarks (memory only, never saved)
+let bnState = {busy:false, err:"", tried:0};
+let PEOPLE = [], BYKEY = {};
+function buildRoll(){
+  const out = [];
+  if(BN && BN.units && UNITS.every(u => Array.isArray(BN.units[u]) && BN.units[u].length)){
+    UNITS.forEach(u => BN.units[u].forEach(r => {
+      const k = keyOf(r.name), b = BASE_BY_KEY[k] || {};
+      out.push({key:k, unit:u, rank:r.rank || b.rank || "", name:r.name, code:r.code || "", appt:b.appt || "",
+                section:b.unit === u && b.section ? b.section : (r.section || (isCmdRank(r.rank) ? "COMMANDERS" : "OTHERS")),
+                bn:{att:r.att || "PRESENT", from:r.from || "", to:r.to || "", reason:r.reason || "", status:!!r.status}});
+    }));
+  } else {
+    BASE.forEach(([unit, rank, name, appt, section]) => out.push({key:keyOf(name), unit, rank, name, code:"", appt, section, bn:null}));
+  }
+  PEOPLE = out; BYKEY = {};
+  out.forEach(p => { BYKEY[p.key] = p; });
+}
+const personsOf = u => PEOPLE.filter(p => p.unit === u);
+const isCmd = p => isCmdRank(p.rank);
+const apptOf = p => { const v = S.units[p.unit].appt[p.key]; return (v !== undefined ? v : p.appt) || ""; };
+
+// The status in force: the PS's tag, else the Bn attendance, else an automatic
+// rule from the appointment (ASA / SAGE move out but do not participate).
+function statusOf(p){
+  const t = S.units[p.unit].tags[p.key];
+  if(t && t.cat) return {cat:catById(t.cat), src:"ps", reason:t.reason || "", stale: !!(p.bn && t.bnAt !== undefined && t.bnAt !== p.bn.att)};
+  if(p.bn){
+    const c = bnCat(p.bn.att);
+    if(c !== "present") return {cat:catById(c), src:"bn", reason:bnReason(p, c)};
+  }
+  const a = apptOf(p).toUpperCase();
+  for(const [k, cid] of (RULES.autoStatus || [])){
+    if(k && a.includes(k)) return {cat:catById(cid === "moving" ? "np" : cid), src:"auto", reason:"by appointment"};
+  }
+  return {cat:catById("present"), src: p.bn ? "bn" : "base", reason:""};
+}
+function bnReason(p, c){
+  const b = p.bn; if(!b) return "";
+  const dates = b.from || b.to ? `${ddmmyy(b.from)} - ${ddmmyy(b.to)}` : "";
+  const att = String(b.att || "").toUpperCase();
+  if(c === "mc") return dates;
+  const bits = [];
+  if(c === "leave" && att !== "OFF" && att !== "LEAVE") bits.push(att.replace(/^LEAVE\s*/, "").replace(/[()]/g, "").trim() ? att : "");
+  if(c === "others") bits.push(att);
+  if(b.reason) bits.push(b.reason.trim());
+  if(dates) bits.push(dates);
+  return bits.filter(Boolean).join(", ");
+}
+// Where the man is for this activity. Within the coy he is counted where he is
+// attached; "EXT" = attached out of the coy (training under another coy/unit).
+function attachOf(p){
+  const v = S.units[p.unit].attach[p.key];
+  if(v === "OFF") return null;
+  if(v && v.to) return {...v, src:"ps"};
+  const st = statusOf(p);
+  if(st.cat.id === "attout") return {to:EXT, note:st.reason, src:st.src, bnOut:true};
+  const a = apptOf(p).toUpperCase();
+  if((RULES.autoAttachOut || []).some(k => k && a.includes(k)) && st.cat.mo) return {to:EXT, note:"by appointment", src:"auto"};
+  return null;
+}
+// mo / pa / gear for the activity, attachment included
+function stateOf(p){
+  const st = statusOf(p), c = st.cat, a = attachOf(p);
+  let mo = !!c.mo, pa = !!c.mo && !!c.pa, gear = !!c.mo && !!c.gear;
+  if(a && a.to === EXT){ if(a.bnOut){ mo = pa = gear = false; } else { mo = pa = false; } }  // trains under another coy; draws our gear (PS / auto) unless the Bn has him away
+  return {st, a, mo, pa, gear, here: a && a.to !== EXT ? a.to : p.unit};
+}
+
+// ---------------------------------------------------------------------------
+// COUNTING
+// ---------------------------------------------------------------------------
+function split(list){ let c = 0; list.forEach(p => { if(p.guest ? p.cmd : isCmd(p)) c++; }); return {n:list.length, c, t:list.length - c}; }
+const sTxt = x => `${x.n} (${x.c} + ${x.t})`;
+function count(u){
+  const roll = personsOf(u);
+  const guests = (S.units[u].guests || []).map(g => ({...g, guest:true, cmd:isCmdRank(g.rank)}));
+  const extOut = roll.filter(p => { const a = attachOf(p); return a && a.to === EXT; });
+  const attOut = roll.filter(p => { const a = attachOf(p); return a && a.to !== EXT; });
+  const attIn = PEOPLE.filter(p => p.unit !== u && (attachOf(p) || {}).to === u);
+  const here = roll.filter(p => !attachOf(p)).concat(attIn);
+  const mo = here.filter(p => stateOf(p).mo).concat(guests.filter(g => g.mo !== false));
+  const pa = here.filter(p => stateOf(p).pa).concat(guests.filter(g => g.mo !== false && g.pa !== false));
+  return {roll:split(roll), extOut:split(extOut), attOut, attIn, guests, here,
+          held:split(roll.filter(p => !extOut.includes(p))), mo:split(mo), pa:split(pa),
+          np:split(mo.filter(p => !pa.includes(p)))};
+}
+function coyCount(){
+  const all = UNITS.map(count);
+  const add = k => all.reduce((s, r) => ({n:s.n + r[k].n, c:s.c + r[k].c, t:s.t + r[k].t}), {n:0, c:0, t:0});
+  return {units:all, roll:add("roll"), extOut:add("extOut"), held:add("held"), mo:add("mo"), pa:add("pa"), np:add("np")};
+}
+// Everyone not simply present-moving-participating, grouped by message heading.
+function exceptions(units){
+  const g = {};
+  const put = (h, line) => { (g[h] = g[h] || []).push(line); };
+  units.forEach(u => {
+    personsOf(u).forEach(p => {
+      const s = stateOf(p), a = s.a;
+      if(a && a.to !== EXT) return;                        // listed under the unit he went to
+      if(a && a.to === EXT && !a.bnOut){ put("ATTACHED OUT", {p, why: a.note && a.note !== "by appointment" ? a.note : "another coy", src:a.src, unit:u}); return; }
+      const c = s.st.cat;
+      if(c.id === "present") return;
+      put(c.grp, {p, why: s.st.reason || (c.id === "staff" ? "safety / conducting" : ""), src:s.st.src, unit:u, stale:s.st.stale});
+    });
+    PEOPLE.filter(p => p.unit !== u && (attachOf(p) || {}).to === u).forEach(p => {
+      const s = stateOf(p);
+      if(s.st.cat.id !== "present") put(s.st.cat.grp || "OTHERS", {p, why:(s.st.reason ? s.st.reason + ", " : "") + "att in from " + UNIT_SHORT[p.unit], src:s.st.src, unit:u});
+    });
+  });
+  return g;
+}
+
+// ---------------------------------------------------------------------------
+// EQUIPMENT — the BUILD 67 rules, unchanged
+// ---------------------------------------------------------------------------
+function weaponFor(p){
+  if(!p.guest){ const w = S.units[p.unit].wpn[p.key]; if(w !== undefined) return w || null; }
+  const a = (p.guest ? p.appt || "" : apptOf(p)).toUpperCase();
+  for(const [k, w] of RULES.weapon){ if(a.includes(k)) return w; }
+  return "SAR21";
+}
+function weaponsOf(p){
+  const w = weaponFor(p); if(!w) return [];
+  return [w, ...RULES.accessories.filter(([ww, item]) => ww === w && WEAPON_CHOICES.includes(item)).map(([, item]) => item)];
+}
+function sftFor(p){
+  const a = (p.guest ? p.appt || "" : apptOf(p)).toUpperCase();
+  for(const [k, sft] of RULES.sft){ if(k && a.includes(k)) return sft; }
+  const w = weaponFor(p); return w ? (WEAPON_TO_SFT[w] || null) : null;
+}
+function sftsFor(p){
+  const ws = weaponsOf(p); if(!ws.length) return [];
+  const out = [], pri = sftFor(p); if(pri) out.push(pri);
+  ws.slice(1).forEach(w => { const s = WEAPON_TO_SFT[w]; if(s && !out.includes(s)) out.push(s); });
+  return out;
+}
+function signalsFor(p){
+  const a = (p.guest ? p.appt || "" : apptOf(p)).toUpperCase();
+  const r = RULES.signal.find(([ap, rk]) => a === ap && (!rk || p.rank === rk));
+  const items = new Set(r ? r[2] : []);
+  if((p.guest ? p.cmd : isCmd(p)) && !MAP_COMPASS_EXCLUDE.some(x => a.includes(x))){ items.add("MAP"); items.add("COMPASS"); }
+  return [...items];
+}
+function loadoutOf(p){
+  const ws = weaponsOf(p);
+  return [...(ws.length > 1 ? [...ws.slice(1), ws[0]] : ws), ...signalsFor(p)];
+}
+// Gear moves with the man inside the coy: attached to a sister platoon → counted
+// there. Attached out of the coy (by the PS or the MPAT rule) → drew here.
+function drawers(u){
+  const own = personsOf(u).filter(p => { const s = stateOf(p); if(s.a && s.a.to !== EXT) return false; return s.gear || (s.a && s.a.to === EXT && !s.a.bnOut); });
+  const ins = PEOPLE.filter(p => p.unit !== u && (attachOf(p) || {}).to === u && stateOf(p).gear);
+  return own.concat(ins);
+}
+function catOfItem(item){ for(const [k] of EQ_CATS) if(ITEMS[k].includes(item)) return k; return "wpn"; }
+function tally(people){
+  const t = {}; EQ_CATS.forEach(([k]) => t[k] = {});
+  const add = (item, n) => { const k = catOfItem(item); t[k][item] = (t[k][item] || 0) + n; };
+  const first = {};
+  people.forEach(p => {
+    const w = weaponFor(p);
+    if(w){
+      add(w, 1);
+      RULES.accessories.forEach(([ww, item, qty, fo]) => {
+        if(ww !== w || !item) return;
+        if(fo){ const k = ww + "::" + item; if(first[k]) return; first[k] = 1; }
+        add(item, Number(qty) || 0);
+      });
+    }
+    signalsFor(p).forEach(i => add(i, 1));
+    const a = (p.guest ? p.appt || "" : apptOf(p)).toUpperCase();
+    if(RULES.pantesExclude.some(x => x && a.includes(x))) return;
+    Object.entries(RULES.perman).forEach(([item, q]) => add(item, Number(q) || 0));
+    sftsFor(p).forEach(s => { add(s, 1); if(s === "M203 SFT") add("M203 ROUND", 1); });
+  });
+  return t;
+}
+function estabFor(u, item, map){
+  const ov = (RULES.estabUnit || {})[item];
+  if(ov && ov[u] !== undefined) return Number(ov[u]) || 0;
+  return STORE_UNITS.includes(u) ? Number(map[item]) || 0 : 0;
+}
+// figures shown and sent: a typed figure wins over the calculated one
+function equipOf(u){
+  const calc = tally(drawers(u));
+  ITEMS.store.forEach(i => { calc.store[i] = estabFor(u, i, RULES.storeEstab); });
+  ITEMS.tag.forEach(i => { calc.tag[i] = estabFor(u, i, RULES.tagEstab); });
+  const set = S.units[u].eq || {};
+  const rows = {};
+  EQ_CATS.forEach(([k]) => {
+    rows[k] = ITEMS[k].map(item => {
+      const id = k + "::" + item, c = calc[k][item] || 0, typed = set[id];
+      return {k, item, id, calc:c, typed: typed === undefined ? null : typed, n: typed === undefined ? c : typed};
+    }).filter(r => r.n || r.typed !== null);
+  });
+  const gq = tally((S.units[u].guests || []).map(g => ({...g, guest:true, cmd:isCmdRank(g.rank)})));
+  return {rows, guests:gq};
+}
+
+// ---------------------------------------------------------------------------
+// BN PARADE STATE — read live from the sheet (Google's public query endpoint,
+// loaded as a script so it works from any phone without a login)
+// ---------------------------------------------------------------------------
+function bnId(){ const v = store.get("bnid", BN_DEFAULT); const m = String(v || "").match(/\/d\/([a-zA-Z0-9_-]{20,})/); return m ? m[1] : (String(v || "").trim() || BN_DEFAULT); }
+let jsonpN = 0;
+function readTab(tab){
+  return new Promise((res, rej) => {
+    const cb = "__rawdyBn" + (++jsonpN);
+    const s = document.createElement("script");
+    const t = setTimeout(() => { done(); rej(new Error("no answer from the sheet")); }, 20000);
+    function done(){ clearTimeout(t); try { delete window[cb]; } catch(e){ window[cb] = undefined; } s.remove(); }
+    window[cb] = d => { done(); if(!d || d.status === "error") rej(new Error((d && d.errors && d.errors[0] && (d.errors[0].detailed_message || d.errors[0].message)) || "sheet error")); else res(d); };
+    s.onerror = () => { done(); rej(new Error("offline")); };
+    s.src = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(bnId())}/gviz/tq?tqx=out:json;responseHandler:${cb}&headers=0&sheet=${encodeURIComponent(tab)}&range=A1:K150&_=${Date.now()}`;
+    document.head.appendChild(s);
+  });
+}
+// One Bn tab → men. Column letters: C rank, D name, E attendance, F/G dates,
+// H absent reason, J status, K status remarks; B is the 4D / callsign.
+function parseTab(d){
+  const cols = (d.table && d.table.cols) || [], rows = (d.table && d.table.rows) || [];
+  const at = L => cols.findIndex(c => c && c.id === L);
+  const ix = {A:at("A"), B:at("B"), C:at("C"), D:at("D"), E:at("E"), F:at("F"), G:at("G"), H:at("H"), J:at("J"), K:at("K")};
+  const val = (r, L) => { const i = ix[L]; if(i < 0 || !r.c || !r.c[i]) return ""; const c = r.c[i]; return String(c.f != null ? c.f : (c.v == null ? "" : c.v)).trim(); };
+  const out = [], rem = {}; let section = "";
+  rows.forEach(r => {
+    const name = val(r, "D"), a = val(r, "A");
+    if(!name){ if(a && !/^end$/i.test(a) && !/^\d+$/.test(a)) section = a.toUpperCase(); return; }
+    if(/^name$/i.test(name)) return;
+    const k = keyOf(name);
+    out.push({rank:val(r, "C").toUpperCase(), name:name.toUpperCase().replace(/\s+/g, " "), code:val(r, "B"), att:(val(r, "E") || "PRESENT").toUpperCase(),
+              from:val(r, "F"), to:val(r, "G"), reason:val(r, "H"), status:/STATUS/i.test(val(r, "J")), section});
+    const sr = val(r, "K"); if(sr) rem[k] = sr;
+  });
+  return {men:out, rem};
+}
+async function readBn(manual){
+  if(bnState.busy) return;
+  bnState.busy = true; bnState.err = ""; renderBnPill();
+  try {
+    const got = await Promise.all(UNITS.map(u => readTab(BN_TABS[u]).then(parseTab)));
+    if(got.some(g => !g.men.length)) throw new Error("a tab came back empty — check the sheet still has Alpha HQ, P1, P2 and P3");
+    const units = {};
+    UNITS.forEach((u, i) => { units[u] = got[i].men; Object.assign(BN_REMARKS, got[i].rem); });
+    BN = {at:Date.now(), units};
+    store.set("bn", BN);
+    buildRoll(); renderAll();
+    if(manual) toast("Bn parade state read — " + PEOPLE.length + " men");
+  } catch(e){
+    bnState.err = /offline/.test(e.message) ? "cannot reach the Bn sheet (no signal?)" : e.message;
+    if(manual) toast("Bn sheet: " + bnState.err);
+  } finally { bnState.busy = false; bnState.tried = Date.now(); renderBnPill(); renderBnNote(); }
+}
+
+// ---------------------------------------------------------------------------
+// LIVE SYNC — the same Firebase room the phones already use (kept in
+// "rawdy_sync"), under its own /v5 branch so the old build is never touched.
+// ---------------------------------------------------------------------------
+const DEV = (() => { let d = store.get("dev", ""); if(!d){ d = "d" + Math.random().toString(36).slice(2, 9); store.set("dev", d); } return d; })();
+let syncCfg = {url:"", room:"", on:false};
+try { const raw = localStorage.getItem("rawdy_sync"); if(raw) syncCfg = {...syncCfg, ...JSON.parse(raw)}; } catch(e){}
+function saveSyncCfg(){ try { localStorage.setItem("rawdy_sync", JSON.stringify(syncCfg)); } catch(e){} }
+(function roomFromAddress(){
+  try {
+    const s = new URLSearchParams(location.search).get("s"); if(!s) return;
+    const o = JSON.parse(atob(s)); if(o && o.u && o.r){ syncCfg.url = o.u; syncCfg.room = o.r; syncCfg.on = true; saveSyncCfg(); }
+  } catch(e){}
+})();
+const normUrl = v => { let s = String(v || "").trim().replace(/\s+/g, ""); if(!s) return ""; s = s.replace(/\.json.*$/i, "").replace(/\/+$/, ""); if(!/^https?:\/\//i.test(s)) s = "https://" + s; return s; };
+const syncBase = () => syncCfg.url && syncCfg.room ? normUrl(syncCfg.url) + "/rawdy/" + encodeURIComponent(syncCfg.room) + "/v5" : "";
+let es = null, syncState = "off", syncDetail = "", applying = false;
+function setSync(st, detail){ syncState = st; syncDetail = detail || ""; renderSyncPill(); }
+function payloadOf(k){ return k === "g" ? {act:S.g.act, caa:S.g.caa} : (({tags, attach, appt, wpn, eq, guests}) => ({tags, attach, appt, wpn, eq, guests}))(S.units[k]); }
+let pushT = {};
+function syncPush(k){
+  if(!syncCfg.on || applying || !syncBase()) return;
+  clearTimeout(pushT[k]);
+  pushT[k] = setTimeout(async () => {
+    const at = k === "g" ? S.g.at : S.units[k].at;
+    const body = {by:DEV, at, json:JSON.stringify(payloadOf(k))};
+    try {
+      const r = await fetch(syncBase() + "/" + (k === "g" ? "global" : "units/" + k) + ".json", {method:"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body), keepalive:true});
+      if(!r.ok) throw Object.assign(new Error("HTTP " + r.status), {status:r.status});
+      if(syncState !== "live") setSync("live");
+    } catch(e){ setSync("error", whyErr(e)); }
+  }, 400);
+}
+function whyErr(e){
+  if(e && (e.status === 401 || e.status === 403)) return "the database refused access — its rules need fixing";
+  if(e && e.status === 404) return "wrong database address";
+  return "no signal, or the database cannot be reached";
+}
+function applyRemote(k, packet){
+  if(!packet || !packet.json) return false;
+  const at = packet.at || 0, mine = k === "g" ? S.g.at : S.units[k].at;
+  if(at <= mine) return false;
+  let d; try { d = JSON.parse(packet.json); } catch(e){ return false; }
+  applying = true;
+  try {
+    if(k === "g"){ S.g = {at, act:d.act || "", caa:d.caa || ""}; }
+    else S.units[k] = Object.assign(freshUnit(), d, {at});
+  } finally { applying = false; }
+  return true;
+}
+function onRemote(ev){
+  let m; try { m = JSON.parse(ev.data); } catch(e){ return; }
+  if(!m) return;
+  const parts = String(m.path || "/").split("/").filter(Boolean);
+  let changed = false;
+  if(!parts.length){ const d = m.data || {}; if(d.global) changed = applyRemote("g", d.global) || changed; if(d.units) UNITS.forEach(u => { if(d.units[u]) changed = applyRemote(u, d.units[u]) || changed; }); }
+  else if(parts[0] === "global" && parts.length === 1) changed = applyRemote("g", m.data);
+  else if(parts[0] === "units" && UNITS.includes(parts[1]) && parts.length === 2) changed = applyRemote(parts[1], m.data);
+  else if(parts[0] === "units" || parts[0] === "global"){ refetchRoom(); return; }
+  if(changed){ save(); renderAll(); }
+}
+async function refetchRoom(){
+  try { const r = await fetch(syncBase() + ".json"); const d = await r.json() || {}; onRemote({data:JSON.stringify({path:"/", data:d})}); } catch(e){}
+}
+let syncBusy = false;
+async function syncConnect(){
+  if(!syncBase()){ setSync("off"); return; }
+  if(syncBusy) return; syncBusy = true;
+  try {
+    syncCfg.on = true; saveSyncCfg();
+    if(es){ try { es.close(); } catch(e){} es = null; }
+    setSync("connecting");
+    const r = await fetch(syncBase() + ".json");
+    if(!r.ok) throw Object.assign(new Error("HTTP " + r.status), {status:r.status});
+    const d = await r.json() || {};
+    // newest wins, per platoon; anything this phone holds newer goes up
+    const push = [];
+    UNITS.forEach(u => { const rp = (d.units || {})[u]; if(!applyRemote(u, rp) && S.units[u].at > ((rp || {}).at || 0)) push.push(u); });
+    if(!applyRemote("g", d.global) && S.g.at > ((d.global || {}).at || 0)) push.push("g");
+    save(); renderAll();
+    es = new EventSource(syncBase() + ".json");
+    es.addEventListener("put", onRemote); es.addEventListener("patch", onRemote);
+    es.addEventListener("cancel", () => { try { es.close(); } catch(e){} setSync("error", whyErr({status:401})); });
+    es.onopen = () => setSync("live");
+    es.onerror = () => { if(syncCfg.on) setSync("retry", "connection dropped — retrying"); };
+    setSync("live");
+    push.forEach(syncPush);
+  } catch(e){ setSync("error", whyErr(e)); }
+  finally { syncBusy = false; }
+}
+function syncStop(){ if(es){ try { es.close(); } catch(e){} es = null; } syncCfg.on = false; saveSyncCfg(); setSync("off"); }
+function inviteLink(){
+  try { return location.origin + location.pathname + "?s=" + encodeURIComponent(btoa(JSON.stringify({u:syncCfg.url, r:syncCfg.room}))); } catch(e){ return location.href; }
+}
+setInterval(() => { if(syncCfg.on && syncBase() && document.visibilityState === "visible" && (!es || es.readyState === 2)) syncConnect(); }, 20000);
+window.addEventListener("online", () => { if(syncCfg.on) syncConnect(); readBn(); });
+
+// ---------------------------------------------------------------------------
+// THE MESSAGE — the Bn parade state style
+// ---------------------------------------------------------------------------
+const nameLine = (p, why) => `> ${p.rank ? p.rank + " " : ""}${p.name}${why ? " (" + why + ")" : ""}`;
+function groupLines(g, L){
+  GRP_ORDER.forEach(h => {
+    const list = g[h]; if(!list || !list.length) return;
+    L.push(`*${h}: ${fmt2(list.length)}*`);
+    list.forEach(x => L.push(nameLine(x.p, x.why)));
+    L.push("");
+  });
+}
+function attInLines(u, L){
+  const ins = PEOPLE.filter(p => p.unit !== u && (attachOf(p) || {}).to === u);
+  const gs = S.units[u].guests || [];
+  if(ins.length + gs.length){
+    L.push(`*ATTACHED IN: ${fmt2(ins.length + gs.length)}*`);
+    ins.forEach(p => L.push(nameLine(p, "from " + UNIT_SHORT[p.unit])));
+    gs.forEach(g => L.push(nameLine(g, "from " + (g.from || "other unit") + (g.mo === false ? ", not moving" : g.pa === false ? ", not participating" : ""))));
+    L.push("");
+  }
+}
+function attOutWithinLines(u, L){
+  const outs = personsOf(u).filter(p => { const a = attachOf(p); return a && a.to !== EXT; });
+  if(outs.length){ L.push(`*ATT TO OTHER PLT: ${fmt2(outs.length)}*`); outs.forEach(p => L.push(nameLine(p, "to " + UNIT_SHORT[attachOf(p).to]))); L.push(""); }
+}
+function equipLines(u, L, title){
+  const e = equipOf(u);
+  L.push(title ? `*EQUIPMENT — ${UNIT_LABEL[u]}*` : "*EQUIPMENT*");
+  EQ_CATS.forEach(([k, label]) => {
+    const rows = e.rows[k].filter(r => r.n);
+    if(!rows.length) return;
+    L.push(`_${label}_`);
+    rows.forEach(r => L.push(`${fmt2(r.n)} x ${r.item}${RULES.itemNotes && RULES.itemNotes[r.item] && (k === "store" || k === "tag") ? " (" + RULES.itemNotes[r.item] + ")" : ""}`));
+  });
+  const gl = []; EQ_CATS.forEach(([k]) => Object.entries(e.guests[k]).forEach(([i, n]) => { if(n) gl.push(`${fmt2(n)} x ${i}`); }));
+  if(gl.length){ L.push("_Attached-in (their own armskote)_"); gl.forEach(x => L.push(x)); }
+  L.push("");
+}
+function head(title){
+  const act = (S.g.act || "").trim().toUpperCase();
+  return [`*${title}${act ? " — " + act : ""}*`, `CAA ${(S.g.caa || "").trim() || nowCaa()}`, ""];
+}
+function figLines(r, L){
+  L.push(`*TOTAL STRENGTH:* ${sTxt(r.roll)}`);
+  if(r.extOut.n) L.push(`− ${fmt2(r.extOut.n)} attached out of coy = ${sTxt(r.held)}`);
+  L.push(`*MOVE OUT:* ${sTxt(r.mo)}`);
+  L.push(`*PARTICIPATING:* ${sTxt(r.pa)}`);
+  if(r.np.n) L.push(`*NOT PARTICIPATING:* ${sTxt(r.np)}`);
+  L.push("");
+}
+function unitMessage(u){
+  const r = count(u), L = head(`${COY} ${u === "HQ" ? "HQ" : UNIT_LABEL[u]} PARADE STATE`);
+  figLines(r, L);
+  groupLines(exceptions([u]), L);
+  attOutWithinLines(u, L);
+  attInLines(u, L);
+  if(ui.mode === "full") equipLines(u, L, false);
+  L.push(`_RAWDY ${BUILD}_`);
+  return L.join("\n").replace(/\n{3,}/g, "\n\n");
+}
+function coyMessage(){
+  const c = coyCount(), L = head(`${COY} PARADE STATE`);
+  L.push(`*TOTAL STRENGTH:* ${sTxt(c.roll)}`);
+  L.push(UNITS.map((u, i) => `${UNIT_SHORT[u]}: ${c.units[i].roll.n}`).join(" | "));
+  if(c.extOut.n) L.push(`− ${fmt2(c.extOut.n)} attached out of coy = ${sTxt(c.held)}`);
+  L.push(`*MOVE OUT:* ${sTxt(c.mo)}`);
+  L.push(`*PARTICIPATING:* ${sTxt(c.pa)}`);
+  if(c.np.n) L.push(`*NOT PARTICIPATING:* ${sTxt(c.np)}`);
+  L.push("");
+  L.push("*BY UNIT* — total / move out / participating");
+  UNITS.forEach((u, i) => L.push(`${UNIT_SHORT[u]}: ${c.units[i].roll.n} / ${c.units[i].mo.n} / ${c.units[i].pa.n}`));
+  L.push("");
+  groupLines(exceptions(UNITS), L);
+  const gs = UNITS.flatMap(u => (S.units[u].guests || []).map(g => ({g, u})));
+  if(gs.length){ L.push(`*ATTACHED IN FROM OTHER UNITS: ${fmt2(gs.length)}*`); gs.forEach(({g, u}) => L.push(nameLine(g, "from " + (g.from || "other unit") + ", with " + UNIT_SHORT[u]))); L.push(""); }
+  if(ui.mode === "full") UNITS.forEach(u => { L.push("————————"); equipLines(u, L, true); });
+  L.push(`_RAWDY ${BUILD}_`);
+  return L.join("\n").replace(/\n{3,}/g, "\n\n");
+}
+function waHtml(t){
+  return esc(t).replace(/\*([^*\n]+)\*/g, "<b>$1</b>").replace(/(^|\s)_([^_\n]+)_/g, "$1<i>$2</i>");
+}
+let outDirty = false;
+function renderMessage(){
+  const t = ui.tab === "COY" ? coyMessage() : unitMessage(ui.tab);
+  if(!outDirty) el("out").value = t;
+  const d = new Date();
+  el("bub").innerHTML = waHtml(el("out").value) + `<span class="tm">${fmt2(d.getHours())}:${fmt2(d.getMinutes())} ✓✓</span>`;
+}
+
+// ---------------------------------------------------------------------------
+// RENDERING
+// ---------------------------------------------------------------------------
+function renderTabs(){
+  const c = coyCount();
+  el("tabs").innerHTML = ["COY", ...UNITS].map((u, i) => {
+    const r = u === "COY" ? c : c.units[i - 1];
+    return `<button class="tab${ui.tab === u ? " on" : ""}" data-tab="${u}">${u}<small>${r.mo.n}/${r.roll.n}</small></button>`;
+  }).join("");
+}
+function tilesHtml(r){
+  return `<div class="tiles">
+    <div class="tile"><div class="k">Total</div><div class="v">${r.roll.n}</div><div class="s">${r.roll.c} + ${r.roll.t}</div>${r.extOut.n ? `<div class="delta">− ${r.extOut.n} att out = ${r.held.n}</div>` : ""}</div>
+    <div class="tile mo"><div class="k">Move out</div><div class="v">${r.mo.n}</div><div class="s">${r.mo.c} + ${r.mo.t}</div></div>
+    <div class="tile pa"><div class="k">Participating</div><div class="v">${r.pa.n}</div><div class="s">${r.pa.c} + ${r.pa.t}</div>${r.np.n ? `<div class="delta" style="color:var(--blue)">${r.np.n} not participating</div>` : ""}</div>
+  </div>`;
+}
+const srcTag = (src, stale) => stale ? `<span class="src chk">CHECK</span>` : src === "ps" ? `<span class="src ps">PS</span>` : src === "auto" ? `<span class="src auto">AUTO</span>` : src === "bn" ? `<span class="src bn">BN</span>` : "";
+function exceptionsHtml(units){
+  const g = exceptions(units);
+  const heads = GRP_ORDER.filter(h => g[h] && g[h].length);
+  if(!heads.length) return `<p class="note">Nobody tagged — every man moves out and participates.</p>`;
+  return heads.map(h => `<div class="grp"><b>${h} · ${g[h].length}</b><div class="list">${g[h].map(x =>
+    `<div class="ln ${h === "NOT PARTICIPATING" ? "k-np" : h === "ATTACHED OUT" ? "k-att" : "k-out"}" data-key="${esc(x.p.key)}"><span class="n">${esc(x.p.rank)} ${esc(x.p.name)}${units.length > 1 ? ` <span class="r">· ${UNIT_SHORT[x.unit]}</span>` : ""}${x.why ? `<br><span class="r">${esc(x.why)}</span>` : ""}</span>${srcTag(x.src, x.stale)}</div>`).join("")}</div></div>`).join("");
+}
+function chipClass(p){
+  const s = stateOf(p);
+  if(s.a && s.a.to !== EXT) return "att";
+  if(!s.mo) return "out";
+  if(!s.pa) return "np";
+  return "";
+}
+function chipHtml(p, inFrom){
+  const s = stateOf(p), cls = inFrom ? "in" : chipClass(p);
+  let st = "";
+  if(inFrom) st = "ATT IN · " + UNIT_SHORT[p.unit] + (s.st.cat.id !== "present" ? " · " + s.st.cat.label.toUpperCase() : "");
+  else if(s.a && s.a.to !== EXT) st = "ATT TO " + UNIT_SHORT[s.a.to];
+  else if(s.a && s.a.to === EXT) st = s.a.bnOut ? "ATTACHED OUT" : "ATT OUT OF COY";
+  else if(s.st.cat.id !== "present") st = s.st.cat.label.toUpperCase();
+  const load = s.gear || (s.a && s.a.to === EXT && !s.a.bnOut) ? loadoutOf(p).join(", ") : "no gear";
+  return `<button class="chip ${cls}" data-key="${esc(p.key)}"><span class="nm">${esc(p.rank)} ${esc(p.name)}${p.bn && p.bn.status ? `<span class="stat">STATUS</span>` : ""}</span><span class="ap">${esc(apptOf(p) || "—")} · ${esc(load)}</span>${st ? `<span class="st">${esc(st)}${s.st.stale ? " · CHECK" : ""}</span>` : ""}</button>`;
+}
+function rosterHtml(u){
+  const secs = [];
+  personsOf(u).forEach(p => { if(!secs.includes(p.section)) secs.push(p.section); });
+  let h = secs.map(sec => {
+    const ps = personsOf(u).filter(p => p.section === sec);
+    const mo = ps.filter(p => stateOf(p).mo).length;
+    return `<div class="sect">${esc(sec)} <span>${mo}/${ps.length} moving</span></div><div class="chips">${ps.map(p => chipHtml(p)).join("")}</div>`;
+  }).join("");
+  const ins = PEOPLE.filter(p => p.unit !== u && (attachOf(p) || {}).to === u);
+  const gs = S.units[u].guests || [];
+  if(ins.length || gs.length){
+    h += `<div class="sect">Attached in <span>${ins.length + gs.length}</span></div><div class="chips">${ins.map(p => chipHtml(p, true)).join("")}${gs.map((g, i) =>
+      `<button class="chip in" data-guest="${i}"><span class="nm">${esc(g.rank)} ${esc(g.name)}</span><span class="ap">${esc(g.appt || "—")} · from ${esc(g.from || "other unit")}</span><span class="st">${g.mo === false ? "NOT MOVING" : g.pa === false ? "NOT PARTICIPATING" : "GUEST"}</span></button>`).join("")}</div>`;
+  }
+  return h;
+}
+function equipHtml(u){
+  const e = equipOf(u);
+  return EQ_CATS.map(([k, label]) => {
+    const rows = e.rows[k];
+    const total = rows.reduce((s, r) => s + (Number(r.n) || 0), 0);
+    if(!rows.length) return "";
+    return `<details class="eq" data-k="${k}"${(store.get("eqopen", {})[k]) ? " open" : ""}><summary>${label} <span>${rows.length} items · ${total}</span></summary>${rows.map(r =>
+      `<div class="er"><button class="q${r.typed !== null ? " set" : ""}" data-u="${u}" data-id="${esc(r.id)}" data-calc="${r.calc}">${r.n}</button><span class="i">${esc(r.item)}${r.typed !== null ? ` <span class="note">(calculated ${r.calc})</span>` : ""}</span></div>`).join("")}</details>`;
+  }).join("") + `<p class="note" style="margin-top:8px">Worked out from who moves out and their appointments. Tap a figure to type your own; clear it to go back to the calculated one.</p>`;
+}
+function renderUnit(u){
+  const r = count(u);
+  const stale = personsOf(u).filter(p => statusOf(p).stale);
+  el("view").innerHTML = `
+    <section class="card"><h2>${UNIT_LABEL[u]} <span class="sp"></span><span class="pill ${stale.length ? "bad" : "ok"}">${stale.length ? stale.length + " to check" : "matches Bn"}</span></h2>
+      ${tilesHtml(r)}
+      ${stale.length ? `<div class="notice bad">The Bn sheet changed for ${stale.length} man${stale.length > 1 ? "" : ""} you tagged earlier (marked CHECK). Tap each one to keep your tag or follow the Bn.</div>` : ""}
+    </section>
+    <section class="card"><h2>Not on the plain count <span class="sp"></span><span class="note">tap a name</span></h2>${exceptionsHtml([u])}</section>
+    <section class="card"><h2>Roster <span class="sp"></span><button class="btn sm" id="add-guest">+ Attach in from outside</button></h2>
+      ${rosterHtml(u)}
+      <div class="legend"><span><i style="background:var(--green)"></i>moves out &amp; participates</span><span><i style="background:var(--blue)"></i>moves, not participating</span><span><i style="background:var(--red)"></i>not moving out</span><span><i style="background:var(--grey)"></i>attached to other plt</span><span><span class="stat" style="margin:0">STATUS</span> has a medical status</span></div>
+    </section>
+    <section class="card"><h2>Equipment</h2>${equipHtml(u)}</section>`;
+}
+function renderCoy(){
+  const c = coyCount();
+  el("view").innerHTML = `
+    <section class="card"><h2>${COY}</h2>${tilesHtml(c)}</section>
+    <section class="card"><h2>By unit</h2>
+      <table class="ut"><thead><tr><th>Unit</th><th>Total</th><th>Move out</th><th>Partic</th><th>Off</th><th>Updated</th></tr></thead><tbody>
+      ${UNITS.map((u, i) => { const r = c.units[i]; return `<tr data-tab="${u}"><td>${UNIT_SHORT[u]}</td><td>${r.roll.n}</td><td class="mo">${r.mo.n}</td><td class="pa">${r.pa.n}</td><td class="tg">${r.roll.n - r.pa.n}</td><td style="font-size:12px;color:var(--mute)">${S.units[u].at ? agoText(S.units[u].at) : "Bn only"}</td></tr>`; }).join("")}
+      <tr class="tot"><td>COY</td><td>${c.roll.n}</td><td class="mo">${c.mo.n}</td><td class="pa">${c.pa.n}</td><td class="tg">${c.roll.n - c.pa.n}</td><td></td></tr></tbody></table>
+    </section>
+    <section class="card"><h2>Not on the plain count</h2>${exceptionsHtml(UNITS)}</section>
+    <section class="card"><h2>Equipment — company</h2>${coyEquipHtml()}</section>`;
+}
+function coyEquipHtml(){
+  const per = UNITS.map(equipOf);
+  return EQ_CATS.map(([k, label]) => {
+    const items = ITEMS[k].filter(i => per.some(e => e.rows[k].some(r => r.item === i && r.n)));
+    if(!items.length) return "";
+    const n = (e, i) => (e.rows[k].find(r => r.item === i) || {}).n || 0;
+    return `<details class="eq" data-k="c-${k}"${(store.get("eqopen", {})["c-" + k]) ? " open" : ""}><summary>${label} <span>${items.length} items</span></summary>
+      <table class="ut"><thead><tr><th>Item</th>${UNITS.map(u => `<th>${u}</th>`).join("")}<th>COY</th></tr></thead><tbody>${items.map(i =>
+        `<tr><td style="font-size:13px">${esc(i)}</td>${per.map(e => `<td>${n(e, i) || ""}</td>`).join("")}<td><b>${per.reduce((s, e) => s + Number(n(e, i)), 0)}</b></td></tr>`).join("")}</tbody></table></details>`;
+  }).join("");
+}
+function renderBnPill(){
+  const b = el("bn-pill");
+  if(bnState.busy){ b.className = "pill warn"; b.textContent = "BN · reading…"; return; }
+  if(!BN){ b.className = "pill bad"; b.textContent = bnState.err ? "BN · not read" : "BN · …"; return; }
+  const old = Date.now() - BN.at > 30 * 60 * 1000;
+  b.className = "pill " + (bnState.err || old ? "warn" : "ok");
+  b.textContent = "BN · " + agoText(BN.at);
+}
+function renderBnNote(){
+  const n = el("bn-note");
+  if(!BN) n.innerHTML = `<div class="notice ${bnState.err ? "bad" : "warn"}">${bnState.err ? "Could not read the Bn parade state: " + esc(bnState.err) + ". Using the built-in roll (everyone present) until it can. " : "Reading the Bn parade state… "}<button class="linkish" id="bn-retry">Try again</button></div>`;
+  else if(bnState.err) n.innerHTML = `<div class="notice warn">Bn sheet not reachable right now (${esc(bnState.err)}). Showing the attendance read ${esc(agoText(BN.at))}. <button class="linkish" id="bn-retry">Try again</button></div>`;
+  else n.innerHTML = "";
+  el("bn-diag").textContent = BN ? `Last read ${agoText(BN.at)} — ${PEOPLE.length} men (HQ ${personsOf("HQ").length}, PL1 ${personsOf("PL1").length}, PL2 ${personsOf("PL2").length}, PL3 ${personsOf("PL3").length}).` : (bnState.err || "Not read yet.");
+}
+function renderSyncPill(){
+  const b = el("sy-pill");
+  const map = {live:["ok","SYNC · LIVE"], connecting:["warn","SYNC · …"], retry:["warn","SYNC · RETRYING"], error:["bad","SYNC · ERROR"], off:["", "SYNC · OFF"]};
+  const [c, t] = map[syncState] || map.off;
+  b.className = "pill " + c; b.textContent = t;
+  el("sy-state").textContent = syncState === "live" ? `Live in room ${syncCfg.room}.` : syncState === "off" ? (syncBase() ? "Off on this phone." : "Not set up on this phone.") : (syncDetail || syncState);
+  el("sy-off").classList.toggle("hide", !syncCfg.on);
+  el("sy-wa").classList.toggle("hide", !syncBase());
+}
+function renderAll(){
+  renderTabs();
+  if(ui.tab === "COY") renderCoy(); else renderUnit(ui.tab);
+  el("mode").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.m === ui.mode));
+  if(document.activeElement !== el("act")) el("act").value = S.g.act || "";
+  if(document.activeElement !== el("caa")) el("caa").value = S.g.caa || "";
+  renderMessage(); renderBnPill(); renderBnNote(); renderSyncPill();
+}
+
+// ---------------------------------------------------------------------------
+// THE MAN'S CARD
+// ---------------------------------------------------------------------------
+function openSheet(html){ el("sheet").innerHTML = html; el("sheet").classList.add("on"); el("veil").classList.add("on"); }
+function closeSheet(){ el("sheet").classList.remove("on"); el("veil").classList.remove("on"); }
+function manSheet(key){
+  const p = BYKEY[key]; if(!p) return;
+  const u = p.unit, rec = S.units[u], s = stateOf(p);
+  const tag = rec.tags[p.key], att = rec.attach[p.key];
+  const bnc = p.bn ? bnCat(p.bn.att) : "present";
+  const cur = tag ? tag.cat : null;
+  const rem = BN_REMARKS[p.key];
+  const attTo = att === "OFF" ? "" : (att && att.to) || "";
+  const autoAtt = !att && s.a && s.a.src === "auto";
+  openSheet(`
+    <h3>${esc(p.rank)} ${esc(p.name)}</h3>
+    <div class="meta">${UNIT_LABEL[u]} · ${esc(p.section)}${p.code ? " · " + esc(p.code) : ""} · ${esc(apptOf(p) || "no appointment")}</div>
+    <div class="bnbox"><b>Bn parade state</b>${p.bn ? `${esc(p.bn.att)}${bnReason(p, bnc) ? " — " + esc(bnReason(p, bnc)) : ""}` : "not read yet"}${p.bn && p.bn.status ? `<br><b style="margin-top:6px">Status</b>${esc(rem || "STATUS (details in the Bn sheet)")}` : ""}</div>
+    ${s.st.stale ? `<div class="notice bad">You tagged him <b>${esc(catById(tag.cat).label)}</b> when the Bn sheet said ${esc(tag.bnAt || "PRESENT")}. It now says <b>${esc(p.bn.att)}</b>.</div>` : ""}
+    <b style="font-size:13px">For this activity</b>
+    <div class="opts">
+      <button class="opt${!cur ? " on" : ""}" data-cat=""><i style="background:var(--grey)"></i>Follow Bn${bnc !== "present" ? " (" + esc(catById(bnc).label) + ")" : " (present)"}</button>
+      ${CATS.filter(c => c.id !== "attout").map(c => `<button class="opt${cur === c.id ? " on" : ""}" data-cat="${c.id}"><i style="background:${c.dot}"></i>${esc(c.label)}</button>`).join("")}
+    </div>
+    <div class="fld"><label for="m-reason">Reason (shows in the message)</label><input id="m-reason" value="${esc(tag ? tag.reason || "" : "")}" placeholder="e.g. EX RMJ, safety walker, SSC" autocomplete="off"></div>
+    <div class="fld"><label for="m-att">Attached to</label><select id="m-att">
+      <option value="">Not attached${autoAtt ? " (cancel the automatic MPAT attach)" : ""}</option>
+      ${UNITS.filter(x => x !== u).map(x => `<option value="${x}"${attTo === x ? " selected" : ""}>${UNIT_LABEL[x]} (inside the coy)</option>`).join("")}
+      <option value="EXT"${attTo === EXT || (autoAtt && !att) ? " selected" : ""}>Another coy / unit (out of the coy)</option></select></div>
+    <details class="more"><summary>Appointment and weapon</summary>
+      <div class="fld"><label for="m-appt">Appointment</label><input id="m-appt" value="${esc(apptOf(p))}" list="appts" autocomplete="off"></div>
+      <datalist id="appts">${[...new Set(BASE.map(b => b[3]))].map(a => `<option value="${esc(a)}">`).join("")}</datalist>
+      <div class="fld"><label for="m-wpn">Weapon</label><select id="m-wpn"><option value="__auto">By appointment (${esc(((r) => { const w = rec.wpn[p.key]; delete rec.wpn[p.key]; const x = weaponFor(p) || "none"; if(w !== undefined) rec.wpn[p.key] = w; return x; })())})</option>
+        ${WEAPON_CHOICES.map(w => `<option${rec.wpn[p.key] === w ? " selected" : ""}>${w}</option>`).join("")}<option value=""${rec.wpn[p.key] === "" ? " selected" : ""}>No weapon</option></select></div>
+      <p class="note">Draws: ${esc(loadoutOf(p).join(", ") || "nothing")}</p>
+    </details>
+    <div class="foot"><button class="btn" id="m-cancel">Cancel</button><button class="btn pri" id="m-save">Save</button></div>`);
+  let pick = cur || "";
+  el("sheet").querySelectorAll(".opt").forEach(b => b.onclick = () => { pick = b.dataset.cat; el("sheet").querySelectorAll(".opt").forEach(x => x.classList.toggle("on", x === b)); });
+  el("m-cancel").onclick = closeSheet;
+  el("m-save").onclick = () => {
+    const reason = el("m-reason").value.trim();
+    if(pick) rec.tags[p.key] = {cat:pick, reason, bnAt: p.bn ? p.bn.att : undefined};
+    else delete rec.tags[p.key];
+    const to = el("m-att").value;
+    if(to) rec.attach[p.key] = {to, note: to === EXT ? reason : ""};
+    else if(autoAtt) rec.attach[p.key] = "OFF";
+    else delete rec.attach[p.key];
+    if(to === EXT && autoAtt && !att) delete rec.attach[p.key];     // left on the automatic attach
+    const ap = el("m-appt").value.trim().toUpperCase();
+    if(ap === (p.appt || "")) delete rec.appt[p.key]; else rec.appt[p.key] = ap;
+    const w = el("m-wpn").value;
+    if(w === "__auto") delete rec.wpn[p.key]; else rec.wpn[p.key] = w;
+    touchUnit(u); closeSheet(); renderAll();
+  };
+}
+function guestSheet(u, i){
+  const list = S.units[u].guests = S.units[u].guests || [];
+  const g = i == null ? {rank:"", name:"", appt:"", from:"", mo:true, pa:true} : list[i];
+  openSheet(`
+    <h3>${i == null ? "Attach in from outside the coy" : "Attached in"}</h3>
+    <div class="meta">${UNIT_LABEL[u]} · draws from his own unit's armskote</div>
+    <div class="row"><div class="fld" style="flex:0 0 90px"><label for="g-rank">Rank</label><input id="g-rank" value="${esc(g.rank)}" autocomplete="off"></div>
+    <div class="fld" style="flex:1"><label for="g-name">Name</label><input id="g-name" value="${esc(g.name)}" autocomplete="off"></div></div>
+    <div class="fld"><label for="g-from">From (coy / unit)</label><input id="g-from" value="${esc(g.from)}" placeholder="e.g. BRAVO, 42SAR" autocomplete="off"></div>
+    <div class="fld"><label for="g-appt">Appointment</label><input id="g-appt" value="${esc(g.appt)}" list="appts2" autocomplete="off"><datalist id="appts2">${[...new Set(BASE.map(b => b[3]))].map(a => `<option value="${esc(a)}">`).join("")}</datalist></div>
+    <div class="fld"><label for="g-st">For this activity</label><select id="g-st"><option value="pa">Moves out and participates</option><option value="np"${g.mo !== false && g.pa === false ? " selected" : ""}>Moves out, not participating</option><option value="no"${g.mo === false ? " selected" : ""}>Not moving out</option></select></div>
+    <div class="foot">${i == null ? "" : `<button class="btn danger" id="g-del">Remove</button>`}<button class="btn" id="m-cancel">Cancel</button><button class="btn pri" id="g-save">Save</button></div>`);
+  el("m-cancel").onclick = closeSheet;
+  if(el("g-del")) el("g-del").onclick = () => { list.splice(i, 1); touchUnit(u); closeSheet(); renderAll(); };
+  el("g-save").onclick = () => {
+    const name = el("g-name").value.trim().toUpperCase(); if(!name){ el("g-name").focus(); return; }
+    const st = el("g-st").value;
+    const ng = {id: g.id || "g" + Date.now().toString(36), rank:el("g-rank").value.trim().toUpperCase(), name, from:el("g-from").value.trim().toUpperCase(), appt:el("g-appt").value.trim().toUpperCase(), mo: st !== "no", pa: st === "pa"};
+    if(i == null) list.push(ng); else list[i] = ng;
+    touchUnit(u); closeSheet(); renderAll();
+  };
+}
+
+// ---------------------------------------------------------------------------
+// WIRING
+// ---------------------------------------------------------------------------
+document.addEventListener("click", ev => {
+  const t = ev.target.closest("[data-tab],[data-key],[data-guest],.q,#add-guest,#bn-retry,#veil");
+  if(!t) return;
+  if(t.id === "veil"){ closeSheet(); return; }
+  if(t.id === "bn-retry"){ readBn(true); return; }
+  if(t.id === "add-guest"){ guestSheet(ui.tab, null); return; }
+  if(t.dataset.tab){ ui.tab = t.dataset.tab; store.set("ui", ui); outDirty = false; renderAll(); window.scrollTo({top:0}); return; }
+  if(t.dataset.guest !== undefined){ guestSheet(ui.tab, Number(t.dataset.guest)); return; }
+  if(t.classList.contains("q")){ editQty(t); return; }
+  if(t.dataset.key){ manSheet(t.dataset.key); }
+});
+el("veil").onclick = closeSheet;
+document.addEventListener("keydown", e => { if(e.key === "Escape") closeSheet(); });
+document.addEventListener("toggle", e => {
+  const d = e.target; if(!(d instanceof HTMLDetailsElement) || !d.dataset.k) return;
+  const o = store.get("eqopen", {}); o[d.dataset.k] = d.open; store.set("eqopen", o);
+}, true);
+function editQty(b){
+  const u = b.dataset.u, id = b.dataset.id, calc = Number(b.dataset.calc);
+  const inp = document.createElement("input");
+  inp.type = "number"; inp.inputMode = "numeric"; inp.min = "0"; inp.value = b.textContent;
+  b.replaceWith(inp); inp.focus(); inp.select();
+  let done = false;
+  const finish = () => {
+    if(done) return; done = true;
+    const v = inp.value.trim();
+    if(v === "" || Number(v) === calc) delete S.units[u].eq[id]; else S.units[u].eq[id] = Math.max(0, Math.round(Number(v)) || 0);
+    touchUnit(u); renderAll();
+  };
+  inp.addEventListener("blur", finish);
+  inp.addEventListener("keydown", e => { if(e.key === "Enter") inp.blur(); if(e.key === "Escape"){ done = true; renderAll(); } });
+}
+el("act").addEventListener("input", () => { S.g.act = el("act").value; touchGlobal(); outDirty = false; renderMessage(); });
+el("caa").addEventListener("input", () => { S.g.caa = el("caa").value; touchGlobal(); outDirty = false; renderMessage(); });
+el("caa").addEventListener("focus", () => { if(!el("caa").value){ el("caa").value = nowCaa(); S.g.caa = el("caa").value; touchGlobal(); renderMessage(); } });
+el("mode").addEventListener("click", e => { const b = e.target.closest("button"); if(!b) return; ui.mode = b.dataset.m; store.set("ui", ui); outDirty = false; renderAll(); });
+el("out").addEventListener("input", () => { outDirty = true; renderMessage(); });
+async function copyText(t){
+  try { await navigator.clipboard.writeText(t); return true; } catch(e){}
+  try { const a = document.createElement("textarea"); a.value = t; document.body.appendChild(a); a.select(); const ok = document.execCommand("copy"); a.remove(); return ok; } catch(e){ return false; }
+}
+el("d-copy").onclick = async () => { renderMessage(); toast(await copyText(el("out").value) ? "Copied — paste it in WhatsApp" : "Could not copy — open 'Edit the text' and copy it there"); };
+el("d-wa").onclick = () => { renderMessage(); window.open("https://wa.me/?text=" + encodeURIComponent(el("out").value), "_blank"); };
+el("d-refresh").onclick = () => readBn(true);
+el("bn-pill").onclick = () => { el("d-bn").open = true; el("d-bn").scrollIntoView({behavior:"smooth", block:"center"}); };
+el("sy-pill").onclick = () => { el("d-sync").open = true; el("d-sync").scrollIntoView({behavior:"smooth", block:"center"}); };
+el("bn-id").value = store.get("bnid", BN_DEFAULT);
+el("bn-save").onclick = () => { store.set("bnid", el("bn-id").value.trim() || BN_DEFAULT); readBn(true); };
+el("bn-open").onclick = () => window.open(`https://docs.google.com/spreadsheets/d/${bnId()}/edit`, "_blank");
+el("sy-url").value = syncCfg.url || ""; el("sy-room").value = syncCfg.room || "";
+el("sy-go").onclick = () => { syncCfg.url = normUrl(el("sy-url").value); syncCfg.room = el("sy-room").value.trim(); el("sy-url").value = syncCfg.url; if(!syncCfg.url || !syncCfg.room){ toast("Enter the database address and the room code"); return; } saveSyncCfg(); syncConnect(); };
+el("sy-off").onclick = () => { if(confirm("Stop live sync on this phone? Your work stays on this phone.")) syncStop(); };
+el("sy-wa").onclick = () => window.open("https://wa.me/?text=" + encodeURIComponent(`*RAWDY — ${COY}*\nTap this link once to open RAWDY on your phone, already joined to our room:\n${inviteLink()}\nAdd it to your home screen. Update only your own platoon.`), "_blank");
+el("new-act").onclick = () => {
+  if(ui.tab === "COY"){ toast("Open your platoon's tab first"); return; }
+  if(!confirm(`Start a new activity for ${UNIT_LABEL[ui.tab]}? Every tag, attachment and typed figure for ${UNIT_LABEL[ui.tab]} is cleared on every phone.`)) return;
+  const r = S.units[ui.tab]; r.tags = {}; r.attach = {}; r.eq = {}; r.guests = []; touchUnit(ui.tab); renderAll(); toast("New activity — following the Bn parade state");
+};
+el("new-all").onclick = () => {
+  if(!confirm("Start a new activity for the WHOLE COY? Every platoon's tags, attachments and typed figures are cleared on every phone.")) return;
+  UNITS.forEach(u => { const r = S.units[u]; r.tags = {}; r.attach = {}; r.eq = {}; r.guests = []; touchUnit(u); });
+  S.g.act = ""; S.g.caa = ""; touchGlobal(); renderAll(); toast("New activity for the coy");
+};
+// update notice: the page checks version.json beside it
+async function checkUpdate(){
+  try {
+    const r = await fetch("version.json?_=" + Date.now(), {cache:"no-store"}); if(!r.ok) return;
+    const v = await r.json(); if(v && Number(v.build) > BUILD_NO) el("upd").classList.add("on");
+  } catch(e){}
+}
+el("upd-go").onclick = () => { save(); const q = new URLSearchParams(location.search); q.set("v", Date.now()); location.search = q.toString(); };
+document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible"){ checkUpdate(); if(!BN || Date.now() - BN.at > 3 * 60 * 1000) readBn(); renderBnPill(); } });
+
+// ---------------------------------------------------------------------------
+// BOOT
+// ---------------------------------------------------------------------------
+el("build").textContent = "RAWDY · build " + BUILD;
+if(!["COY", ...UNITS].includes(ui.tab)) ui.tab = "COY";
+buildRoll(); renderAll();
+window.rawdyBooted = true;
+readBn();
+if(syncCfg.on && syncBase()) syncConnect();
+checkUpdate();
+setInterval(() => { if(document.visibilityState === "visible") readBn(); }, 5 * 60 * 1000);
+setInterval(() => { renderBnPill(); }, 60 * 1000);
+</script>
+</body>
+</html>
